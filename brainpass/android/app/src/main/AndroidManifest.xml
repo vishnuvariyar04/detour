@@ -22,6 +22,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <!-- Needed to list the child's installed apps in the parent app picker. -->
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"
@@ -31,7 +32,7 @@
          transmits nothing, so it does not request network access at all. -->
 
     <application
-        android:label="BrainPass"
+        android:label="Nupo"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
 
@@ -67,11 +68,29 @@
         <service
             android:name=".GuardService"
             android:exported="false"
+            android:stopWithTask="false"
             android:foregroundServiceType="specialUse">
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="Keeps a parental-control screen-time gate alive in the background." />
         </service>
+
+        <!-- Restart the guard after reboot / app update. -->
+        <receiver
+            android:name=".BootReceiver"
+            android:exported="true"
+            android:enabled="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Self-healing watchdog (fired by AlarmManager). -->
+        <receiver
+            android:name=".WatchdogReceiver"
+            android:exported="false" />
 
     </application>
 

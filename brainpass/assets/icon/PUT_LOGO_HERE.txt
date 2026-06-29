@@ -1,0 +1,16 @@
+Drop your Nupo logo files in this folder:
+
+1) nupo.png         — full-colour logo, 1024x1024, square.
+                      Used for the LAUNCHER icon + the onboarding header.
+                      Keep the important part centered with padding (Android
+                      crops the edges of adaptive icons / may show it in a circle).
+                      Transparent background is fine.
+
+2) nupo_notif.png   — (optional) a WHITE silhouette on a TRANSPARENT background,
+                      ~256x256. Used for the status-bar notification icon.
+                      Android draws status-bar icons as a single white shape, so
+                      a colour logo won't work there — it must be a flat white
+                      cut-out. If you don't provide this, I'll fall back to a
+                      simple icon for the notification.
+
+After adding the file(s), tell me and I'll wire everything up.

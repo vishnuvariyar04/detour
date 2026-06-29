@@ -22,7 +22,6 @@ class _PermissionsScreenState extends State<PermissionsScreen>
     with WidgetsBindingObserver {
   bool _overlay = false;
   bool _usage = false;
-  bool _battery = false;
 
   @override
   void initState() {
@@ -45,12 +44,10 @@ class _PermissionsScreenState extends State<PermissionsScreen>
   Future<void> _refresh() async {
     final overlay = await Engine.canDrawOverlays();
     final usage = await Engine.hasUsageAccess();
-    final battery = await Engine.isIgnoringBattery();
     if (!mounted) return;
     setState(() {
       _overlay = overlay;
       _usage = usage;
-      _battery = battery;
     });
     // Once both core permissions are on, make sure the guard is running.
     if (overlay && usage) Engine.startGuard();
@@ -63,7 +60,7 @@ class _PermissionsScreenState extends State<PermissionsScreen>
     return StepScaffold(
       title: 'Allow these permissions',
       subtitle:
-          'BrainPass needs these to show the earn card and keep working in the '
+          'Nupo needs these to show the earn card and keep working in the '
           'background. It uses nothing else — no camera, location, or contacts.',
       buttonLabel: _canFinish ? 'Continue' : 'Grant the first two to continue',
       onButton: _canFinish ? widget.onNext : null,
@@ -82,23 +79,11 @@ class _PermissionsScreenState extends State<PermissionsScreen>
           _PermissionRow(
             icon: Icons.bar_chart_rounded,
             title: 'Usage access',
-            body: 'So BrainPass knows when your child opens a gated app. '
-                'Find "BrainPass" in the list and turn it on.',
+            body: 'So Nupo knows when your child opens a gated app. '
+                'Find "Nupo" in the list and turn it on.',
             granted: _usage,
             onTap: () async {
               await Engine.openUsageAccessSettings();
-              _refresh();
-            },
-          ),
-          _PermissionRow(
-            icon: Icons.battery_charging_full_rounded,
-            title: 'Ignore battery optimisation',
-            body: 'Recommended — stops Android from killing BrainPass in the '
-                'background. On Xiaomi/Redmi also enable Autostart.',
-            granted: _battery,
-            optional: true,
-            onTap: () async {
-              await Engine.requestIgnoreBattery();
               _refresh();
             },
           ),
@@ -113,7 +98,6 @@ class _PermissionRow extends StatelessWidget {
   final String title;
   final String body;
   final bool granted;
-  final bool optional;
   final VoidCallback onTap;
   const _PermissionRow({
     required this.icon,
@@ -121,7 +105,6 @@ class _PermissionRow extends StatelessWidget {
     required this.body,
     required this.granted,
     required this.onTap,
-    this.optional = false,
   });
 
   @override
@@ -150,18 +133,6 @@ class _PermissionRow extends StatelessWidget {
                           ),
                         ),
                       ),
-                      if (optional)
-                        Container(
-                          margin: const EdgeInsets.only(left: 8),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: AppColors.accent.withValues(alpha: 0.25),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: const Text('recommended',
-                              style: TextStyle(fontSize: 11)),
-                        ),
                     ],
                   ),
                   const SizedBox(height: 4),

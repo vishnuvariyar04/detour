@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:crypto/crypto.dart';
 
+import 'engine.dart';
 import 'storage.dart';
 
 class Pin {
@@ -22,10 +23,13 @@ class Pin {
     return digest.toString();
   }
 
-  /// Set (or change) the parent PIN. Generates a fresh salt each time.
+  /// Set (or change) the parent PIN. Generates a fresh salt each time, and
+  /// pushes the salted hash to native so the lock can verify the parent bypass.
   static Future<void> setPin(String pin) async {
     final salt = _newSalt();
-    await Storage.setPin(_hash(pin, salt), salt);
+    final hash = _hash(pin, salt);
+    await Storage.setPin(hash, salt);
+    await Engine.setPin(hash, salt);
   }
 
   /// Returns true if [pin] matches the stored salted hash.

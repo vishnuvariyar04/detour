@@ -1,6 +1,6 @@
 // screens/intro_screen.dart — spec §9.1
 //
-// A single welcoming screen: what BrainPass does + the privacy promise.
+// A single welcoming screen: what Nupo does + the privacy promise.
 
 import 'package:flutter/material.dart';
 
@@ -14,31 +14,38 @@ class IntroScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StepScaffold(
-      title: 'Welcome to BrainPass',
+      title: 'Welcome to Nupo',
       subtitle: 'Your child earns screen time by solving a few quick problems.',
       buttonLabel: 'Get started',
       onButton: onNext,
       child: Column(
-        children: const [
-          _Point(
+        children: [
+          Center(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(26),
+              child: Image.asset('assets/icon/nupo.png', width: 104, height: 104),
+            ),
+          ),
+          const SizedBox(height: 24),
+          const _Point(
             icon: Icons.school_rounded,
             title: 'Learn, then play',
             body:
                 'When your child opens a game or video app, a friendly card asks '
                 'them to solve a few age-appropriate questions first.',
           ),
-          _Point(
+          const _Point(
             icon: Icons.lock_rounded,
             title: 'You stay in control',
             body:
-                'A PIN protects every setting. Your child cannot turn BrainPass '
+                'A PIN protects every setting. Your child cannot turn Nupo '
                 'off — only you can.',
           ),
-          _Point(
+          const _Point(
             icon: Icons.shield_rounded,
             title: 'Everything stays on this device',
             body:
-                'BrainPass collects nothing. No accounts, no ads, no tracking. '
+                'Nupo collects nothing. No accounts, no ads, no tracking. '
                 'Your child’s data never leaves the phone.',
           ),
         ],

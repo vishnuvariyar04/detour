@@ -2,6 +2,7 @@ package com.brainpass.brainpass
 
 import android.content.Context
 import android.content.SharedPreferences
+import java.security.MessageDigest
 import java.util.Calendar
 
 /**
@@ -20,6 +21,9 @@ object EnginePrefs {
     private const val KEY_GATED = "gatedApps"
     private const val KEY_MASTER = "masterEnabled"
     private const val KEY_DAY = "dayStamp"
+    private const val KEY_BAND = "ageBand"
+    private const val KEY_PIN_HASH = "pinHash"
+    private const val KEY_PIN_SALT = "pinSalt"
 
     // Per-app config
     private const val Q = "q_"        // Int: questions to earn
@@ -33,6 +37,22 @@ object EnginePrefs {
 
     private fun p(c: Context): SharedPreferences =
         c.getSharedPreferences(FILE, Context.MODE_PRIVATE)
+
+    // ---- parent config (pushed from Flutter) ----
+    fun setAgeBand(c: Context, b: String) = p(c).edit().putString(KEY_BAND, b).apply()
+    fun ageBand(c: Context): String = p(c).getString(KEY_BAND, "b") ?: "b"
+
+    fun setPin(c: Context, hash: String, salt: String) =
+        p(c).edit().putString(KEY_PIN_HASH, hash).putString(KEY_PIN_SALT, salt).apply()
+
+    /** Verify the parent PIN against the stored salted SHA-256 (matches pin.dart). */
+    fun verifyPin(c: Context, pin: String): Boolean {
+        val hash = p(c).getString(KEY_PIN_HASH, null) ?: return false
+        val salt = p(c).getString(KEY_PIN_SALT, null) ?: return false
+        val digest = MessageDigest.getInstance("SHA-256").digest("$salt:$pin".toByteArray())
+        val hex = digest.joinToString("") { "%02x".format(it) }
+        return hex == hash
+    }
 
     // ---- master + gated set ----
     fun setMasterEnabled(c: Context, v: Boolean) = p(c).edit().putBoolean(KEY_MASTER, v).apply()

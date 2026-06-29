@@ -108,9 +108,36 @@ class _PinEntryScreenState extends State<PinEntryScreen> {
                       ),
                 ],
               ),
+              const SizedBox(height: 8),
+              TextButton(
+                onPressed: () => _showForgot(context),
+                child: const Text('Forgot PIN?'),
+              ),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  void _showForgot(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Forgot your PIN?'),
+        content: const Text(
+          'Nupo keeps everything on your device with no account, so the PIN '
+          'can\'t be recovered.\n\nTo reset it, open:\n'
+          'Android Settings → Apps → Nupo → Storage → Clear data,\n'
+          'then set Nupo up again.\n\n'
+          'Note: this also clears your gated-app settings.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
+          ),
+        ],
       ),
     );
   }

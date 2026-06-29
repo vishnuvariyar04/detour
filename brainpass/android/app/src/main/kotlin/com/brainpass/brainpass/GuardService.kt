@@ -10,6 +10,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.PixelFormat
 import android.graphics.drawable.GradientDrawable
@@ -20,27 +21,29 @@ import android.os.Looper
 import android.provider.Settings
 import android.util.Log
 import android.view.Gravity
+import android.view.View
+import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.TextView
 
 /**
- * The whole gating engine, in ONE reliable place.
+ * The whole gating engine in one foreground service. Detection via
+ * UsageStatsManager polling (1s, screen-on only); time booked to disk each tick.
  *
- * Why this design (rewired for Xiaomi/HyperOS):
- *  - A foreground service is the component the OS is least likely to kill (with
- *    battery exemption + Autostart), and it RESTARTS itself (START_STICKY).
- *  - We detect the foreground app with UsageStatsManager — a *query*, not a live
- *    listener — so the OS can't silently "disable" it the way it disables an
- *    Accessibility Service. This was the root cause of "no gating".
- *  - Time is booked INCREMENTALLY to disk (~1s per tick), so if the process is
- *    killed and restarted mid-session it resumes exactly where it left off — no
- *    more "timer lost track / drifted".
- *  - The 1s loop only runs while the screen is on (no battery cost otherwise).
+ * IMPORTANT cross-OEM design: the LOCK is a full-screen **overlay** (a window),
+ * NOT a background-launched Activity. Many OEMs (notably Xiaomi/MIUI via the
+ * hidden "display pop-up windows while running in background" permission) block
+ * background Activity starts, so the old approach showed nothing until the app
+ * was foregrounded. An overlay only needs "Draw over other apps" (already
+ * granted, since the countdown chip works), so it appears instantly everywhere.
+ * The overlay also tries to launch the Flutter earn Activity (for the questions
+ * UI); if that's blocked, tapping the overlay launches it (a user gesture is
+ * always allowed).
  */
 class GuardService : Service() {
 
     companion object {
-        private const val TAG = "BrainPassGuard"
+        private const val TAG = "NupoGuard"
         private const val CHANNEL = "brainpass_guard"
         private const val NOTIF_ID = 4201
 
@@ -54,19 +57,14 @@ class GuardService : Service() {
             }
         }
 
-        /** Does the app hold the "Usage access" special permission? */
         fun hasUsageAccess(ctx: Context): Boolean {
             return try {
                 val usm = ctx.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
                 val now = System.currentTimeMillis()
-                // If we can read any events, access is granted.
-                val ev = usm.queryEvents(now - 60_000, now)
-                ev.hasNextEvent() || run {
-                    // No events in the last minute doesn't prove denial; fall back
-                    // to a usage-stats query which returns empty when denied.
-                    usm.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, now - 86_400_000, now)
-                        .isNotEmpty()
-                }
+                usm.queryEvents(now - 60_000, now).hasNextEvent() ||
+                    usm.queryUsageStats(
+                        UsageStatsManager.INTERVAL_DAILY, now - 86_400_000, now
+                    ).isNotEmpty()
             } catch (e: Throwable) {
                 false
             }
@@ -76,12 +74,12 @@ class GuardService : Service() {
     private val handler = Handler(Looper.getMainLooper())
     private var wm: WindowManager? = null
     private var chip: TextView? = null
+    private var lockView: View? = null
+    private var lockPkg: String? = null
 
     private var trackedPkg: String? = null
-    private var lastFg: String? = null // last known foreground app (persists between events)
+    private var lastFg: String? = null
     private var lastTickAt: Long = 0L
-    private var lockedPkg: String? = null
-    private var lockCooldownUntil: Long = 0L
     private var ticking = false
 
     private val screenReceiver = object : BroadcastReceiver() {
@@ -112,6 +110,7 @@ class GuardService : Service() {
         } catch (_: Throwable) {
         }
         startTicking()
+        WatchdogReceiver.schedule(this) // self-healing wake-ups
         Log.d(TAG, "guard service started")
     }
 
@@ -120,8 +119,15 @@ class GuardService : Service() {
         return START_STICKY
     }
 
+    /** Swiped from recents — schedule a quick restart so gating resumes. */
+    override fun onTaskRemoved(rootIntent: Intent?) {
+        WatchdogReceiver.schedule(this, 1500)
+        super.onTaskRemoved(rootIntent)
+    }
+
     override fun onDestroy() {
         stopTicking()
+        hideLock()
         try {
             unregisterReceiver(screenReceiver)
         } catch (_: Throwable) {
@@ -163,37 +169,32 @@ class GuardService : Service() {
         EnginePrefs.rollDayIfNeeded(this)
 
         if (!EnginePrefs.masterEnabled(this)) {
-            idle(); return
+            idle(); hideLock(); return
         }
         val pkg = currentForegroundApp() ?: return
-        if (pkg == packageName) { idle(); return }       // our own lock screen
-        if (!EnginePrefs.isGated(this, pkg)) { idle(); return }
 
-        if (EnginePrefs.capReached(this, pkg)) {
-            idle(); lock(pkg, "done"); return
-        }
-        if (EnginePrefs.remMs(this, pkg) <= 0L) {
-            idle(); lock(pkg, "earn"); return
-        }
+        // Our own parent app is open — not gated; remove any lock.
+        if (pkg == packageName) { idle(); hideLock(); return }
 
-        // Allowed and has time: count it down.
+        // Child left the gated app (home / another app) — free them.
+        if (!EnginePrefs.isGated(this, pkg)) { idle(); hideLock(); return }
+
+        // Gated app with no time -> show the native lock overlay.
+        if (EnginePrefs.capReached(this, pkg)) { idle(); showLock(pkg, "done"); return }
+        if (EnginePrefs.remMs(this, pkg) <= 0L) { idle(); showLock(pkg, "earn"); return }
+
+        // Gated app with time -> remove any lock and count down.
+        hideLock()
         if (pkg != trackedPkg) {
             trackedPkg = pkg
-            showChip() // just entered; start the clock next tick
+            showChip()
         } else {
-            EnginePrefs.consume(this, pkg, delta) // book ~1s to disk (restart-safe)
+            EnginePrefs.consume(this, pkg, delta)
             if (EnginePrefs.remMs(this, pkg) <= 0L) {
-                // Time's up: just CLOSE the app (go home) — NO questions here.
-                // Questions appear only when the child next OPENS the app (the
-                // entry-lock branch above). Briefly suppress that entry-lock so
-                // the lingering foreground frame doesn't pop questions before
-                // home takes effect.
                 hideChip()
                 trackedPkg = null
-                lockedPkg = pkg
-                lockCooldownUntil = System.currentTimeMillis() + 2500
-                Log.d(TAG, "$pkg time up -> home (questions on next open)")
-                goHome()
+                Log.d(TAG, "$pkg time up -> home (lock on next open)")
+                goHome() // just close to home; questions appear on next open
                 return
             }
         }
@@ -208,20 +209,10 @@ class GuardService : Service() {
         hideChip()
     }
 
-    /**
-     * The current foreground app. We scan recent "moved to foreground" events and
-     * only UPDATE [lastFg] when a newer one is found — otherwise we keep the last
-     * known app. This is essential: once you've been in an app for a while there
-     * are no new foreground events, so a naive query returns null and the
-     * countdown would freeze. Keeping [lastFg] makes the clock keep running until
-     * a DIFFERENT app actually comes forward.
-     */
     private fun currentForegroundApp(): String? {
         try {
             val usm = getSystemService(USAGE_STATS_SERVICE) as UsageStatsManager
             val end = System.currentTimeMillis()
-            // Overlapping 12s window; with 1s ticks every event is seen ~12 times,
-            // so we never miss an app switch.
             val ev = usm.queryEvents(end - 12_000, end)
             val e = UsageEvents.Event()
             var newestPkg: String? = null
@@ -242,6 +233,62 @@ class GuardService : Service() {
         return lastFg
     }
 
+    /**
+     * Show the kid lock as a native full-screen overlay (questions rendered by
+     * [LockUi]). An overlay only needs "Draw over other apps" — works on every
+     * phone, no per-OEM background-launch permission, no Activity.
+     */
+    private fun showLock(pkg: String, mode: String) {
+        if (lockView != null && lockPkg == pkg) return // already showing for this app
+        hideLock()
+        if (!Settings.canDrawOverlays(this)) return
+        lockPkg = pkg
+
+        val band = bandFromString(EnginePrefs.ageBand(this))
+        val target = EnginePrefs.questions(this, pkg)
+        val minutes = EnginePrefs.minutes(this, pkg)
+        val ui = LockUi(
+            this, mode, band, target, minutes,
+            onEarned = { EnginePrefs.addEarned(this, pkg); hideLock() },
+            onOverride = { EnginePrefs.addOverride(this, pkg); hideLock() },
+        )
+
+        val type = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+        else
+            @Suppress("DEPRECATION") WindowManager.LayoutParams.TYPE_PHONE
+        // FLAG_NOT_FOCUSABLE => touchable (our buttons work) but doesn't grab
+        // keys; covers + blocks the app behind. No Activity needed.
+        val lp = WindowManager.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            type,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+            PixelFormat.OPAQUE
+        )
+        // Force the lock to portrait so the keypad always fits (a kid might be
+        // in a landscape game when it pops).
+        lp.screenOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        try {
+            wm?.addView(ui.root, lp)
+            lockView = ui.root
+            Log.d(TAG, "native lock shown: $pkg ($mode)")
+        } catch (e: Throwable) {
+            Log.e(TAG, "showLock failed", e)
+            lockPkg = null
+        }
+    }
+
+    private fun hideLock() {
+        val v = lockView ?: return
+        lockView = null
+        lockPkg = null
+        try {
+            wm?.removeView(v)
+        } catch (_: Throwable) {
+        }
+    }
+
     private fun goHome() {
         try {
             startActivity(
@@ -254,34 +301,7 @@ class GuardService : Service() {
         }
     }
 
-    /** Show the earn/done screen when a gated app is OPENED with no time left. */
-    private fun lock(pkg: String, mode: String) {
-        val now = System.currentTimeMillis()
-        if (pkg == lockedPkg && now < lockCooldownUntil) return // don't relaunch repeatedly
-        lockedPkg = pkg
-        lockCooldownUntil = now + 3000
-
-        val q = EnginePrefs.questions(this, pkg)
-        val min = EnginePrefs.minutes(this, pkg)
-        val intent = Intent(this, MainActivity::class.java).apply {
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
-            addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
-            putExtra("lock_package", pkg)
-            putExtra("lock_mode", mode)
-            putExtra("lock_questions", q)
-            putExtra("lock_minutes", min)
-        }
-        try {
-            startActivity(intent)
-            Log.d(TAG, "lock launched: $pkg ($mode)")
-        } catch (e: Throwable) {
-            Log.e(TAG, "lock launch failed", e)
-            lockedPkg = null
-        }
-    }
-
-    // ---- floating countdown chip ----
+    // ---- countdown chip ----
     private fun showChip() {
         if (chip != null) return
         if (!Settings.canDrawOverlays(this)) return
@@ -338,7 +358,7 @@ class GuardService : Service() {
     private fun createChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val ch = NotificationChannel(
-                CHANNEL, "BrainPass active", NotificationManager.IMPORTANCE_MIN
+                CHANNEL, "Nupo active", NotificationManager.IMPORTANCE_MIN
             ).apply { description = "Keeps screen-time gating running." }
             (getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager)
                 .createNotificationChannel(ch)
@@ -351,11 +371,19 @@ class GuardService : Service() {
         } else {
             @Suppress("DEPRECATION") Notification.Builder(this)
         }
-        return builder
-            .setContentTitle("BrainPass is active")
+        builder
+            .setContentTitle("Nupo is active")
             .setContentText("Protecting your child's screen time.")
-            .setSmallIcon(android.R.drawable.ic_lock_idle_lock)
+            .setSmallIcon(R.drawable.ic_stat_nupo)
             .setOngoing(true)
-            .build()
+        appIconBitmap()?.let { builder.setLargeIcon(it) }
+        return builder.build()
+    }
+
+    /** The colour Nupo owl (bundled Flutter asset) for the notification's large icon. */
+    private fun appIconBitmap(): android.graphics.Bitmap? = try {
+        assets.open("flutter_assets/assets/icon/nupo.png").use { BitmapFactory.decodeStream(it) }
+    } catch (e: Throwable) {
+        null
     }
 }

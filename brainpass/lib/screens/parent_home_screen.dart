@@ -16,7 +16,9 @@ import '../theme.dart';
 import 'age_band_screen.dart';
 import 'app_picker_screen.dart';
 import 'app_rules_screen.dart';
+import 'keep_running_screen.dart';
 import 'permissions_screen.dart';
+import 'pin_create_screen.dart';
 
 class ParentHomeScreen extends StatefulWidget {
   const ParentHomeScreen({super.key});
@@ -101,7 +103,7 @@ class _ParentHomeScreenState extends State<ParentHomeScreen>
     final rules = Storage.appRules;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('BrainPass')),
+      appBar: AppBar(title: const Text('Nupo')),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
@@ -111,21 +113,21 @@ class _ParentHomeScreenState extends State<ParentHomeScreen>
                 color: AppColors.wrong,
                 icon: Icons.warning_amber_rounded,
                 title: 'A permission is off',
-                body: 'BrainPass can’t gate apps until you re-enable it. Tap to fix.',
+                body: 'Nupo can’t gate apps until you re-enable it. Tap to fix.',
                 onTap: () => _edit((onNext) => PermissionsScreen(onNext: onNext)),
               )
             else if (!_enabled)
               _Banner(
                 color: AppColors.textMuted,
                 icon: Icons.pause_circle_rounded,
-                title: 'BrainPass is paused',
+                title: 'Nupo is paused',
                 body: 'Gating is turned off. Turn it back on below.',
               )
             else
               const _Banner(
                 color: AppColors.correct,
                 icon: Icons.check_circle_rounded,
-                title: 'BrainPass is active',
+                title: 'Nupo is active',
                 body: 'Your child must earn time on each gated app.',
               ),
             const SizedBox(height: 16),
@@ -205,6 +207,19 @@ class _ParentHomeScreenState extends State<ParentHomeScreen>
               title: 'Permissions',
               value: _permissionsOk ? 'All granted' : 'Needs attention',
               onTap: () => _edit((onNext) => PermissionsScreen(onNext: onNext)),
+            ),
+            _EditTile(
+              icon: Icons.rocket_launch_rounded,
+              title: 'Keep it running',
+              value: 'Autostart & battery',
+              onTap: () => _edit((onNext) =>
+                  KeepRunningScreen(onNext: onNext, isOnboarding: false)),
+            ),
+            _EditTile(
+              icon: Icons.password_rounded,
+              title: 'Change PIN',
+              value: 'Set a new parent PIN',
+              onTap: () => _edit((onNext) => PinCreateScreen(onNext: onNext)),
             ),
           ],
         ),

@@ -5,6 +5,7 @@
 
 import 'package:flutter/material.dart';
 
+import '../engine.dart';
 import '../questions.dart';
 import '../storage.dart';
 import '../widgets.dart';
@@ -28,6 +29,7 @@ class _AgeBandScreenState extends State<AgeBandScreen> {
 
   Future<void> _save() async {
     await Storage.setAgeBand(bandToString(_band));
+    await Engine.setAgeBand(bandToString(_band));
     widget.onNext();
   }
 
