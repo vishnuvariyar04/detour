@@ -1,9 +1,9 @@
-// screens/app_picker_screen.dart — spec §9.5, §10, §13
+// screens/app_picker_screen.dart
 //
 // Parent toggles which apps to gate. Two sources:
 //   1. The curated preset list (always shown).
 //   2. The phone's installed apps (loaded on demand), filtered so the dialer,
-//      messaging, contacts, clock, and settings can NEVER be selected (§13).
+//      messaging, contacts, clock, and settings can NEVER be selected.
 //
 // Saves the selected package names to `gatedApps`.
 
@@ -19,7 +19,14 @@ import '../widgets.dart';
 
 class AppPickerScreen extends StatefulWidget {
   final VoidCallback onNext;
-  const AppPickerScreen({super.key, required this.onNext});
+  final int? step;
+  final int? total;
+  const AppPickerScreen({
+    super.key,
+    required this.onNext,
+    this.step,
+    this.total,
+  });
 
   @override
   State<AppPickerScreen> createState() => _AppPickerScreenState();
@@ -43,12 +50,11 @@ class _AppPickerScreenState extends State<AppPickerScreen> {
         excludeSystemApps: true,
         withIcon: true,
       );
-      // Safety filter (§13) + drop anything already in the preset list.
+      // Safety filter + drop anything already in the preset list.
       final presetPkgs = kPresetGateableApps.map((p) => p.package).toSet();
       apps.retainWhere(
           (a) => isGateable(a.packageName) && !presetPkgs.contains(a.packageName));
-      apps.sort((a, b) =>
-          a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+      apps.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
       if (!mounted) return;
       setState(() => _installed = apps);
     } finally {
@@ -57,13 +63,9 @@ class _AppPickerScreenState extends State<AppPickerScreen> {
   }
 
   void _toggle(String pkg) {
-    if (!isGateable(pkg)) return; // hard guard (§13)
+    if (!isGateable(pkg)) return; // hard safety guard
     setState(() {
-      if (_selected.contains(pkg)) {
-        _selected.remove(pkg);
-      } else {
-        _selected.add(pkg);
-      }
+      _selected.contains(pkg) ? _selected.remove(pkg) : _selected.add(pkg);
     });
   }
 
@@ -77,71 +79,149 @@ class _AppPickerScreenState extends State<AppPickerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return StepScaffold(
-      title: 'Apps to gate',
-      subtitle:
-          'Pick the games, video, and social apps your child must earn. '
-          'Phone, messages, contacts, and clock can never be gated for safety.',
-      buttonLabel: _selected.isEmpty ? 'Pick at least one app' : 'Save',
-      onButton: _selected.isEmpty ? null : _save,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const _SectionLabel('Common apps'),
-          for (final p in kPresetGateableApps)
-            _AppToggle(
-              name: p.name,
-              package: p.package,
-              selected: _selected.contains(p.package),
-              onTap: () => _toggle(p.package),
-            ),
-          const SizedBox(height: 16),
-          const _SectionLabel('Other installed apps'),
-          if (_installed == null)
-            OutlinedButton.icon(
-              onPressed: _loadingInstalled ? null : _loadInstalled,
-              icon: _loadingInstalled
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2))
-                  : const Icon(Icons.apps_rounded),
-              label: Text(_loadingInstalled
-                  ? 'Loading…'
-                  : 'Show apps installed on this phone'),
-            )
-          else if (_installed!.isEmpty)
-            const Text('No other gateable apps found.',
-                style: TextStyle(color: AppColors.textMuted))
-          else
-            for (final a in _installed!)
-              _AppToggle(
-                name: a.name,
-                package: a.packageName,
-                icon: a.icon,
-                selected: _selected.contains(a.packageName),
-                onTap: () => _toggle(a.packageName),
-              ),
-        ],
-      ),
-    );
-  }
-}
+    return Scaffold(
+      body: Container(
+        decoration: AppColors.bgDecoration(),
+        height: double.infinity,
+        child: SafeArea(
+          child: Column(
+            children: [
+              NupoTopBar(step: widget.step, total: widget.total),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('Where should learning pop up?',
+                          style: AppText.title),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Pick the games and videos they reach for most.',
+                        style: AppText.body,
+                      ),
+                      const SizedBox(height: 20),
 
-class _SectionLabel extends StatelessWidget {
-  final String text;
-  const _SectionLabel(this.text);
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Text(
-        text.toUpperCase(),
-        style: const TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w700,
-          color: AppColors.textMuted,
-          letterSpacing: 0.6,
+                      // Preset apps
+                      Container(
+                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                        decoration: AppColors.cardDecoration(),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Padding(
+                              padding: EdgeInsets.only(left: 4, bottom: 10),
+                              child: Row(
+                                children: [
+                                  Icon(Icons.star_rounded,
+                                      color: AppColors.accent, size: 16),
+                                  SizedBox(width: 6),
+                                  Text('POPULAR', style: AppText.overline),
+                                ],
+                              ),
+                            ),
+                            for (final p in kPresetGateableApps)
+                              _AppToggle(
+                                name: p.name,
+                                package: p.package,
+                                selected: _selected.contains(p.package),
+                                onTap: () => _toggle(p.package),
+                              ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+
+                      // Other installed apps
+                      Container(
+                        padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+                        decoration: AppColors.cardDecoration(),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (_installed == null)
+                              Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(14),
+                                  onTap: _loadingInstalled ? null : _loadInstalled,
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 4, vertical: 8),
+                                    child: Row(
+                                      children: [
+                                        const IconBadge(Icons.apps_rounded,
+                                            size: 18),
+                                        const SizedBox(width: 12),
+                                        const Expanded(
+                                          child: Text('More apps on this phone',
+                                              style: AppText.cardTitle),
+                                        ),
+                                        if (_loadingInstalled)
+                                          const SizedBox(
+                                            width: 20,
+                                            height: 20,
+                                            child: CircularProgressIndicator(
+                                                strokeWidth: 2),
+                                          )
+                                        else
+                                          const Icon(
+                                              Icons.expand_more_rounded,
+                                              color: AppColors.textMuted),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              )
+                            else ...[
+                              const Padding(
+                                padding: EdgeInsets.only(left: 4, bottom: 10, top: 4),
+                                child: Text('ON THIS PHONE', style: AppText.overline),
+                              ),
+                              if (_installed!.isEmpty)
+                                const Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 8),
+                                  child: Text('No other apps found.',
+                                      style: AppText.body),
+                                )
+                              else
+                                for (final a in _installed!)
+                                  _AppToggle(
+                                    name: a.name,
+                                    package: a.packageName,
+                                    iconBytes: a.icon,
+                                    selected: _selected.contains(a.packageName),
+                                    onTap: () => _toggle(a.packageName),
+                                  ),
+                            ],
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                    ],
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
+                child: Column(
+                  children: [
+                    PrimaryButton(
+                      label: _selected.isEmpty
+                          ? 'Pick at least one app'
+                          : 'Continue',
+                      onPressed: _selected.isEmpty ? null : _save,
+                    ),
+                    const SizedBox(height: 12),
+                    const InfoPill(
+                      icon: Icons.phone_rounded,
+                      text: 'Phone, messages & clock always stay open',
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -153,53 +233,56 @@ class _AppToggle extends StatelessWidget {
   final String package;
   final bool selected;
   final VoidCallback onTap;
-  final dynamic icon; // Uint8List? from installed_apps
+  final dynamic iconBytes; // Uint8List? from installed_apps
   const _AppToggle({
     required this.name,
     required this.package,
     required this.selected,
     required this.onTap,
-    this.icon,
+    this.iconBytes,
   });
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(bottom: 6),
       child: Material(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
+        color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(16),
           onTap: onTap,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 150),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(
-                color: selected ? AppColors.primary : const Color(0xFFE8EAF2),
-                width: selected ? 2 : 1,
-              ),
+              borderRadius: BorderRadius.circular(16),
+              color: selected ? AppColors.primarySoft : Colors.transparent,
             ),
             child: Row(
               children: [
-                if (icon != null)
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Image.memory(icon, width: 36, height: 36),
-                  )
-                else
-                  const Icon(Icons.smartphone_rounded,
-                      color: AppColors.primary, size: 30),
+                AppBrandIcon(package, size: 40, iconBytes: iconBytes),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: Text(
-                    name,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textDark,
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        name,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.textDark,
+                        ),
+                      ),
+                      Text(
+                        categoryFor(package),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textMuted,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 Switch(value: selected, onChanged: (_) => onTap()),

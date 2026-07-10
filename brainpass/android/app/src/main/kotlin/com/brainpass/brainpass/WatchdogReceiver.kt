@@ -51,6 +51,50 @@ class WatchdogReceiver : BroadcastReceiver() {
                 (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0)
             return PendingIntent.getBroadcast(ctx, REQ, i, flags)
         }
+
+        /**
+         * Post (or refresh) the "needs attention" warning right now. Callable
+         * from anywhere — GuardService uses this for an INSTANT alert the
+         * moment it notices a permission is gone, rather than waiting up to
+         * [INTERVAL] for the next scheduled alarm.
+         */
+        fun warnNow(ctx: Context) {
+            try {
+                val nm = ctx.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    nm.createNotificationChannel(
+                        NotificationChannel(
+                            WARN_CHANNEL, "Nupo alerts", NotificationManager.IMPORTANCE_HIGH
+                        ).apply { description = "Warns you if Nupo's lessons stop working." }
+                    )
+                }
+                val tap = PendingIntent.getActivity(
+                    ctx, 1,
+                    Intent(ctx, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+                    (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0)
+                )
+                val builder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+                    Notification.Builder(ctx, WARN_CHANNEL) else @Suppress("DEPRECATION") Notification.Builder(ctx)
+                val notif = builder
+                    .setContentTitle("Nupo needs attention")
+                    .setContentText("A permission is off — tap to fix.")
+                    .setSmallIcon(android.R.drawable.stat_notify_error)
+                    .setContentIntent(tap)
+                    .setAutoCancel(true)
+                    .setOngoing(true)
+                    .build()
+                nm.notify(WARN_ID, notif)
+            } catch (e: Throwable) {
+                Log.e(TAG, "warnNow failed", e)
+            }
+        }
+
+        fun cancelWarningNow(ctx: Context) {
+            try {
+                (ctx.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager).cancel(WARN_ID)
+            } catch (_: Throwable) {
+            }
+        }
     }
 
     override fun onReceive(ctx: Context, intent: Intent) {
@@ -63,47 +107,10 @@ class WatchdogReceiver : BroadcastReceiver() {
         val overlay = Settings.canDrawOverlays(ctx)
         if (usage && overlay) {
             GuardService.start(ctx) // ensure / restart the guard
-            cancelWarning(ctx)
+            cancelWarningNow(ctx)
         } else {
-            warn(ctx)
+            warnNow(ctx)
         }
     }
 
-    private fun warn(ctx: Context) {
-        try {
-            val nm = ctx.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                nm.createNotificationChannel(
-                    NotificationChannel(
-                        WARN_CHANNEL, "Nupo alerts", NotificationManager.IMPORTANCE_HIGH
-                    ).apply { description = "Warns you if screen-time gating stops working." }
-                )
-            }
-            val tap = PendingIntent.getActivity(
-                ctx, 1,
-                Intent(ctx, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
-                (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0)
-            )
-            val builder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-                Notification.Builder(ctx, WARN_CHANNEL) else @Suppress("DEPRECATION") Notification.Builder(ctx)
-            val notif = builder
-                .setContentTitle("Nupo is not protecting")
-                .setContentText("A permission is off — tap to fix gating.")
-                .setSmallIcon(android.R.drawable.stat_notify_error)
-                .setContentIntent(tap)
-                .setAutoCancel(true)
-                .setOngoing(true)
-                .build()
-            nm.notify(WARN_ID, notif)
-        } catch (e: Throwable) {
-            Log.e(TAG, "warn failed", e)
-        }
-    }
-
-    private fun cancelWarning(ctx: Context) {
-        try {
-            (ctx.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager).cancel(WARN_ID)
-        } catch (_: Throwable) {
-        }
-    }
 }

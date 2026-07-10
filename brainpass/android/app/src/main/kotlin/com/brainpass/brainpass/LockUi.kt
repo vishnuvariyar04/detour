@@ -1,30 +1,35 @@
 package com.brainpass.brainpass
 
+import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.os.Handler
 import android.os.Looper
 import android.view.Gravity
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.OvershootInterpolator
 import android.widget.FrameLayout
 import android.widget.GridLayout
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 
 /**
- * The kid-facing lock, rendered ENTIRELY as native Android views inside the
- * guard's overlay window (no Flutter, no launched Activity). An overlay only
- * needs "Draw over other apps", which works on every phone — so this is the
- * universal lock (no per-OEM background-launch permission).
+ * The kid-facing "learning moment", rendered ENTIRELY as native Android views
+ * inside the guard's overlay window (no Flutter, no launched Activity). An
+ * overlay only needs "Draw over other apps", which works on every phone.
  *
- * Mirrors lib/screens/earn_screen.dart: star progress, a big question card,
- * numeric keypad (math/pattern) or 3 option buttons (GK), gentle wrong-answer
- * handling (reveal answer, new question, no star lost), a discreet "Parent" PIN
- * bypass, and the "all done for today" screen.
+ * Framed as a GIFT, not a lock: a cheering owl, big bouncy stars, colourful
+ * answer buttons, confetti-emoji celebrations on every correct answer, and a
+ * gentle "try again" that never takes a star away. A discreet "Parent" PIN
+ * bypass lives in the corner, and a happy "all done for today" screen closes it.
  */
+@SuppressLint("ClickableViewAccessibility")
 class LockUi(
     private val ctx: Context,
     private val mode: String, // "earn" | "done"
@@ -34,14 +39,19 @@ class LockUi(
     private val onEarned: () -> Unit,
     private val onOverride: () -> Unit,
 ) {
-    // colors
-    private val kidTop = 0xFF6D8BFF.toInt()
-    private val kidBottom = 0xFF8E6CFF.toInt()
+    // colours — bright and playful
+    private val bgTop = 0xFF7A50F0.toInt()
+    private val bgBottom = 0xFF4E86F7.toInt()
     private val correct = 0xFF2FBF71.toInt()
     private val wrong = 0xFFFF6B6B.toInt()
     private val accent = 0xFFFFC83D.toInt()
+    private val accentDeep = 0xFFB98600.toInt()
+    private val accentSoft = 0xFFFFF2CC.toInt()
     private val textDark = 0xFF1F2333.toInt()
-    private val bgGrey = 0xFFF6F7FB.toInt()
+    private val optionColors = intArrayOf(
+        0xFFFF7A7A.toInt(), 0xFF35C9B0.toInt(), 0xFFFFB020.toInt(), 0xFF9B7BFF.toInt()
+    )
+    private val celebrateEmojis = listOf("🎉", "⭐", "🌟", "🚀", "✨", "🏆", "💫")
 
     private val handler = Handler(Looper.getMainLooper())
     private val plan = Questions.buildEarnPlan(target)
@@ -55,14 +65,17 @@ class LockUi(
     private var contentCol: LinearLayout? = null
     private var typedView: TextView? = null
     private var feedbackView: TextView? = null
+    private var cardView: View? = null
+    private var owlView: ImageView? = null
 
     val root: FrameLayout = FrameLayout(ctx).apply {
         background = GradientDrawable(
-            GradientDrawable.Orientation.TOP_BOTTOM, intArrayOf(kidTop, kidBottom)
+            GradientDrawable.Orientation.TL_BR, intArrayOf(bgTop, bgBottom)
         )
     }
 
     init {
+        addBubbles()
         if (mode == "done") buildDone() else buildEarn()
         // discreet parent link (top-right)
         root.addView(
@@ -77,20 +90,43 @@ class LockUi(
         )
     }
 
+    /** Big translucent circles behind everything for a playful feel. */
+    private fun addBubbles() {
+        fun bubble(size: Int, alpha: Int, g: Int, mx: Int, my: Int) {
+            root.addView(View(ctx).apply {
+                background = GradientDrawable().apply {
+                    shape = GradientDrawable.OVAL; setColor((alpha shl 24) or 0xFFFFFF)
+                }
+            }, FrameLayout.LayoutParams(dp(size), dp(size)).apply {
+                gravity = g; setMargins(dp(mx), dp(my), dp(mx), dp(my))
+            })
+        }
+        bubble(220, 0x1F, Gravity.TOP or Gravity.START, -60, -40)
+        bubble(160, 0x1A, Gravity.BOTTOM or Gravity.END, -40, -20)
+        bubble(90, 0x1A, Gravity.TOP or Gravity.END, 30, 120)
+    }
+
     // ---- EARN ----
     private fun buildEarn() {
         val col = LinearLayout(ctx).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER_HORIZONTAL
-            setPadding(dp(20), dp(52), dp(20), dp(24))
+            setPadding(dp(20), dp(44), dp(20), dp(24))
         }
+        // Cheering owl
+        owlBitmap()?.let { bmp ->
+            owlView = ImageView(ctx).apply { setImageBitmap(bmp) }
+            col.addView(owlView, LinearLayout.LayoutParams(dp(96), dp(96)))
+        }
+        col.addView(TextView(ctx).apply {
+            text = "Here's your learning moment!"
+            setTextColor(Color.WHITE); textSize = 20f
+            setTypeface(null, Typeface.BOLD)
+            gravity = Gravity.CENTER
+            setPadding(0, dp(6), 0, dp(10))
+        })
         starsRow = LinearLayout(ctx).apply { gravity = Gravity.CENTER }
         col.addView(starsRow)
-        col.addView(TextView(ctx).apply {
-            text = "Solve $target to play!"
-            setTextColor(Color.WHITE); textSize = 18f
-            setPadding(0, dp(6), 0, 0)
-        })
         contentCol = LinearLayout(ctx).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER_HORIZONTAL
@@ -100,16 +136,21 @@ class LockUi(
         renderQuestion()
     }
 
-    private fun renderStars() {
+    private fun renderStars(popLast: Boolean = false) {
         val row = starsRow ?: return
         row.removeAllViews()
+        var lastFilled: TextView? = null
         for (i in 0 until target) {
-            row.addView(TextView(ctx).apply {
+            val tv = TextView(ctx).apply {
                 text = if (i < solved) "★" else "☆"
-                setTextColor(accent); textSize = 32f
-                setPadding(dp(4), 0, dp(4), 0)
-            })
+                setTextColor(if (i < solved) accent else 0x66FFFFFF)
+                textSize = 34f
+                setPadding(dp(5), 0, dp(5), 0)
+            }
+            row.addView(tv)
+            if (i == solved - 1) lastFilled = tv
         }
+        if (popLast) lastFilled?.let { popIn(it) }
     }
 
     private fun renderQuestion() {
@@ -122,38 +163,51 @@ class LockUi(
         val card = LinearLayout(ctx).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER_HORIZONTAL
-            background = rounded(Color.WHITE, dp(28))
-            setPadding(dp(24), dp(24), dp(24), dp(24))
+            background = rounded(Color.WHITE, dp(30))
+            elevation = dp(8).toFloat()
+            setPadding(dp(24), dp(22), dp(24), dp(24))
         }
+        // "Question X of Y" pill
+        card.addView(TextView(ctx).apply {
+            text = "Question ${solved + 1} of $target"
+            setTextColor(accentDeep); textSize = 13f
+            setTypeface(null, Typeface.BOLD)
+            background = rounded(accentSoft, dp(20))
+            setPadding(dp(14), dp(6), dp(14), dp(6))
+        })
         card.addView(TextView(ctx).apply {
             text = current.prompt
-            setTextColor(textDark); textSize = 32f
+            setTextColor(textDark); textSize = 34f
             setTypeface(null, Typeface.BOLD)
             gravity = Gravity.CENTER
+            setPadding(0, dp(16), 0, 0)
         })
         if (!current.isMultipleChoice) {
             typedView = TextView(ctx).apply {
                 text = " "
-                setTextColor(textDark); textSize = 28f
+                setTextColor(textDark); textSize = 30f
                 setTypeface(null, Typeface.BOLD)
                 gravity = Gravity.CENTER
-                background = rounded(bgGrey, dp(16))
+                background = rounded(0xFFF2F1FA.toInt(), dp(16))
                 setPadding(0, dp(12), 0, dp(12))
             }
             card.addView(typedView, LinearLayout.LayoutParams(match, wrap).apply { topMargin = dp(16) })
         }
         feedbackView = TextView(ctx).apply {
-            text = ""; textSize = 15f; gravity = Gravity.CENTER
-            setPadding(0, dp(10), 0, 0)
+            text = ""; textSize = 16f; gravity = Gravity.CENTER
+            setTypeface(null, Typeface.BOLD)
+            setPadding(0, dp(12), 0, 0)
             visibility = View.GONE
         }
         card.addView(feedbackView)
+        cardView = card
 
         val cardWrap = LinearLayout(ctx).apply { gravity = Gravity.CENTER }
         cardWrap.addView(card, LinearLayout.LayoutParams(match, wrap))
         col.addView(spacer())
         col.addView(cardWrap, LinearLayout.LayoutParams(match, wrap))
         col.addView(spacer())
+        popIn(card)
 
         // input area
         if (current.isMultipleChoice) col.addView(buildOptions()) else col.addView(buildKeypad())
@@ -163,19 +217,22 @@ class LockUi(
         val grid = GridLayout(ctx).apply { columnCount = 3 }
         val keys = listOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "del", "0", "ok")
         for (k in keys) {
+            val bg = when (k) { "ok" -> correct; "del" -> 0x33FFFFFF; else -> Color.WHITE }
             val btn = TextView(ctx).apply {
                 gravity = Gravity.CENTER
-                textSize = if (k.length > 1) 18f else 26f
+                textSize = if (k.length > 1) 20f else 27f
                 setTypeface(null, Typeface.BOLD)
                 text = when (k) { "del" -> "⌫"; "ok" -> "✓"; else -> k }
-                setTextColor(if (k == "ok") Color.WHITE else textDark)
-                background = rounded(if (k == "ok") correct else Color.WHITE, dp(18))
+                setTextColor(if (k == "ok" || k == "del") Color.WHITE else textDark)
+                background = rounded(bg, dp(20))
+                if (k != "del") elevation = dp(3).toFloat()
                 setOnClickListener { if (!busy) onKey(k) }
+                pressable(this)
             }
             val lp = GridLayout.LayoutParams().apply {
                 width = 0; columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
-                height = dp(56)
-                setMargins(dp(5), dp(5), dp(5), dp(5))
+                height = dp(58)
+                setMargins(dp(6), dp(6), dp(6), dp(6))
             }
             grid.addView(btn, lp)
         }
@@ -184,16 +241,18 @@ class LockUi(
 
     private fun buildOptions(): View {
         val box = LinearLayout(ctx).apply { orientation = LinearLayout.VERTICAL }
-        for (opt in current.options ?: emptyList()) {
+        (current.options ?: emptyList()).forEachIndexed { i, opt ->
             box.addView(TextView(ctx).apply {
                 text = opt
-                gravity = Gravity.CENTER; textSize = 20f
+                gravity = Gravity.CENTER; textSize = 21f
                 setTypeface(null, Typeface.BOLD)
-                setTextColor(textDark)
-                background = rounded(Color.WHITE, dp(18))
+                setTextColor(Color.WHITE)
+                background = rounded(optionColors[i % optionColors.size], dp(22))
+                elevation = dp(4).toFloat()
                 setPadding(0, dp(18), 0, dp(18))
                 setOnClickListener { if (!busy) submit(opt) }
-            }, LinearLayout.LayoutParams(match, wrap).apply { setMargins(0, dp(7), 0, dp(7)) })
+                pressable(this)
+            }, LinearLayout.LayoutParams(match, wrap).apply { setMargins(0, dp(8), 0, dp(8)) })
         }
         return box
     }
@@ -212,18 +271,21 @@ class LockUi(
         if (Questions.isCorrect(current, given)) {
             busy = true
             solved++
-            renderStars()
+            renderStars(popLast = true)
+            bounceOwl()
+            celebrate()
             if (solved >= target) {
-                feedback("You earned your time! 🎉", correct)
-                handler.postDelayed({ onEarned() }, 1100)
+                feedback("You did it! 🎉", correct)
+                handler.postDelayed({ onEarned() }, 1250)
             } else {
                 feedback("Great job! 🎉", correct)
-                handler.postDelayed({ busy = false; nextQuestion() }, 650)
+                handler.postDelayed({ busy = false; nextQuestion() }, 800)
             }
         } else {
             busy = true
-            feedback("Try again — the answer was ${current.answer}", wrong)
-            handler.postDelayed({ busy = false; nextQuestion() }, 1400)
+            cardView?.let { shake(it) }
+            feedback("Oops! It was ${current.answer} 🙈", wrong)
+            handler.postDelayed({ busy = false; nextQuestion() }, 1500)
         }
     }
 
@@ -241,6 +303,51 @@ class LockUi(
         }
     }
 
+    // ---- celebrations / animations ----
+    private fun celebrate() {
+        val emoji = TextView(ctx).apply {
+            text = celebrateEmojis.random()
+            textSize = 92f
+            gravity = Gravity.CENTER
+        }
+        root.addView(emoji, FrameLayout.LayoutParams(wrap, wrap).apply { gravity = Gravity.CENTER })
+        emoji.scaleX = 0.3f; emoji.scaleY = 0.3f; emoji.alpha = 0f
+        emoji.animate().scaleX(1.7f).scaleY(1.7f).alpha(1f)
+            .setDuration(260).setInterpolator(OvershootInterpolator())
+            .withEndAction {
+                emoji.animate().alpha(0f).scaleX(2.1f).scaleY(2.1f)
+                    .translationYBy(dp(-40).toFloat()).setDuration(420)
+                    .withEndAction { try { root.removeView(emoji) } catch (_: Throwable) {} }
+                    .start()
+            }.start()
+    }
+
+    private fun popIn(v: View) {
+        v.scaleX = 0.6f; v.scaleY = 0.6f
+        v.animate().scaleX(1f).scaleY(1f).setDuration(300)
+            .setInterpolator(OvershootInterpolator()).start()
+    }
+
+    private fun bounceOwl() {
+        val v = owlView ?: return
+        v.animate().scaleX(1.18f).scaleY(1.18f).rotationBy(6f).setDuration(140)
+            .withEndAction {
+                v.animate().scaleX(1f).scaleY(1f).rotation(0f).setDuration(160)
+                    .setInterpolator(OvershootInterpolator()).start()
+            }.start()
+    }
+
+    private fun shake(v: View) {
+        val d = dp(14).toFloat()
+        v.animate().translationX(-d).setDuration(60).withEndAction {
+            v.animate().translationX(d).setDuration(70).withEndAction {
+                v.animate().translationX(-d * 0.6f).setDuration(60).withEndAction {
+                    v.animate().translationX(0f).setDuration(60).start()
+                }.start()
+            }.start()
+        }.start()
+    }
+
     // ---- DONE FOR TODAY ----
     private fun buildDone() {
         val col = LinearLayout(ctx).apply {
@@ -248,16 +355,19 @@ class LockUi(
             gravity = Gravity.CENTER
             setPadding(dp(28), dp(28), dp(28), dp(28))
         }
-        col.addView(TextView(ctx).apply { text = "🌙"; textSize = 64f; gravity = Gravity.CENTER })
+        owlBitmap()?.let { bmp ->
+            col.addView(ImageView(ctx).apply { setImageBitmap(bmp) },
+                LinearLayout.LayoutParams(dp(130), dp(130)).apply { bottomMargin = dp(4) })
+        }
         col.addView(TextView(ctx).apply {
-            text = "All done for today!"
-            setTextColor(Color.WHITE); textSize = 28f
+            text = "You're a star today! 🌟"
+            setTextColor(Color.WHITE); textSize = 27f
             setTypeface(null, Typeface.BOLD); gravity = Gravity.CENTER
-            setPadding(0, dp(16), 0, dp(8))
+            setPadding(0, dp(8), 0, dp(8))
         })
         col.addView(TextView(ctx).apply {
-            text = "You've used all your screen time.\nSee you tomorrow! 👋"
-            setTextColor(Color.WHITE); textSize = 17f; gravity = Gravity.CENTER
+            text = "Great learning today.\nSee you tomorrow! 👋"
+            setTextColor(0xE6FFFFFF.toInt()); textSize = 17f; gravity = Gravity.CENTER
         })
         root.addView(col, FrameLayout.LayoutParams(match, match))
     }
@@ -268,7 +378,7 @@ class LockUi(
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER
             background = GradientDrawable(
-                GradientDrawable.Orientation.TOP_BOTTOM, intArrayOf(kidTop, kidBottom)
+                GradientDrawable.Orientation.TL_BR, intArrayOf(bgTop, bgBottom)
             )
             setPadding(dp(24), dp(24), dp(24), dp(24))
         }
@@ -294,9 +404,6 @@ class LockUi(
             dots.text = (0 until 4).joinToString(" ") { if (it < pin.length) "●" else "○" }
         }
         val grid = GridLayout(ctx).apply { columnCount = 3 }
-        // Every cell (including the blank bottom-left) uses identical weighted
-        // params, so all 3 columns are equal width — a placeholder with a fixed
-        // width was collapsing the first column.
         fun cellLp() = GridLayout.LayoutParams().apply {
             width = 0
             columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
@@ -319,10 +426,10 @@ class LockUi(
                         else { err.text = "Wrong PIN"; pin = ""; refresh() }
                     }
                 }
+                pressable(this)
             }, cellLp())
         }
         overlay.addView(grid, LinearLayout.LayoutParams(match, wrap).apply { topMargin = dp(16) })
-        // a small back chip
         overlay.addView(TextView(ctx).apply {
             text = "← Back"
             setTextColor(0xCCFFFFFF.toInt()); textSize = 15f; gravity = Gravity.CENTER
@@ -342,4 +449,23 @@ class LockUi(
     }
     private fun rounded(color: Int, radius: Int): GradientDrawable =
         GradientDrawable().apply { cornerRadius = radius.toFloat(); setColor(color) }
+
+    private fun pressable(v: View) {
+        v.setOnTouchListener { view, ev ->
+            when (ev.actionMasked) {
+                MotionEvent.ACTION_DOWN ->
+                    view.animate().scaleX(0.93f).scaleY(0.93f).setDuration(80).start()
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL ->
+                    view.animate().scaleX(1f).scaleY(1f).setDuration(120).start()
+            }
+            false
+        }
+    }
+
+    private fun owlBitmap(): android.graphics.Bitmap? = try {
+        ctx.assets.open("flutter_assets/assets/mascot_opening.png")
+            .use { BitmapFactory.decodeStream(it) }
+    } catch (_: Throwable) {
+        null
+    }
 }

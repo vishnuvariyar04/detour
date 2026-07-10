@@ -3,9 +3,10 @@ package com.brainpass.brainpass
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.provider.Settings
 import android.os.PowerManager
-import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 
@@ -13,8 +14,11 @@ import io.flutter.plugin.common.MethodChannel
  * Hosts the Flutter PARENT UI and bridges it to the native engine. The kid lock
  * is now 100% native (see GuardService + LockUi), so this no longer launches or
  * coordinates any lock screen — it just pushes parent config down to the engine.
+ *
+ * FlutterFragmentActivity (not FlutterActivity): RevenueCat's PaywallView /
+ * Customer Center require a FragmentActivity host.
  */
-class MainActivity : FlutterActivity() {
+class MainActivity : FlutterFragmentActivity() {
     private val channelName = "brainpass/engine"
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
@@ -82,14 +86,26 @@ class MainActivity : FlutterActivity() {
                         WatchdogReceiver.schedule(this)
                         result.success(true)
                     }
+                    "deviceInfo" -> {
+                        val version = try {
+                            @Suppress("DEPRECATION")
+                            packageManager.getPackageInfo(packageName, 0).versionName ?: "?"
+                        } catch (_: Throwable) { "?" }
+                        result.success(
+                            mapOf(
+                                "appVersion" to version,
+                                "model" to Build.MODEL,
+                                "manufacturer" to Build.MANUFACTURER,
+                                "androidVersion" to Build.VERSION.RELEASE
+                            )
+                        )
+                    }
                     "autostartRelevant" -> result.success(Autostart.isRelevant())
                     "openAutostartSettings" -> result.success(Autostart.open(this))
                     "canDrawOverlays" -> result.success(Settings.canDrawOverlays(this))
                     "requestOverlay" -> {
-                        startActivity(
-                            Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName"))
-                                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        )
+                        // Deep-link straight to Nupo (MIUI dumps you on a list otherwise).
+                        OverlayPermission.open(this)
                         result.success(true)
                     }
                     "isIgnoringBattery" -> {

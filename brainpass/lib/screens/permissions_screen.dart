@@ -1,8 +1,9 @@
-// screens/permissions_screen.dart — spec §8, §9.3
+// screens/permissions_screen.dart
 //
-// Guided permission rows with live ✓/✗ status and deep-link buttons, now backed
-// by the native engine channel. "Continue" stays disabled until overlay +
-// accessibility are granted (battery exemption is strongly recommended).
+// The single parent-settings screen for every permission Nupo relies on:
+// draw-over-apps + usage access (core), battery + autostart (reliability). Live
+// ✓ status where Android lets us read it; a deep-link "Open" button otherwise.
+// (This replaces the old separate "Permissions" and "Keep Nupo running" screens.)
 
 import 'package:flutter/material.dart';
 
@@ -22,11 +23,16 @@ class _PermissionsScreenState extends State<PermissionsScreen>
     with WidgetsBindingObserver {
   bool _overlay = false;
   bool _usage = false;
+  bool _battery = false;
+  bool _autostartRelevant = false;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    Engine.autostartRelevant().then((v) {
+      if (mounted) setState(() => _autostartRelevant = v);
+    });
     _refresh();
   }
 
@@ -44,48 +50,75 @@ class _PermissionsScreenState extends State<PermissionsScreen>
   Future<void> _refresh() async {
     final overlay = await Engine.canDrawOverlays();
     final usage = await Engine.hasUsageAccess();
+    final battery = await Engine.isIgnoringBattery();
     if (!mounted) return;
     setState(() {
       _overlay = overlay;
       _usage = usage;
+      _battery = battery;
     });
-    // Once both core permissions are on, make sure the guard is running.
     if (overlay && usage) Engine.startGuard();
   }
-
-  bool get _canFinish => _overlay && _usage;
 
   @override
   Widget build(BuildContext context) {
     return StepScaffold(
-      title: 'Allow these permissions',
-      subtitle:
-          'Nupo needs these to show the earn card and keep working in the '
-          'background. It uses nothing else — no camera, location, or contacts.',
-      buttonLabel: _canFinish ? 'Continue' : 'Grant the first two to continue',
-      onButton: _canFinish ? widget.onNext : null,
+      title: 'Permissions',
+      subtitle: 'Keep these on so Nupo works reliably.',
+      buttonLabel: 'Done',
+      onButton: widget.onNext,
       child: Column(
         children: [
-          _PermissionRow(
+          _PermRow(
             icon: Icons.layers_rounded,
+            color: AppColors.primary,
+            background: AppColors.primarySoft,
             title: 'Draw over other apps',
-            body: 'So the earn card can appear over games and videos.',
+            body: 'Shows the learning moment over an app.',
             granted: _overlay,
-            onTap: () async {
+            onOpen: () async {
               await Engine.requestOverlay();
               _refresh();
             },
           ),
-          _PermissionRow(
-            icon: Icons.bar_chart_rounded,
+          _PermRow(
+            icon: Icons.visibility_rounded,
+            color: AppColors.correct,
+            background: AppColors.correctSoft,
             title: 'Usage access',
-            body: 'So Nupo knows when your child opens a gated app. '
-                'Find "Nupo" in the list and turn it on.',
+            body: 'Lets Nupo know the right moment for a lesson.',
             granted: _usage,
-            onTap: () async {
+            onOpen: () async {
               await Engine.openUsageAccessSettings();
               _refresh();
             },
+          ),
+          _PermRow(
+            icon: Icons.bolt_rounded,
+            color: AppColors.accentDeep,
+            background: AppColors.accentSoft,
+            title: 'Background battery',
+            body: 'Set to “No restrictions” so Nupo isn’t put to sleep.',
+            granted: _battery,
+            onOpen: () async {
+              await Engine.requestIgnoreBattery();
+              _refresh();
+            },
+          ),
+          if (_autostartRelevant)
+            _PermRow(
+              icon: Icons.rocket_launch_rounded,
+              color: const Color(0xFF6D8BFF),
+              background: const Color(0xFFEAF0FF),
+              title: 'Auto-restart',
+              body: 'Switch it on for Nupo so it can turn itself back on.',
+              granted: null, // can't be read on Xiaomi/etc.
+              onOpen: () => Engine.openAutostartSettings(),
+            ),
+          const SizedBox(height: 8),
+          const InfoPill(
+            icon: Icons.push_pin_rounded,
+            text: 'In recent apps, lock Nupo so it isn’t swiped away.',
           ),
         ],
       ),
@@ -93,77 +126,96 @@ class _PermissionsScreenState extends State<PermissionsScreen>
   }
 }
 
-class _PermissionRow extends StatelessWidget {
+class _PermRow extends StatelessWidget {
   final IconData icon;
+  final Color color;
+  final Color background;
   final String title;
   final String body;
-  final bool granted;
-  final VoidCallback onTap;
-  const _PermissionRow({
+
+  /// true = granted, false = not granted, null = can't be detected (autostart).
+  final bool? granted;
+  final VoidCallback onOpen;
+
+  const _PermRow({
     required this.icon,
+    required this.color,
+    required this.background,
     required this.title,
     required this.body,
     required this.granted,
-    required this.onTap,
+    required this.onOpen,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(icon, color: AppColors.primary, size: 28),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+    final isOn = granted == true;
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: AppColors.cardDecoration(),
+      child: Row(
+        children: [
+          IconBadge(icon, color: color, background: background),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: AppText.cardTitle),
+                const SizedBox(height: 2),
+                Text(
+                  body,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textMuted,
+                    height: 1.3,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 10),
+          if (isOn)
+            Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: AppColors.correctSoft,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Row(
-                    children: [
-                      Flexible(
-                        child: Text(
-                          title,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.textDark,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    body,
-                    style: const TextStyle(
-                        fontSize: 14, color: AppColors.textMuted, height: 1.35),
-                  ),
-                  const SizedBox(height: 10),
-                  if (granted)
-                    const Row(
-                      children: [
-                        Icon(Icons.check_circle_rounded,
-                            color: AppColors.correct, size: 20),
-                        SizedBox(width: 6),
-                        Text('Granted',
-                            style: TextStyle(
-                                color: AppColors.correct,
-                                fontWeight: FontWeight.w600)),
-                      ],
-                    )
-                  else
-                    OutlinedButton(
-                      onPressed: onTap,
-                      child: const Text('Open settings'),
-                    ),
+                  Icon(Icons.check_rounded,
+                      color: AppColors.correct, size: 16),
+                  SizedBox(width: 4),
+                  Text('On',
+                      style: TextStyle(
+                          color: AppColors.correct,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 12.5)),
                 ],
               ),
+            )
+          else
+            SizedBox(
+              height: 38,
+              child: FilledButton(
+                onPressed: onOpen,
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size(72, 38),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(19),
+                  ),
+                ),
+                child: const Text('Open',
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800)),
+              ),
             ),
-          ],
-        ),
+        ],
       ),
     );
   }

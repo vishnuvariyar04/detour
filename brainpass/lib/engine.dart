@@ -66,6 +66,16 @@ class Engine {
   static Future<void> requestIgnoreBattery() =>
       _channel.invokeMethod('requestIgnoreBattery');
 
+  /// App version + device model/manufacturer/OS (for the user profile doc).
+  static Future<Map<String, String>> deviceInfo() async {
+    try {
+      final m = await _channel.invokeMethod<Map>('deviceInfo');
+      return m?.map((k, v) => MapEntry('$k', '$v')) ?? {};
+    } catch (_) {
+      return {};
+    }
+  }
+
   /// True on OEMs that have an "Autostart" control (Xiaomi/Oppo/Vivo/etc.).
   static Future<bool> autostartRelevant() async =>
       (await _channel.invokeMethod<bool>('autostartRelevant')) ?? false;

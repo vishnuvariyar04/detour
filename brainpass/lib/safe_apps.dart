@@ -29,7 +29,7 @@ const List<GatePreset> kPresetGateableApps = [
 /// Exact package names that must NEVER be gateable.
 const Set<String> kNeverGateExact = {
   // Our own app
-  'app.nupo.kids',
+  'app.nupo.kid',
   // Common dialers
   'com.google.android.dialer',
   'com.android.dialer',

@@ -180,14 +180,19 @@ class GuardService : Service() {
         if (!EnginePrefs.isGated(this, pkg)) { idle(); hideLock(); return }
 
         // Gated app with no time -> show the native lock overlay.
-        if (EnginePrefs.capReached(this, pkg)) { idle(); showLock(pkg, "done"); return }
-        if (EnginePrefs.remMs(this, pkg) <= 0L) { idle(); showLock(pkg, "earn"); return }
+        if (EnginePrefs.capReached(this, pkg)) { idle(); lockOrEscape(pkg, "done"); return }
+        if (EnginePrefs.remMs(this, pkg) <= 0L) { idle(); lockOrEscape(pkg, "earn"); return }
 
         // Gated app with time -> remove any lock and count down.
         hideLock()
+        // Self-healing: (re)add the chip EVERY tick it should be visible, not
+        // only on the app-switch transition. During a launcher->app transition
+        // (home, then back into the gated app) the one-shot addView can be
+        // dropped by the OEM window manager, and a one-shot has no retry — the
+        // chip stayed gone until the next app switch.
+        showChip()
         if (pkg != trackedPkg) {
             trackedPkg = pkg
-            showChip()
         } else {
             EnginePrefs.consume(this, pkg, delta)
             if (EnginePrefs.remMs(this, pkg) <= 0L) {
@@ -213,7 +218,11 @@ class GuardService : Service() {
         try {
             val usm = getSystemService(USAGE_STATS_SERVICE) as UsageStatsManager
             val end = System.currentTimeMillis()
-            val ev = usm.queryEvents(end - 12_000, end)
+            // 60s window: OEMs can flush usage events late; a short window can
+            // miss a late-stamped MOVE_TO_FOREGROUND entirely, leaving lastFg
+            // stuck on the launcher. We always take the newest event, so
+            // re-reading old ones is harmless.
+            val ev = usm.queryEvents(end - 60_000, end)
             val e = UsageEvents.Event()
             var newestPkg: String? = null
             var newestT = 0L
@@ -238,8 +247,42 @@ class GuardService : Service() {
      * [LockUi]). An overlay only needs "Draw over other apps" — works on every
      * phone, no per-OEM background-launch permission, no Activity.
      */
+    private var lockAddedAt = 0L
+    private var lastPermWarnAt = 0L
+
+    /**
+     * Show the lock if we can — but the "Display over other apps" permission
+     * is a normal OS toggle a child could reach and turn off (e.g. via the
+     * OEM's own "app is drawing over other apps" notification). If it's gone,
+     * we CANNOT show the lock, so don't leave the gated app sitting open and
+     * unrestricted: kick to the home screen (needs no special permission) and
+     * alert the parent immediately, instead of waiting up to 3 minutes for the
+     * next scheduled watchdog alarm. Debounced so the notification doesn't
+     * re-fire every tick while the child keeps reopening the app.
+     */
+    private fun lockOrEscape(pkg: String, mode: String) {
+        if (Settings.canDrawOverlays(this)) {
+            showLock(pkg, mode)
+            return
+        }
+        goHome()
+        val now = System.currentTimeMillis()
+        if (now - lastPermWarnAt > 60_000L) {
+            lastPermWarnAt = now
+            WatchdogReceiver.warnNow(this)
+        }
+    }
+
     private fun showLock(pkg: String, mode: String) {
-        if (lockView != null && lockPkg == pkg) return // already showing for this app
+        val existing = lockView
+        if (existing != null && lockPkg == pkg) {
+            // Already showing for this app — unless the system detached it
+            // (same OEM transition issue as the chip), then re-add.
+            if (existing.isAttachedToWindow ||
+                System.currentTimeMillis() - lockAddedAt < 2_500
+            ) return
+            Log.w(TAG, "lock was detached by the system — re-adding")
+        }
         hideLock()
         if (!Settings.canDrawOverlays(this)) return
         lockPkg = pkg
@@ -272,6 +315,7 @@ class GuardService : Service() {
         try {
             wm?.addView(ui.root, lp)
             lockView = ui.root
+            lockAddedAt = System.currentTimeMillis()
             Log.d(TAG, "native lock shown: $pkg ($mode)")
         } catch (e: Throwable) {
             Log.e(TAG, "showLock failed", e)
@@ -302,8 +346,20 @@ class GuardService : Service() {
     }
 
     // ---- countdown chip ----
+    private var chipAddedAt = 0L
+
     private fun showChip() {
-        if (chip != null) return
+        val existing = chip
+        if (existing != null) {
+            // Give a fresh addView a couple of ticks to attach, then treat a
+            // detached view as "system removed it" and re-add.
+            if (existing.isAttachedToWindow ||
+                System.currentTimeMillis() - chipAddedAt < 2_500
+            ) return
+            Log.w(TAG, "chip was detached by the system — re-adding")
+            chip = null
+            try { wm?.removeView(existing) } catch (_: Throwable) {}
+        }
         if (!Settings.canDrawOverlays(this)) return
         try {
             val tv = TextView(this).apply {
@@ -332,7 +388,9 @@ class GuardService : Service() {
             }
             wm?.addView(tv, lp)
             chip = tv
+            chipAddedAt = System.currentTimeMillis()
         } catch (e: Throwable) {
+            // Don't give up: showChip is re-tried on every tick.
             Log.e(TAG, "showChip failed", e)
         }
     }
@@ -359,7 +417,7 @@ class GuardService : Service() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val ch = NotificationChannel(
                 CHANNEL, "Nupo active", NotificationManager.IMPORTANCE_MIN
-            ).apply { description = "Keeps screen-time gating running." }
+            ).apply { description = "Keeps Nupo's daily lessons running." }
             (getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager)
                 .createNotificationChannel(ch)
         }
@@ -373,7 +431,7 @@ class GuardService : Service() {
         }
         builder
             .setContentTitle("Nupo is active")
-            .setContentText("Protecting your child's screen time.")
+            .setContentText("Your child's daily learning is on.")
             .setSmallIcon(R.drawable.ic_stat_nupo)
             .setOngoing(true)
         appIconBitmap()?.let { builder.setLargeIcon(it) }

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1070595284454",
+    "project_id": "nupo-e6a13",
+    "storage_bucket": "nupo-e6a13.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1070595284454:android:880b4dca8b6af59f7e0a27",
+        "android_client_info": {
+          "package_name": "app.nupo.kid"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDca6K4ZquBNruICuo3j4gWUagdTS-Vpfs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

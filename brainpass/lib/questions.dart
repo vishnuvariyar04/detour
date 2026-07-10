@@ -1,8 +1,7 @@
 // questions.dart
 //
-// The "brain" of BrainPass: it produces the problems a child solves to earn
-// screen time. Two kinds of content live here and BOTH are compiled into the
-// app (no network, no server — see spec §4 "collect nothing"):
+// The "brain" of Nupo: it produces the questions in a child's learning moment.
+// Two kinds of content live here and BOTH are compiled into the app:
 //
 //   1. Procedurally GENERATED questions (math + number patterns). These are
 //      created by code on the fly, so they are effectively infinite and need

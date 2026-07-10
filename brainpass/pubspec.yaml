@@ -1,5 +1,5 @@
 name: brainpass
-description: "Kids earn screen time by solving quick problems. All on-device."
+description: "A daily learning habit for kids 5-11, built into the phone time they already love."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.0+1
+version: 1.0.0+2
 
 environment:
   sdk: ^3.12.2
@@ -46,6 +46,11 @@ dependencies:
   shared_preferences: ^2.5.5
   crypto: ^3.0.7
   installed_apps: ^2.1.1
+  firebase_core: ^4.11.0
+  firebase_auth: ^6.5.4
+  cloud_firestore: ^6.6.0
+  purchases_flutter: ^10.4.0
+  purchases_ui_flutter: ^10.4.0
   # NOTE: detection + overlay + keep-alive are now handled by our own native
   # Android Accessibility Service (see android/.../BrainPassAccessibilityService.kt)
   # instead of plugins, so the engine survives the app being killed. The old
@@ -77,6 +82,22 @@ flutter:
 
   assets:
     - assets/icon/nupo.png
+    - assets/mascot_opening.png
+    - assets/mascot_pin.png
+
+  fonts:
+    - family: Nunito
+      fonts:
+        - asset: assets/fonts/Nunito-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Nunito-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Nunito-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Nunito-ExtraBold.ttf
+          weight: 800
+        - asset: assets/fonts/Nunito-Black.ttf
+          weight: 900
 
   # To add assets to your application, add an assets section, like this:
   # assets:

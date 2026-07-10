@@ -2,9 +2,21 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <!-- ===================================================================
-         PERMISSIONS (spec §4: ONLY what the gate needs — no location,
-         camera, mic, contacts, internet, ads, or analytics.)
+         PERMISSIONS: only what the app needs — no location, camera, mic,
+         contacts, ads, or analytics. Network is used solely for parent login
+         (Firebase) and subscriptions (RevenueCat/Play Billing).
          =================================================================== -->
+
+    <!-- Parent login (Firebase Auth), profile sync (Firestore), and
+         subscriptions (RevenueCat / Google Play Billing). -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Nupo's audience includes CHILDREN, so the advertising ID (AAID) must
+         never be transmitted (Google Play Families policy). Firebase and Play
+         Billing transitively merge this permission in; strip it so no AAID can
+         be accessed. Verified absent in the merged manifest. -->
+    <uses-permission android:name="com.google.android.gms.permission.AD_ID"
+        tools:node="remove" />
 
     <!-- Lets the guard service draw the countdown chip and launch the lock
          screen over other apps from the background. -->
@@ -27,9 +39,6 @@
     <!-- Needed to list the child's installed apps in the parent app picker. -->
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"
         tools:ignore="QueryAllPackagesPermission" />
-
-    <!-- NOTE: there is intentionally NO INTERNET permission. BrainPass
-         transmits nothing, so it does not request network access at all. -->
 
     <application
         android:label="Nupo"

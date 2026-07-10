@@ -1,7 +1,7 @@
 # Nupo — Version 1 (complete reference)
 
 > **Status:** v1, working and device-verified (Xiaomi Redmi/POCO, HyperOS, Android 16).
-> **App name:** **Nupo** · **applicationId:** `app.nupo.kids` · **code namespace:** `com.brainpass.brainpass` (internal only).
+> **App name:** **Nupo** · **applicationId:** `app.nupo.kid` · **code namespace:** `com.brainpass.brainpass` (internal only).
 > **Platform:** Android only. **Framework:** Flutter (Dart) parent UI + a native Kotlin engine.
 > **Promise:** A child earns time on chosen apps by answering quick questions. 100% on-device, zero data collection, no accounts, no ads.
 > **Project root:** `c:\dev\detour\brainpass` (folder still named `brainpass`; the product is Nupo).
@@ -166,7 +166,7 @@ Everything stays on the device; nothing collected or transmitted. See `PRIVACY_P
 ## 12. Build, signing & dependencies
 - **Flutter** 3.44.3 (Dart 3.12.2) at `C:\dev\flutter`; JDK: `flutter config --jdk-dir "C:\Program Files\Java\jdk-19"` (Android Studio's bundled JBR is JDK 11 — too old).
 - **minSdk 24**; target/compile per Flutter (36).
-- **Release signing:** `android/key.properties` (gitignored) + a keystore; `build.gradle.kts` uses the release key when present, else debug. `applicationId = app.nupo.kids`.
+- **Release signing:** `android/key.properties` (gitignored) + a keystore; `build.gradle.kts` uses the release key when present, else debug. `applicationId = app.nupo.kid`.
 - **Dart deps:** `shared_preferences`, `crypto`, `installed_apps`, `cupertino_icons`; dev: `flutter_launcher_icons`. (The old accessibility/overlay/foreground plugins were removed — all native now.)
 - Build: `flutter build apk --release` → `build\app\outputs\flutter-apk\app-release.apk`. Generate icons: `dart run flutter_launcher_icons`. (Transient "Unable to determine engine version" → `flutter clean` + retry.)
 
@@ -175,9 +175,9 @@ Everything stays on the device; nothing collected or transmitted. See `PRIVACY_P
 ## 13. Install & test workflow (HyperOS)
 `adb` at `%LOCALAPPDATA%\Android\Sdk\platform-tools\adb.exe`.
 - **First install of a new package is blocked** by MIUI ("Install via USB" / `INSTALL_FAILED_USER_RESTRICTED`) → install from the phone's **Downloads** (`Nupo.apk`, tap → "Install anyway"). **Updates** to an already-installed package work via `adb install -r` *only if signatures match* (release-vs-debug mismatch otherwise).
-- Grant via adb for testing: `appops set app.nupo.kids GET_USAGE_STATS allow`, `appops set app.nupo.kids SYSTEM_ALERT_WINDOW allow`, `dumpsys deviceidle whitelist +app.nupo.kids`.
-- Fresh onboarding without uninstalling: `adb shell pm clear app.nupo.kids`.
-- Inspect engine: `adb shell run-as app.nupo.kids cat /data/data/app.nupo.kids/shared_prefs/brainpass_engine.xml`.
+- Grant via adb for testing: `appops set app.nupo.kid GET_USAGE_STATS allow`, `appops set app.nupo.kid SYSTEM_ALERT_WINDOW allow`, `dumpsys deviceidle whitelist +app.nupo.kid`.
+- Fresh onboarding without uninstalling: `adb shell pm clear app.nupo.kid`.
+- Inspect engine: `adb shell run-as app.nupo.kid cat /data/data/app.nupo.kid/shared_prefs/brainpass_engine.xml`.
 - Logs: `adb logcat -s NupoGuard NupoWatchdog`.
 - Device-verified in v1: detection, native lock renders + answers register + stars advance, countdown at 1× rate, time-up→home, watchdog alarm scheduled, Autostart deep-link opens, launcher icon applied.
 

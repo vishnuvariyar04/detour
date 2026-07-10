@@ -9,9 +9,16 @@
 import 'package:flutter/material.dart';
 
 import '../theme.dart';
+import '../widgets.dart';
 
 class PermissionStepScreen extends StatefulWidget {
-  final String emoji;
+  final IconData icon;
+  final String? mascot; // optional asset shown instead of the icon badge
+
+  /// Hero tint — each step gets its own colour so the flow feels alive.
+  final Color heroColor;
+  final Color heroBackground;
+
   final String title;
   final String subtitle;
   final String buttonLabel;
@@ -22,7 +29,7 @@ class PermissionStepScreen extends StatefulWidget {
   /// Opens the relevant system settings / dialog.
   final Future<void> Function() request;
 
-  /// Show the "find this in the list" preview (for list-based screens).
+  /// Show the "find Nupo in the list" preview (for list-based settings pages).
   final bool showFindCard;
 
   /// Allow a discreet "Skip for now" (for recommended-but-not-required steps).
@@ -34,7 +41,7 @@ class PermissionStepScreen extends StatefulWidget {
 
   const PermissionStepScreen({
     super.key,
-    required this.emoji,
+    required this.icon,
     required this.title,
     required this.subtitle,
     required this.buttonLabel,
@@ -42,6 +49,9 @@ class PermissionStepScreen extends StatefulWidget {
     required this.step,
     required this.total,
     required this.onNext,
+    this.heroColor = AppColors.primary,
+    this.heroBackground = Colors.white,
+    this.mascot,
     this.check,
     this.showFindCard = false,
     this.skippable = false,
@@ -80,9 +90,7 @@ class _PermissionStepScreenState extends State<PermissionStepScreen>
     final check = widget.check;
     if (check != null) {
       final granted = await check();
-      if (granted) {
-        _advance();
-      }
+      if (granted) _advance();
     } else {
       // Undetectable (Autostart): advance once they've returned from settings.
       if (_opened && !initial) _advance();
@@ -108,152 +116,170 @@ class _PermissionStepScreenState extends State<PermissionStepScreen>
 
   @override
   Widget build(BuildContext context) {
-    final color = _granted ? AppColors.correct : AppColors.primary;
     return Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(28, 16, 28, 24),
+      body: Container(
+        decoration: AppColors.bgDecoration(),
+        height: double.infinity,
+        child: SafeArea(
           child: Column(
             children: [
-              _ProgressDots(step: widget.step, total: widget.total),
-              const Spacer(),
-              // Big friendly icon / check
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 250),
-                width: 120,
-                height: 120,
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.12),
-                  shape: BoxShape.circle,
+              NupoTopBar(step: widget.step, total: widget.total),
+              Expanded(
+                child: LayoutBuilder(
+                  builder: (context, viewport) => SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(horizontal: 28),
+                    child: ConstrainedBox(
+                      constraints:
+                          BoxConstraints(minHeight: viewport.maxHeight),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          _hero(),
+                          const SizedBox(height: 26),
+                          Text(
+                            _granted ? 'Done!' : widget.title,
+                            textAlign: TextAlign.center,
+                            style: AppText.title,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            _granted ? 'Permission granted.' : widget.subtitle,
+                            textAlign: TextAlign.center,
+                            style: AppText.body,
+                          ),
+                          if (!_granted && widget.showFindCard) ...[
+                            const SizedBox(height: 26),
+                            _findCard(),
+                          ],
+                          // Keep the block optically centered (hero is tall).
+                          const SizedBox(height: 40),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
-                alignment: Alignment.center,
-                child: _granted
-                    ? const Icon(Icons.check_rounded,
-                        color: AppColors.correct, size: 64)
-                    : Text(widget.emoji, style: const TextStyle(fontSize: 60)),
               ),
-              const SizedBox(height: 28),
-              Text(
-                _granted ? 'Done!' : widget.title,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.textDark,
+              Padding(
+                padding: const EdgeInsets.fromLTRB(28, 4, 28, 16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (!_granted) ...[
+                      PrimaryButton(
+                        label: widget.buttonLabel,
+                        icon: widget.icon,
+                        onPressed: _onButton,
+                      ),
+                      if (widget.skippable)
+                        TextButton(
+                          onPressed: widget.onNext,
+                          child: const Text('Skip for now'),
+                        )
+                      else ...[
+                        const SizedBox(height: 12),
+                        const InfoPill(
+                          icon: Icons.favorite_rounded,
+                          text: 'A quick lesson, then straight to play',
+                        ),
+                      ],
+                    ],
+                  ],
                 ),
               ),
-              const SizedBox(height: 10),
-              Text(
-                widget.subtitle,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 16,
-                  color: AppColors.textMuted,
-                  height: 1.4,
-                ),
-              ),
-              if (widget.showFindCard && !_granted) ...[
-                const SizedBox(height: 24),
-                const _FindThisCard(),
-              ],
-              const Spacer(),
-              if (!_granted) ...[
-                FilledButton(
-                  onPressed: _onButton,
-                  child: Text(widget.buttonLabel),
-                ),
-                if (widget.skippable)
-                  TextButton(
-                    onPressed: widget.onNext,
-                    child: const Text('Skip for now'),
-                  )
-                else
-                  const SizedBox(height: 8),
-              ],
             ],
           ),
         ),
       ),
     );
   }
-}
 
-/// Shows the parent exactly what to look for in a settings list.
-class _FindThisCard extends StatelessWidget {
-  const _FindThisCard();
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        const Text(
-          'Find this and turn it on:',
-          style: TextStyle(
-              fontSize: 13,
-              color: AppColors.textMuted,
-              fontWeight: FontWeight.w600),
-        ),
-        const SizedBox(height: 8),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.primary, width: 2),
+  Widget _hero() {
+    if (_granted) {
+      return TweenAnimationBuilder<double>(
+        tween: Tween(begin: 0.6, end: 1),
+        duration: const Duration(milliseconds: 350),
+        curve: Curves.easeOutBack,
+        builder: (context, v, child) => Transform.scale(scale: v, child: child),
+        child: Container(
+          width: 140,
+          height: 140,
+          decoration: const BoxDecoration(
+            color: AppColors.correctSoft,
+            shape: BoxShape.circle,
           ),
-          child: Row(
-            children: [
-              Container(
-                width: 38,
-                height: 38,
-                decoration: BoxDecoration(
-                  color: AppColors.primary,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Icon(Icons.shield_rounded,
-                    color: Colors.white, size: 22),
-              ),
-              const SizedBox(width: 12),
-              const Text(
-                'Nupo',
-                style: TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textDark),
-              ),
-              const Spacer(),
-              const Icon(Icons.toggle_on_rounded,
-                  color: AppColors.correct, size: 40),
-            ],
-          ),
+          child: const Icon(Icons.check_rounded,
+              color: AppColors.correct, size: 72),
         ),
-      ],
+      );
+    }
+    if (widget.mascot != null) {
+      return Image.asset(
+        widget.mascot!,
+        width: 160,
+        height: 160,
+        fit: BoxFit.contain,
+      );
+    }
+    return Container(
+      width: 140,
+      height: 140,
+      decoration: BoxDecoration(
+        color: widget.heroBackground,
+        shape: BoxShape.circle,
+        boxShadow: AppColors.softShadow,
+      ),
+      child: Icon(widget.icon, color: widget.heroColor, size: 56),
     );
   }
-}
 
-class _ProgressDots extends StatelessWidget {
-  final int step;
-  final int total;
-  const _ProgressDots({required this.step, required this.total});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        for (var i = 1; i <= total; i++)
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            margin: const EdgeInsets.symmetric(horizontal: 4),
-            width: i == step ? 24 : 8,
-            height: 8,
+  /// Compact "find Nupo in the list and switch it on" preview.
+  Widget _findCard() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: AppColors.cardDecoration(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('In the screen that opens, turn this on:',
+              style: AppText.caption),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
-              color: i <= step ? AppColors.primary : const Color(0xFFD8DCEA),
-              borderRadius: BorderRadius.circular(4),
+              color: AppColors.primarySoft,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.primary, width: 1.5),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 34,
+                  height: 34,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    borderRadius: BorderRadius.circular(9),
+                  ),
+                  child: const Icon(Icons.shield_rounded,
+                      color: Colors.white, size: 18),
+                ),
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Text(
+                    'Nupo',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w900,
+                      color: AppColors.textDark,
+                    ),
+                  ),
+                ),
+                const Icon(Icons.toggle_on_rounded,
+                    color: AppColors.correct, size: 40),
+              ],
             ),
           ),
-      ],
+        ],
+      ),
     );
   }
 }
