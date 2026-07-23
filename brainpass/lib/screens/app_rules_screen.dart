@@ -4,6 +4,7 @@
 // across apps. Saving pushes the rules to the native engine immediately.
 
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 import '../engine.dart';
 import '../safe_apps.dart';
@@ -98,8 +99,9 @@ class _AppRulesScreenState extends State<AppRulesScreen> {
                     children: [
                       const Text('How much learning?', style: AppText.title),
                       const SizedBox(height: 8),
-                      const Text(
-                        'Each app gets its own quick lesson. Minutes only count while the app is open.',
+                      Text(
+                        'For each app: how many questions ${Storage.childNameOr()} '
+                        'answers, and how many minutes of play that earns.',
                         style: AppText.body,
                       ),
                       const SizedBox(height: 20),
@@ -124,8 +126,8 @@ class _AppRulesScreenState extends State<AppRulesScreen> {
                       onPressed: _save,
                     ),
                     const SizedBox(height: 12),
-                    const InfoPill(
-                      icon: Icons.tune_rounded,
+                    InfoPill(
+                      icon: Symbols.tune_rounded,
                       text: 'You can change these any time',
                     ),
                   ],
@@ -189,7 +191,7 @@ class _AppRuleCard extends StatelessWidget {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.star_rounded,
+                          Icon(Symbols.star_rounded,
                               color: AppColors.accent, size: 15),
                           const SizedBox(width: 4),
                           Text(

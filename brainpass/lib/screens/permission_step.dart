@@ -7,7 +7,9 @@
 // optimistically once the parent has opened the settings.
 
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
+import '../engine.dart';
 import '../theme.dart';
 import '../widgets.dart';
 
@@ -35,6 +37,17 @@ class PermissionStepScreen extends StatefulWidget {
   /// Allow a discreet "Skip for now" (for recommended-but-not-required steps).
   final bool skippable;
 
+  /// Setup video shown under the subtitle ('perm_overlay' etc.); the card
+  /// hides itself when the recording isn't bundled yet.
+  final String? videoKey;
+
+  /// When set ('overlay' | 'usage'), the native side watches the permission
+  /// and pops Nupo back to the front the moment it's granted — no back-taps.
+  final String? returnKind;
+
+  /// One-line reassurance under the button (defaults to the brand line).
+  final String? footnote;
+
   final int step;
   final int total;
   final VoidCallback onNext;
@@ -55,6 +68,9 @@ class PermissionStepScreen extends StatefulWidget {
     this.check,
     this.showFindCard = false,
     this.skippable = false,
+    this.videoKey,
+    this.returnKind,
+    this.footnote,
   });
 
   @override
@@ -110,6 +126,10 @@ class _PermissionStepScreenState extends State<PermissionStepScreen>
 
   Future<void> _onButton() async {
     _opened = true;
+    // Arm the auto-return BEFORE opening settings, so the watcher is already
+    // polling when the parent flips the toggle.
+    final kind = widget.returnKind;
+    if (kind != null) Engine.watchReturn(kind);
     await widget.request();
     // The result is picked up in didChangeAppLifecycleState on resume.
   }
@@ -147,6 +167,8 @@ class _PermissionStepScreenState extends State<PermissionStepScreen>
                             textAlign: TextAlign.center,
                             style: AppText.body,
                           ),
+                          if (!_granted && widget.videoKey != null)
+                            SetupVideoCard(widget.videoKey!),
                           if (!_granted && widget.showFindCard) ...[
                             const SizedBox(height: 26),
                             _findCard(),
@@ -177,9 +199,10 @@ class _PermissionStepScreenState extends State<PermissionStepScreen>
                         )
                       else ...[
                         const SizedBox(height: 12),
-                        const InfoPill(
-                          icon: Icons.favorite_rounded,
-                          text: 'A quick lesson, then straight to play',
+                        InfoPill(
+                          icon: Symbols.favorite_rounded,
+                          text: widget.footnote ??
+                              'A quick lesson, then straight to play',
                         ),
                       ],
                     ],

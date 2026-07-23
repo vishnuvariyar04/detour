@@ -100,6 +100,12 @@ class MainActivity : FlutterFragmentActivity() {
                             )
                         )
                     }
+                    "watchReturn" -> {
+                        // Bring the app back automatically once the permission
+                        // being granted in system settings flips on.
+                        PermissionReturn.watch(this, call.argument<String>("kind") ?: "")
+                        result.success(true)
+                    }
                     "autostartRelevant" -> result.success(Autostart.isRelevant())
                     "openAutostartSettings" -> result.success(Autostart.open(this))
                     "canDrawOverlays" -> result.success(Settings.canDrawOverlays(this))

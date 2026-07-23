@@ -133,4 +133,67 @@ class Storage {
       _p.getBool(kOnboardingComplete) ?? false;
   static Future<void> setOnboardingComplete(bool v) =>
       _p.setBool(kOnboardingComplete, v);
+
+  // ---- Onboarding survey (LOCAL ONLY — see nupo_onboarding_spec.md §7) ----
+  // The child's name never leaves the device. Survey answers personalize the
+  // flow on-device; only `attribution` may ever be transmitted (aggregate).
+  static const kParentName = 'parentName';
+  static const kChildName = 'childName';
+  static const kChildAge = 'childAge';
+  static const kScreenHours = 'screenHours'; // parent's daily estimate
+  static const kGoals = 'onbGoals';
+  static const kTried = 'onbTried';
+  static const kVibe = 'onbVibe';
+  static const kReachApps = 'onbReachApps'; // pre-fills the app picker
+  static const kOwlName = 'owlName';
+  static const kCommitment = 'onbCommitment';
+  static const kAttribution = 'onbAttribution';
+
+  static String get parentName => (_p.getString(kParentName) ?? '').trim();
+  static Future<void> setParentName(String v) =>
+      _p.setString(kParentName, v.trim());
+
+  static String get childName => (_p.getString(kChildName) ?? '').trim();
+  static Future<void> setChildName(String v) =>
+      _p.setString(kChildName, v.trim());
+
+  /// The child's name for UI copy, with a graceful fallback.
+  static String childNameOr([String fallback = 'your child']) =>
+      childName.isEmpty ? fallback : childName;
+
+  static int get childAge => _p.getInt(kChildAge) ?? 8;
+  static Future<void> setChildAge(int v) => _p.setInt(kChildAge, v);
+
+  static double get screenHours => _p.getDouble(kScreenHours) ?? 0;
+  static Future<void> setScreenHours(double v) =>
+      _p.setDouble(kScreenHours, v);
+
+  static List<String> get goals => _p.getStringList(kGoals) ?? const [];
+  static Future<void> setGoals(List<String> v) => _p.setStringList(kGoals, v);
+
+  static List<String> get tried => _p.getStringList(kTried) ?? const [];
+  static Future<void> setTried(List<String> v) => _p.setStringList(kTried, v);
+
+  static String get vibe => _p.getString(kVibe) ?? '';
+  static Future<void> setVibe(String v) => _p.setString(kVibe, v);
+
+  static List<String> get reachApps =>
+      _p.getStringList(kReachApps) ?? const [];
+  static Future<void> setReachApps(List<String> v) =>
+      _p.setStringList(kReachApps, v);
+
+  static String get owlName {
+    final v = (_p.getString(kOwlName) ?? '').trim();
+    return v.isEmpty ? 'Nupo' : v;
+  }
+
+  static Future<void> setOwlName(String v) => _p.setString(kOwlName, v.trim());
+
+  static String get commitment => _p.getString(kCommitment) ?? '';
+  static Future<void> setCommitment(String v) =>
+      _p.setString(kCommitment, v);
+
+  static String get attribution => _p.getString(kAttribution) ?? '';
+  static Future<void> setAttribution(String v) =>
+      _p.setString(kAttribution, v);
 }

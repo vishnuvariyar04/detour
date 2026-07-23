@@ -147,6 +147,30 @@ object EnginePrefs {
         return e.coerceAtLeast(0L)
     }
 
+    // ---- content freshness (question engine v2) ----
+    /**
+     * Pick a random index in [0, poolSize) avoiding the most recently used
+     * indices for [bucket] (persisted, so "no repeats" survives restarts).
+     * Remembers up to half the pool (max 20).
+     */
+    fun pickFresh(c: Context, bucket: String, poolSize: Int): Int {
+        if (poolSize <= 1) return 0
+        val key = "recent_$bucket"
+        val recent = (p(c).getString(key, "") ?: "")
+            .split(',').mapNotNull { it.toIntOrNull() }.toMutableList()
+        val avoid = recent.toSet()
+        var pick = (0 until poolSize).random()
+        var tries = 0
+        while (avoid.contains(pick) && tries < 40) {
+            pick = (0 until poolSize).random(); tries++
+        }
+        recent.add(pick)
+        val keep = minOf(poolSize / 2, 20)
+        while (recent.size > keep) recent.removeAt(0)
+        p(c).edit().putString(key, recent.joinToString(",")).apply()
+        return pick
+    }
+
     // ---- midnight rollover ----
     private fun today(): String {
         val cal = Calendar.getInstance()

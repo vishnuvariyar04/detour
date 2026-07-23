@@ -6,6 +6,7 @@
 // (This replaces the old separate "Permissions" and "Keep Nupo running" screens.)
 
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 import '../engine.dart';
 import '../theme.dart';
@@ -64,41 +65,43 @@ class _PermissionsScreenState extends State<PermissionsScreen>
   Widget build(BuildContext context) {
     return StepScaffold(
       title: 'Permissions',
-      subtitle: 'Keep these on so Nupo works reliably.',
+      subtitle: 'Green means working. Tap Open to fix anything that\'s off.',
       buttonLabel: 'Done',
       onButton: widget.onNext,
       child: Column(
         children: [
           _PermRow(
-            icon: Icons.layers_rounded,
+            icon: Symbols.layers_rounded,
             color: AppColors.primary,
             background: AppColors.primarySoft,
-            title: 'Draw over other apps',
-            body: 'Shows the learning moment over an app.',
+            title: 'Display over other apps',
+            body: 'Lets the lesson appear before a game opens.',
             granted: _overlay,
             onOpen: () async {
+              Engine.watchReturn('overlay'); // auto-return once granted
               await Engine.requestOverlay();
               _refresh();
             },
           ),
           _PermRow(
-            icon: Icons.visibility_rounded,
+            icon: Symbols.visibility_rounded,
             color: AppColors.correct,
             background: AppColors.correctSoft,
             title: 'Usage access',
-            body: 'Lets Nupo know the right moment for a lesson.',
+            body: 'Tells Nupo when a chosen app opens.',
             granted: _usage,
             onOpen: () async {
+              Engine.watchReturn('usage'); // auto-return once granted
               await Engine.openUsageAccessSettings();
               _refresh();
             },
           ),
           _PermRow(
-            icon: Icons.bolt_rounded,
+            icon: Symbols.bolt_rounded,
             color: AppColors.accentDeep,
             background: AppColors.accentSoft,
             title: 'Background battery',
-            body: 'Set to “No restrictions” so Nupo isn’t put to sleep.',
+            body: 'Choose “No restrictions” so Nupo isn\'t put to sleep.',
             granted: _battery,
             onOpen: () async {
               await Engine.requestIgnoreBattery();
@@ -107,18 +110,18 @@ class _PermissionsScreenState extends State<PermissionsScreen>
           ),
           if (_autostartRelevant)
             _PermRow(
-              icon: Icons.rocket_launch_rounded,
+              icon: Symbols.rocket_launch_rounded,
               color: const Color(0xFF6D8BFF),
               background: const Color(0xFFEAF0FF),
               title: 'Auto-restart',
-              body: 'Switch it on for Nupo so it can turn itself back on.',
+              body: 'Find Nupo in the list and switch Autostart on.',
               granted: null, // can't be read on Xiaomi/etc.
               onOpen: () => Engine.openAutostartSettings(),
             ),
           const SizedBox(height: 8),
-          const InfoPill(
-            icon: Icons.push_pin_rounded,
-            text: 'In recent apps, lock Nupo so it isn’t swiped away.',
+          InfoPill(
+            icon: Symbols.push_pin_rounded,
+            text: 'In recent apps, lock Nupo so it isn\'t swiped away.',
           ),
         ],
       ),

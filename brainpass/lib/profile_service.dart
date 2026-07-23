@@ -32,6 +32,10 @@ class ProfileService {
         'ageBand': Storage.ageBand,
         'gatedAppsCount': Storage.gatedApps.length,
         'onboardingComplete': Storage.onboardingComplete,
+        // Attribution is the ONLY survey answer that may leave the device
+        // (nupo_onboarding_spec.md §7); names and answers stay local.
+        if (Storage.attribution.isNotEmpty)
+          'attribution': Storage.attribution,
       };
 
       // Stamp createdAt only once (skip silently when offline-and-uncached).

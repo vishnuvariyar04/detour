@@ -72,7 +72,7 @@ class _AgeBandScreenState extends State<AgeBandScreen> {
                       const Text('How old is your child?', style: AppText.title),
                       const SizedBox(height: 8),
                       const Text(
-                        'Lessons adjust to their level.',
+                        'Questions will match their age. You can change this any time.',
                         style: AppText.body,
                       ),
                       const SizedBox(height: 20),
@@ -117,6 +117,7 @@ class _AgeBandScreenState extends State<AgeBandScreen> {
       Band.a => ('🧸', const Color(0xFFFFEFE6)),
       Band.b => ('🚀', const Color(0xFFE6F4EA)),
       Band.c => ('🔬', const Color(0xFFE8F0FE)),
+      Band.d => ('🎓', const Color(0xFFF1F0FE)),
     };
     return Container(
       width: 46,
@@ -131,14 +132,17 @@ class _AgeBandScreenState extends State<AgeBandScreen> {
   }
 
   Widget _previewCard() {
-    var math = '2 + 3 = ?';
-    var gk = 'Which animal says woof?';
+    var math = '🍎 + 🍎 = 6\nWhat is 🍎?';
+    var gk = 'What is a baby dog called?';
     if (_band == Band.b) {
-      math = '12 × 4 = ?';
-      gk = 'Which planet is red?';
+      math = '14 + 8 = ?';
+      gk = 'Which shape has 5 sides?';
     } else if (_band == Band.c) {
-      math = '144 ÷ 12 = ?';
-      gk = 'Capital of France?';
+      math = '8 × 7 = ?';
+      gk = 'Pumps blood in body?';
+    } else if (_band == Band.d) {
+      math = '6 × 8 + 7 = ?';
+      gk = 'Capital of Australia?';
     }
 
     return Container(
@@ -207,9 +211,11 @@ class _AgeBandScreenState extends State<AgeBandScreen> {
       case Band.a:
         return 'Counting & simple sums';
       case Band.b:
-        return 'Mental math & general knowledge';
+        return 'Mental math & nature';
       case Band.c:
-        return 'Logic puzzles & tricky questions';
+        return 'Times tables & trivia';
+      case Band.d:
+        return 'Advanced logic & math';
     }
   }
 }
@@ -230,7 +236,7 @@ class _AgePicker extends StatelessWidget {
               spacing: 12,
               runSpacing: 12,
               children: [
-                for (var age = 5; age <= 13; age++)
+                for (var age = 5; age <= 11; age++)
                   ElevatedButton(
                     onPressed: () => Navigator.of(context).pop(age),
                     style: ElevatedButton.styleFrom(

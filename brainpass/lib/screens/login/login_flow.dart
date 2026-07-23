@@ -12,6 +12,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 import '../../auth_service.dart';
 import '../../theme.dart';
@@ -290,10 +291,10 @@ class _PhoneStepState extends State<_PhoneStep> {
                     children: [
                       const HaloMascot('assets/mascot_pin.png', size: 130),
                       const SizedBox(height: 18),
-                      const Text('Sign in to continue', style: AppText.title),
+                      const Text('Hi! Sign in to start', style: AppText.title),
                       const SizedBox(height: 8),
                       const Text(
-                        "We'll text a 6-digit code to your phone to make sure it's really you.",
+                        "Type your mobile number. We'll send a 6-digit code by SMS.",
                         textAlign: TextAlign.center,
                         style: AppText.body,
                       ),
@@ -388,9 +389,9 @@ class _PhoneStepState extends State<_PhoneStep> {
                                       fontWeight: FontWeight.w800)),
                         ),
                       ),
-                      const InfoPill(
-                        icon: Icons.info_outline_rounded,
-                        text: "This is the parent's number. Message rates may apply.",
+                      InfoPill(
+                        icon: Symbols.info_rounded,
+                        text: "Use a parent's number — the code arrives there.",
                       ),
                     ],
                   ),
@@ -461,6 +462,16 @@ class _OtpStepState extends State<_OtpStep> {
     setState(() => _code = _code.substring(0, _code.length - 1));
   }
 
+  /// Fill the code from the clipboard (button or long-press on the boxes).
+  Future<void> _paste() async {
+    if (widget.busy) return;
+    final data = await Clipboard.getData(Clipboard.kTextPlain);
+    final digits = (data?.text ?? '').replaceAll(RegExp(r'\D'), '');
+    if (digits.isEmpty) return;
+    setState(() => _code = digits.substring(0, digits.length.clamp(0, 6)));
+    if (_code.length == 6) widget.onVerify(_code);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -477,15 +488,27 @@ class _OtpStepState extends State<_OtpStep> {
                   child: Column(
                     children: [
                       const SizedBox(height: 8),
-                      const Text('Enter the code', style: AppText.title),
+                      const Text('Type the 6-digit code', style: AppText.title),
                       const SizedBox(height: 8),
                       Text(
-                        'Sent to ${widget.phoneLabel}',
+                        'We sent it by SMS to ${widget.phoneLabel}',
                         textAlign: TextAlign.center,
                         style: AppText.body,
                       ),
                       const SizedBox(height: 26),
-                      PinBoxes(filled: _code.length, count: 6),
+                      GestureDetector(
+                        onLongPress: _paste,
+                        child: PinBoxes(filled: _code.length, count: 6),
+                      ),
+                      const SizedBox(height: 10),
+                      TextButton.icon(
+                        onPressed: widget.busy ? null : _paste,
+                        icon: Icon(
+                          Symbols.content_paste_rounded,
+                          size: 18,
+                        ),
+                        label: const Text('Paste code'),
+                      ),
                       SizedBox(
                         height: 34,
                         child: Center(

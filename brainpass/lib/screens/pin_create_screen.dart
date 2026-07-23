@@ -113,7 +113,9 @@ class _PinCreateScreenState extends State<PinCreateScreen> {
                       AnimatedSwitcher(
                         duration: const Duration(milliseconds: 200),
                         child: Text(
-                          _confirming ? 'Confirm your PIN' : 'Create your PIN',
+                          _confirming
+                              ? 'Type it once more'
+                              : 'Create your parent PIN',
                           key: ValueKey(_confirming),
                           style: AppText.title,
                         ),
@@ -121,8 +123,8 @@ class _PinCreateScreenState extends State<PinCreateScreen> {
                       const SizedBox(height: 8),
                       Text(
                         _confirming
-                            ? 'Enter the same 4 digits again.'
-                            : 'Just for grown-ups — opens settings and skips a lesson.',
+                            ? 'Just to make sure — the same 4 digits.'
+                            : '4 digits only you know. It opens the parent settings.',
                         textAlign: TextAlign.center,
                         style: AppText.body,
                       ),

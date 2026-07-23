@@ -118,6 +118,9 @@ class AppTheme {
       scaffoldBackgroundColor: AppColors.bg,
     );
     return base.copyWith(
+      // Material Symbols are variable icons; fill=1 renders the filled style
+      // everywhere (friendlier + more "designed" than outlines).
+      iconTheme: const IconThemeData(fill: 1, weight: 600),
       appBarTheme: const AppBarTheme(
         backgroundColor: Colors.transparent,
         elevation: 0,

@@ -75,6 +75,7 @@ class GuardService : Service() {
     private var wm: WindowManager? = null
     private var chip: TextView? = null
     private var lockView: View? = null
+    private var lockUi: LockUi? = null
     private var lockPkg: String? = null
 
     private var trackedPkg: String? = null
@@ -173,11 +174,19 @@ class GuardService : Service() {
         }
         val pkg = currentForegroundApp() ?: return
 
+        // A parent-PIN session only lasts while that app stays in front.
+        if (freePkg != null && pkg != freePkg) freePkg = null
+
         // Our own parent app is open — not gated; remove any lock.
         if (pkg == packageName) { idle(); hideLock(); return }
 
         // Child left the gated app (home / another app) — free them.
         if (!EnginePrefs.isGated(this, pkg)) { idle(); hideLock(); return }
+
+        // Parent unlocked this app with their PIN: untimed session — no lock,
+        // no countdown chip, no minutes consumed. (The kid flow is untouched;
+        // this state only exists after a correct parent PIN on the lock.)
+        if (pkg == freePkg) { idle(); hideLock(); return }
 
         // Gated app with no time -> show the native lock overlay.
         if (EnginePrefs.capReached(this, pkg)) { idle(); lockOrEscape(pkg, "done"); return }
@@ -250,6 +259,9 @@ class GuardService : Service() {
     private var lockAddedAt = 0L
     private var lastPermWarnAt = 0L
 
+    /** Package the parent unlocked via PIN — free (untimed) while it stays foreground. */
+    private var freePkg: String? = null
+
     /**
      * Show the lock if we can — but the "Display over other apps" permission
      * is a normal OS toggle a child could reach and turn off (e.g. via the
@@ -293,7 +305,8 @@ class GuardService : Service() {
         val ui = LockUi(
             this, mode, band, target, minutes,
             onEarned = { EnginePrefs.addEarned(this, pkg); hideLock() },
-            onOverride = { EnginePrefs.addOverride(this, pkg); hideLock() },
+            // Parent PIN: free untimed session (no earned block, no chip).
+            onOverride = { freePkg = pkg; hideLock() },
         )
 
         val type = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
@@ -315,6 +328,7 @@ class GuardService : Service() {
         try {
             wm?.addView(ui.root, lp)
             lockView = ui.root
+            lockUi = ui
             lockAddedAt = System.currentTimeMillis()
             Log.d(TAG, "native lock shown: $pkg ($mode)")
         } catch (e: Throwable) {
@@ -327,6 +341,8 @@ class GuardService : Service() {
         val v = lockView ?: return
         lockView = null
         lockPkg = null
+        lockUi?.release()
+        lockUi = null
         try {
             wm?.removeView(v)
         } catch (_: Throwable) {

@@ -10,6 +10,7 @@
 import 'package:flutter/material.dart';
 import 'package:installed_apps/app_info.dart';
 import 'package:installed_apps/installed_apps.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 import '../engine.dart';
 import '../safe_apps.dart';
@@ -41,6 +42,11 @@ class _AppPickerScreenState extends State<AppPickerScreen> {
   void initState() {
     super.initState();
     _selected = Storage.gatedApps.toSet();
+    // First run: pre-select what the parent said the child reaches for in the
+    // onboarding survey (spec §2.6 — pre-fill everything you can).
+    if (_selected.isEmpty) {
+      _selected = Storage.reachApps.where(isGateable).toSet();
+    }
   }
 
   Future<void> _loadInstalled() async {
@@ -93,11 +99,12 @@ class _AppPickerScreenState extends State<AppPickerScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Where should learning pop up?',
+                      Text('Where should learning pop up?',
                           style: AppText.title),
                       const SizedBox(height: 8),
-                      const Text(
-                        'Pick the games and videos they reach for most.',
+                      Text(
+                        'A short lesson appears before each of these opens '
+                        'for ${Storage.childNameOr()}.',
                         style: AppText.body,
                       ),
                       const SizedBox(height: 20),
@@ -109,14 +116,17 @@ class _AppPickerScreenState extends State<AppPickerScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Padding(
-                              padding: EdgeInsets.only(left: 4, bottom: 10),
+                            Padding(
+                              padding: const EdgeInsets.only(left: 4, bottom: 10),
                               child: Row(
                                 children: [
-                                  Icon(Icons.star_rounded,
-                                      color: AppColors.accent, size: 16),
-                                  SizedBox(width: 6),
-                                  Text('POPULAR', style: AppText.overline),
+                                  Icon(
+                                    Symbols.star_rounded,
+                                    color: AppColors.accent,
+                                    size: 16,
+                                  ),
+                                  const SizedBox(width: 6),
+                                  const Text('POPULAR', style: AppText.overline),
                                 ],
                               ),
                             ),
@@ -213,8 +223,8 @@ class _AppPickerScreenState extends State<AppPickerScreen> {
                       onPressed: _selected.isEmpty ? null : _save,
                     ),
                     const SizedBox(height: 12),
-                    const InfoPill(
-                      icon: Icons.phone_rounded,
+                    InfoPill(
+                      icon: Symbols.call_rounded,
                       text: 'Phone, messages & clock always stay open',
                     ),
                   ],

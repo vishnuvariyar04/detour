@@ -5,6 +5,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 import '../pin.dart';
 import '../theme.dart';
@@ -76,13 +77,14 @@ class _PinEntryScreenState extends State<PinEntryScreen> {
                           border: Border.all(color: AppColors.line, width: 1.5),
                           boxShadow: AppColors.softShadow,
                         ),
-                        child: const Icon(Icons.lock_rounded,
-                            color: AppColors.primary, size: 40),
+                        child: Icon(Symbols.lock_rounded,
+                            color: AppColors.primary, size: 38),
                       ),
                       const SizedBox(height: 20),
-                      const Text('Enter your PIN', style: AppText.title),
+                      const Text('Enter your parent PIN', style: AppText.title),
                       const SizedBox(height: 6),
-                      const Text('For parents only.', style: AppText.body),
+                      const Text('The 4 digits you chose during setup.',
+                          style: AppText.body),
                       const SizedBox(height: 24),
                       PinBoxes(filled: _pin.length),
                       SizedBox(

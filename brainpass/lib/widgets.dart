@@ -7,6 +7,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:installed_apps/installed_apps.dart';
+import 'package:material_symbols_icons/symbols.dart';
+import 'package:video_player/video_player.dart';
 
 import 'theme.dart';
 
@@ -68,6 +70,43 @@ class ProgressDots extends StatelessWidget {
   }
 }
 
+/// Slim rounded progress bar used when the flow has too many steps for dots
+/// (the full onboarding). Fills left→right with the brand gradient.
+class SlimProgressBar extends StatelessWidget {
+  final int step;
+  final int total;
+  const SlimProgressBar({super.key, required this.step, required this.total});
+
+  @override
+  Widget build(BuildContext context) {
+    final t = (step / total).clamp(0.0, 1.0);
+    return Container(
+      height: 8,
+      margin: const EdgeInsets.symmetric(horizontal: 18),
+      decoration: BoxDecoration(
+        color: const Color(0xFFE1DDF0),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: LayoutBuilder(
+        builder: (context, c) => Align(
+          alignment: Alignment.centerLeft,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 350),
+            curve: Curves.easeOutCubic,
+            width: (c.maxWidth * t).clamp(8.0, c.maxWidth),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [AppColors.primary, AppColors.primaryBright],
+              ),
+              borderRadius: BorderRadius.circular(4),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// Standard header row: back circle (optional), centered dots or title.
 class NupoTopBar extends StatelessWidget {
   final bool showBack;
@@ -89,7 +128,10 @@ class NupoTopBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final Widget center;
     if (step != null && total != null) {
-      center = ProgressDots(step: step!, total: total!);
+      // Dots stop reading past ~8 steps; the long onboarding gets a bar.
+      center = total! > 8
+          ? SlimProgressBar(step: step!, total: total!)
+          : ProgressDots(step: step!, total: total!);
     } else if (title != null) {
       center = Text(
         title!,
@@ -315,6 +357,236 @@ class InfoPill extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Setup guide videos
+// ---------------------------------------------------------------------------
+
+/// A short "watch how to do this step" video teaser. Looks for
+/// `assets/videos/<videoKey>.mp4`; if the file isn't bundled (yet), the card
+/// simply doesn't render — so screens can wire it up before the recordings
+/// exist. Tapping opens a full-screen player.
+class SetupVideoCard extends StatefulWidget {
+  final String videoKey;
+  const SetupVideoCard(this.videoKey, {super.key});
+
+  @override
+  State<SetupVideoCard> createState() => _SetupVideoCardState();
+}
+
+class _SetupVideoCardState extends State<SetupVideoCard> {
+  VideoPlayerController? _controller;
+  bool _ready = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final c = VideoPlayerController.asset('assets/videos/${widget.videoKey}.mp4');
+    _controller = c;
+    c.initialize().then((_) {
+      c.setLooping(true);
+      if (mounted) setState(() => _ready = true);
+    }).catchError((_) {
+      // Asset not bundled — card stays hidden.
+      if (mounted) setState(() => _ready = false);
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller?.dispose();
+    super.dispose();
+  }
+
+  void _openPlayer() {
+    final c = _controller;
+    if (c == null) return;
+    c.seekTo(Duration.zero);
+    c.play();
+    Navigator.of(context)
+        .push(
+          PageRouteBuilder(
+            opaque: false,
+            barrierColor: Colors.black.withValues(alpha: 0.88),
+            transitionDuration: const Duration(milliseconds: 220),
+            pageBuilder: (_, anim, _) => FadeTransition(
+              opacity: anim,
+              child: _FullscreenVideo(controller: c),
+            ),
+          ),
+        )
+        .then((_) => c.pause());
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = _controller;
+    if (c == null || !_ready) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(top: 20),
+      child: GestureDetector(
+        onTap: _openPlayer,
+        child: Container(
+          height: 150,
+          width: double.infinity,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: AppColors.softShadow,
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(24),
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                // First frame of the recording, cover-cropped.
+                FittedBox(
+                  fit: BoxFit.cover,
+                  clipBehavior: Clip.hardEdge,
+                  child: SizedBox(
+                    width: c.value.size.width,
+                    height: c.value.size.height,
+                    child: VideoPlayer(c),
+                  ),
+                ),
+                // Brand wash so the play affordance always reads.
+                const DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [Color(0xB35A32E9), Color(0x338E6CFF)],
+                    ),
+                  ),
+                ),
+                Center(
+                  child: Container(
+                    width: 54,
+                    height: 54,
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                      boxShadow: AppColors.softShadow,
+                    ),
+                    child: Icon(
+                      Symbols.play_arrow_rounded,
+                      color: AppColors.primary,
+                      size: 24,
+                    ),
+                  ),
+                ),
+                Positioned(
+                  left: 14,
+                  bottom: 12,
+                  child: Row(
+                    children: [
+                      Icon(
+                        Symbols.videocam_rounded,
+                        color: Colors.white,
+                        size: 15,
+                      ),
+                      const SizedBox(width: 6),
+                      const Text(
+                        'Watch how to do this step',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _FullscreenVideo extends StatefulWidget {
+  final VideoPlayerController controller;
+  const _FullscreenVideo({required this.controller});
+
+  @override
+  State<_FullscreenVideo> createState() => _FullscreenVideoState();
+}
+
+class _FullscreenVideoState extends State<_FullscreenVideo> {
+  @override
+  Widget build(BuildContext context) {
+    final c = widget.controller;
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: SafeArea(
+        child: Stack(
+          children: [
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(28),
+                  child: AspectRatio(
+                    aspectRatio: c.value.aspectRatio,
+                    child: GestureDetector(
+                      onTap: () => setState(
+                        () => c.value.isPlaying ? c.pause() : c.play(),
+                      ),
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          VideoPlayer(c),
+                          if (!c.value.isPlaying)
+                            Container(
+                              width: 64,
+                              height: 64,
+                              decoration: const BoxDecoration(
+                                color: Colors.white,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                Symbols.play_arrow_rounded,
+                                color: AppColors.primary,
+                                size: 28,
+                              ),
+                            ),
+                          Positioned(
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            child: VideoProgressIndicator(
+                              c,
+                              allowScrubbing: true,
+                              colors: const VideoProgressColors(
+                                playedColor: AppColors.accent,
+                                bufferedColor: Colors.white24,
+                                backgroundColor: Colors.white12,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              top: 8,
+              right: 8,
+              child: IconButton(
+                onPressed: () => Navigator.of(context).pop(),
+                icon: const Icon(Icons.close_rounded,
+                    color: Colors.white, size: 28),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

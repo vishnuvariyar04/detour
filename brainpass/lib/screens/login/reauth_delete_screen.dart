@@ -7,6 +7,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../auth_service.dart';
 import '../../theme.dart';
@@ -155,6 +156,15 @@ class _ReauthDeleteScreenState extends State<ReauthDeleteScreen> {
     setState(() => _code = _code.substring(0, _code.length - 1));
   }
 
+  Future<void> _paste() async {
+    if (_busy) return;
+    final data = await Clipboard.getData(Clipboard.kTextPlain);
+    final digits = (data?.text ?? '').replaceAll(RegExp(r'\D'), '');
+    if (digits.isEmpty) return;
+    setState(() => _code = digits.substring(0, digits.length.clamp(0, 6)));
+    if (_code.length == 6) _verify(_code);
+  }
+
   @override
   Widget build(BuildContext context) {
     final canResend = _resendSeconds == 0 && !_busy;
@@ -180,7 +190,10 @@ class _ReauthDeleteScreenState extends State<ReauthDeleteScreen> {
                         style: AppText.body,
                       ),
                       const SizedBox(height: 26),
-                      PinBoxes(filled: _code.length, count: 6),
+                      GestureDetector(
+                        onLongPress: _paste,
+                        child: PinBoxes(filled: _code.length, count: 6),
+                      ),
                       SizedBox(
                         height: 34,
                         child: Center(

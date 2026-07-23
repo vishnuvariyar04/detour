@@ -6,6 +6,19 @@
 
 import 'package:flutter/services.dart';
 
+import 'storage.dart';
+
+/// Push all saved parent config down to the native engine (after launch /
+/// update / reboot / onboarding) and start the guard.
+Future<void> syncToEngine() async {
+  await Engine.setRules(Storage.rulesForEngine());
+  await Engine.setMasterEnabled(Storage.masterEnabled);
+  await Engine.setAgeBand(Storage.ageBand);
+  final h = Storage.pinHash, s = Storage.pinSalt;
+  if (h != null && s != null) await Engine.setPin(h, s);
+  await Engine.startGuard();
+}
+
 /// Live per-app counters read back from native (for the parent dashboard).
 class AppStatus {
   final int usedMs;
@@ -65,6 +78,11 @@ class Engine {
       (await _channel.invokeMethod<bool>('isIgnoringBattery')) ?? false;
   static Future<void> requestIgnoreBattery() =>
       _channel.invokeMethod('requestIgnoreBattery');
+
+  /// Auto-return: poll [kind] ('overlay' | 'usage') and bring Nupo back to the
+  /// foreground the moment the parent grants it in system settings.
+  static Future<void> watchReturn(String kind) =>
+      _channel.invokeMethod('watchReturn', {'kind': kind});
 
   /// App version + device model/manufacturer/OS (for the user profile doc).
   static Future<Map<String, String>> deviceInfo() async {

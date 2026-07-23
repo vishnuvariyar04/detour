@@ -7,6 +7,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 import '../auth_service.dart';
 import '../engine.dart';
@@ -120,7 +121,7 @@ class _ParentHomeScreenState extends State<ParentHomeScreen>
                     // Permissions revoked warning
                     if (!_permissionsOk) ...[
                       _alertBanner(
-                        icon: Icons.warning_amber_rounded,
+                        icon: Symbols.warning_rounded,
                         title: 'A permission is off',
                         body: 'Nupo can\'t bring lessons right now. Tap to fix.',
                         onTap: () =>
@@ -138,8 +139,8 @@ class _ParentHomeScreenState extends State<ParentHomeScreen>
                         children: [
                           IconBadge(
                             _enabled
-                                ? Icons.shield_rounded
-                                : Icons.pause_rounded,
+                                ? Symbols.verified_user_rounded
+                                : Symbols.pause_rounded,
                             color: _enabled
                                 ? AppColors.correct
                                 : AppColors.textMuted,
@@ -196,7 +197,9 @@ class _ParentHomeScreenState extends State<ParentHomeScreen>
                         TextButton.icon(
                           onPressed: () =>
                               _edit((onNext) => AppPickerScreen(onNext: onNext)),
-                          icon: const Icon(Icons.edit_rounded, size: 15),
+                          icon: Icon(
+                              Symbols.edit_rounded,
+                              size: 15),
                           label: const Text('Edit',
                               style: TextStyle(
                                   fontSize: 13, fontWeight: FontWeight.w800)),
@@ -242,7 +245,7 @@ class _ParentHomeScreenState extends State<ParentHomeScreen>
                       child: Column(
                         children: [
                           _EditRowItem(
-                            icon: Icons.cake_rounded,
+                            icon: Symbols.cake_rounded,
                             color: AppColors.accentDeep,
                             background: AppColors.accentSoft,
                             title: 'Child age',
@@ -252,7 +255,7 @@ class _ParentHomeScreenState extends State<ParentHomeScreen>
                           ),
                           const Divider(height: 1, indent: 62),
                           _EditRowItem(
-                            icon: Icons.tune_rounded,
+                            icon: Symbols.tune_rounded,
                             title: 'Permissions',
                             value: _permissionsOk ? 'All granted' : 'Needs attention',
                             valueColor:
@@ -262,7 +265,7 @@ class _ParentHomeScreenState extends State<ParentHomeScreen>
                           ),
                           const Divider(height: 1, indent: 62),
                           _EditRowItem(
-                            icon: Icons.password_rounded,
+                            icon: Symbols.lock_rounded,
                             title: 'Change PIN',
                             value: '••••',
                             onTap: () => _edit(
@@ -280,7 +283,7 @@ class _ParentHomeScreenState extends State<ParentHomeScreen>
                       child: Column(
                         children: [
                           _EditRowItem(
-                            icon: Icons.phone_iphone_rounded,
+                            icon: Symbols.smartphone_rounded,
                             color: AppColors.correct,
                             background: AppColors.correctSoft,
                             title: 'Signed in',
@@ -289,7 +292,7 @@ class _ParentHomeScreenState extends State<ParentHomeScreen>
                           ),
                           const Divider(height: 1, indent: 62),
                           _EditRowItem(
-                            icon: Icons.workspace_premium_rounded,
+                            icon: Symbols.crown_rounded,
                             color: AppColors.accentDeep,
                             background: AppColors.accentSoft,
                             title: 'Subscription',
@@ -300,14 +303,14 @@ class _ParentHomeScreenState extends State<ParentHomeScreen>
                           ),
                           const Divider(height: 1, indent: 62),
                           _EditRowItem(
-                            icon: Icons.logout_rounded,
+                            icon: Symbols.logout_rounded,
                             title: 'Sign out',
                             value: '',
                             onTap: _signOut,
                           ),
                           const Divider(height: 1, indent: 62),
                           _EditRowItem(
-                            icon: Icons.delete_outline_rounded,
+                            icon: Symbols.delete_rounded,
                             color: AppColors.wrong,
                             background: const Color(0xFFFFE1E1),
                             title: 'Delete account',

@@ -2,10 +2,17 @@ package com.brainpass.brainpass
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.Path
+import android.graphics.RectF
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
+import android.media.AudioAttributes
+import android.media.SoundPool
 import android.os.Handler
 import android.os.Looper
 import android.view.Gravity
@@ -20,14 +27,13 @@ import android.widget.LinearLayout
 import android.widget.TextView
 
 /**
- * The kid-facing "learning moment", rendered ENTIRELY as native Android views
- * inside the guard's overlay window (no Flutter, no launched Activity). An
- * overlay only needs "Draw over other apps", which works on every phone.
+ * The kid-facing "learning moment" v2 — 100% native views in the guard's
+ * overlay window (no Flutter, no Activity — works on every phone).
  *
- * Framed as a GIFT, not a lock: a cheering owl, big bouncy stars, colourful
- * answer buttons, confetti-emoji celebrations on every correct answer, and a
- * gentle "try again" that never takes a star away. A discreet "Parent" PIN
- * bypass lives in the corner, and a happy "all done for today" screen closes it.
+ * v2 design: ten ways to answer (engine in Questions.kt), a session arc with a
+ * Boss finale, streak combos, rotating affirmations, Nunito everywhere, and a
+ * hand-drawn shape/tile visual system (ShapeTileView) instead of emoji —
+ * stickers drop in later via flutter_assets/assets/stickers/<name>.png.
  */
 @SuppressLint("ClickableViewAccessibility")
 class LockUi(
@@ -45,20 +51,45 @@ class LockUi(
     private val correct = 0xFF2FBF71.toInt()
     private val wrong = 0xFFFF6B6B.toInt()
     private val accent = 0xFFFFC83D.toInt()
-    private val accentDeep = 0xFFB98600.toInt()
-    private val accentSoft = 0xFFFFF2CC.toInt()
     private val textDark = 0xFF1F2333.toInt()
     private val optionColors = intArrayOf(
         0xFFFF7A7A.toInt(), 0xFF35C9B0.toInt(), 0xFFFFB020.toInt(), 0xFF9B7BFF.toInt()
     )
     private val celebrateEmojis = listOf("🎉", "⭐", "🌟", "🚀", "✨", "🏆", "💫")
+    private val affirmations = listOf(
+        "Smart thinking!", "Your brain is growing!", "Genius move!",
+        "Brilliant!", "Super smart!", "Nailed it!", "Big brain energy!",
+        "You're unstoppable!",
+    )
+
+    // Nunito from the Flutter bundle so the kid screen matches the brand.
+    private val nunito: Typeface? = runCatching {
+        Typeface.createFromAsset(ctx.assets, "flutter_assets/assets/fonts/Nunito-ExtraBold.ttf")
+    }.getOrNull()
+    private val nunitoBlack: Typeface? = runCatching {
+        Typeface.createFromAsset(ctx.assets, "flutter_assets/assets/fonts/Nunito-Black.ttf")
+    }.getOrNull()
+
+    private fun TextView.brandFont(black: Boolean = false) {
+        typeface = (if (black) nunitoBlack else nunito)
+            ?: Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+    }
 
     private val handler = Handler(Looper.getMainLooper())
-    private val plan = Questions.buildEarnPlan(target)
+    private val session: List<Q> =
+        if (mode == "earn") Questions.buildSession(ctx, band, target) else emptyList()
+    private var index = 0
     private var solved = 0
-    private var current = Questions.generateOne(band, plan.getOrElse(0) { QuestionKind.MATH })
+    private var streak = 0
+    private var current: Q? = session.getOrNull(0)
     private var typed = ""
-    private var busy = false // disable input during feedback/animation
+    private var busy = false
+
+    // Sound effects
+    private var soundPool: SoundPool? = null
+    private var successSoundId = 0
+    private var tryAgainSoundId = 0
+    private var bossSoundId = 0
 
     // live view refs
     private var starsRow: LinearLayout? = null
@@ -75,14 +106,29 @@ class LockUi(
     }
 
     init {
+        try {
+            val attrs = AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_GAME)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                .build()
+            // NOTE: compile-time R references, NOT getIdentifier() — the release
+            // resource shrinker can't see reflective lookups and was stripping
+            // the wav files out of the APK entirely (sounds silently vanished).
+            soundPool = SoundPool.Builder().setMaxStreams(3).setAudioAttributes(attrs)
+                .build().apply {
+                    successSoundId = load(ctx, R.raw.nupo_success, 1)
+                    tryAgainSoundId = load(ctx, R.raw.nupo_try_again, 1)
+                    bossSoundId = load(ctx, R.raw.nupo_boss, 1)
+                }
+        } catch (_: Throwable) {
+        }
+
         addBubbles()
         if (mode == "done") buildDone() else buildEarn()
-        // discreet parent link (top-right)
         root.addView(
             TextView(ctx).apply {
                 text = "Parent"
-                setTextColor(0xB3FFFFFF.toInt())
-                textSize = 14f
+                setTextColor(0xB3FFFFFF.toInt()); textSize = 14f; brandFont()
                 setPadding(dp(16), dp(14), dp(20), dp(14))
                 setOnClickListener { showPinEntry() }
             },
@@ -90,7 +136,16 @@ class LockUi(
         )
     }
 
-    /** Big translucent circles behind everything for a playful feel. */
+    private fun playSound(id: Int) {
+        val pool = soundPool ?: return
+        if (id != 0) runCatching { pool.play(id, 1f, 1f, 1, 0, 1f) }
+    }
+
+    fun release() {
+        runCatching { soundPool?.release() }
+        soundPool = null
+    }
+
     private fun addBubbles() {
         fun bubble(size: Int, alpha: Int, g: Int, mx: Int, my: Int) {
             root.addView(View(ctx).apply {
@@ -106,26 +161,21 @@ class LockUi(
         bubble(90, 0x1A, Gravity.TOP or Gravity.END, 30, 120)
     }
 
-    // ---- EARN ----
+    // ------------------------------------------------------------------ EARN
     private fun buildEarn() {
         val col = LinearLayout(ctx).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER_HORIZONTAL
-            setPadding(dp(20), dp(44), dp(20), dp(24))
+            setPadding(dp(20), dp(40), dp(20), dp(20))
         }
-        // Cheering owl
         owlBitmap()?.let { bmp ->
             owlView = ImageView(ctx).apply { setImageBitmap(bmp) }
-            col.addView(owlView, LinearLayout.LayoutParams(dp(96), dp(96)))
+            col.addView(owlView, LinearLayout.LayoutParams(dp(84), dp(84)))
         }
-        col.addView(TextView(ctx).apply {
-            text = "Here's your learning moment!"
-            setTextColor(Color.WHITE); textSize = 20f
-            setTypeface(null, Typeface.BOLD)
+        starsRow = LinearLayout(ctx).apply {
             gravity = Gravity.CENTER
-            setPadding(0, dp(6), 0, dp(10))
-        })
-        starsRow = LinearLayout(ctx).apply { gravity = Gravity.CENTER }
+            setPadding(0, dp(4), 0, dp(2))
+        }
         col.addView(starsRow)
         contentCol = LinearLayout(ctx).apply {
             orientation = LinearLayout.VERTICAL
@@ -139,18 +189,19 @@ class LockUi(
     private fun renderStars(popLast: Boolean = false) {
         val row = starsRow ?: return
         row.removeAllViews()
-        var lastFilled: TextView? = null
+        var last: View? = null
         for (i in 0 until target) {
-            val tv = TextView(ctx).apply {
-                text = if (i < solved) "★" else "☆"
-                setTextColor(if (i < solved) accent else 0x66FFFFFF)
-                textSize = 34f
-                setPadding(dp(5), 0, dp(5), 0)
-            }
-            row.addView(tv)
-            if (i == solved - 1) lastFilled = tv
+            val filled = i < solved
+            val tile = ShapeTileView(
+                ctx, Tile(Shape.STAR, if (filled) accent else 0x55FFFFFF), dp(34),
+                bare = true,
+            )
+            row.addView(tile, LinearLayout.LayoutParams(dp(38), dp(38)).apply {
+                setMargins(dp(3), 0, dp(3), 0)
+            })
+            if (i == solved - 1) last = tile
         }
-        if (popLast) lastFilled?.let { popIn(it) }
+        if (popLast) last?.let { popIn(it) }
     }
 
     private fun renderQuestion() {
@@ -158,61 +209,113 @@ class LockUi(
         val col = contentCol ?: return
         col.removeAllViews()
         typed = ""
+        val q = current ?: return
+
+        // Boss badge above the card
+        if (q.boss) {
+            col.addView(TextView(ctx).apply {
+                text = "⭐ BOSS QUESTION ⭐"
+                setTextColor(accent); textSize = 14f; brandFont(black = true)
+                gravity = Gravity.CENTER
+                setPadding(0, dp(4), 0, dp(6))
+            })
+        }
 
         // question card
         val card = LinearLayout(ctx).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER_HORIZONTAL
-            background = rounded(Color.WHITE, dp(30))
-            elevation = dp(8).toFloat()
-            setPadding(dp(24), dp(22), dp(24), dp(24))
-        }
-        // "Question X of Y" pill
-        card.addView(TextView(ctx).apply {
-            text = "Question ${solved + 1} of $target"
-            setTextColor(accentDeep); textSize = 13f
-            setTypeface(null, Typeface.BOLD)
-            background = rounded(accentSoft, dp(20))
-            setPadding(dp(14), dp(6), dp(14), dp(6))
-        })
-        card.addView(TextView(ctx).apply {
-            text = current.prompt
-            setTextColor(textDark); textSize = 34f
-            setTypeface(null, Typeface.BOLD)
-            gravity = Gravity.CENTER
-            setPadding(0, dp(16), 0, 0)
-        })
-        if (!current.isMultipleChoice) {
-            typedView = TextView(ctx).apply {
-                text = " "
-                setTextColor(textDark); textSize = 30f
-                setTypeface(null, Typeface.BOLD)
-                gravity = Gravity.CENTER
-                background = rounded(0xFFF2F1FA.toInt(), dp(16))
-                setPadding(0, dp(12), 0, dp(12))
+            background = GradientDrawable().apply {
+                cornerRadius = dp(30).toFloat(); setColor(Color.WHITE)
+                if (q.boss) setStroke(dp(3), accent)
             }
-            card.addView(typedView, LinearLayout.LayoutParams(match, wrap).apply { topMargin = dp(16) })
+            elevation = dp(8).toFloat()
+            setPadding(dp(22), dp(18), dp(22), dp(20))
         }
-        feedbackView = TextView(ctx).apply {
-            text = ""; textSize = 16f; gravity = Gravity.CENTER
-            setTypeface(null, Typeface.BOLD)
+        card.addView(TextView(ctx).apply {
+            text = "Question ${index + 1} of $target"
+            setTextColor(0xFFB98600.toInt()); textSize = 12.5f; brandFont()
+            background = rounded(0xFFFFF2CC.toInt(), dp(20))
+            setPadding(dp(14), dp(5), dp(14), dp(5))
+        })
+        card.addView(TextView(ctx).apply {
+            text = q.prompt
+            setTextColor(textDark); brandFont(black = true)
+            textSize = if (q.prompt.length > 40) 20f else 27f
+            gravity = Gravity.CENTER
             setPadding(0, dp(12), 0, 0)
-            visibility = View.GONE
+        })
+
+        // Kind-specific content INSIDE the card (visual displays)
+        when (q.kind) {
+            QKind.COUNT -> card.addView(tileWrap(q.tiles!!, dp(46)), cardChild(dp(12)))
+            QKind.MEMORY -> card.addView(tileWrap(q.tiles!!, dp(58)), cardChild(dp(12)))
+            QKind.KEYPAD -> {
+                typedView = TextView(ctx).apply {
+                    text = " "; setTextColor(textDark); textSize = 28f; brandFont(black = true)
+                    gravity = Gravity.CENTER
+                    background = rounded(0xFFF2F1FA.toInt(), dp(16))
+                    setPadding(0, dp(10), 0, dp(10))
+                }
+                card.addView(typedView, cardChild(dp(14)))
+            }
+            else -> {}
+        }
+
+        feedbackView = TextView(ctx).apply {
+            text = ""; textSize = 15f; gravity = Gravity.CENTER; brandFont()
+            setPadding(0, dp(10), 0, 0); visibility = View.GONE
         }
         card.addView(feedbackView)
         cardView = card
 
-        val cardWrap = LinearLayout(ctx).apply { gravity = Gravity.CENTER }
-        cardWrap.addView(card, LinearLayout.LayoutParams(match, wrap))
         col.addView(spacer())
-        col.addView(cardWrap, LinearLayout.LayoutParams(match, wrap))
+        col.addView(card, LinearLayout.LayoutParams(match, wrap))
         col.addView(spacer())
         popIn(card)
 
-        // input area
-        if (current.isMultipleChoice) col.addView(buildOptions()) else col.addView(buildKeypad())
+        // Kind-specific INPUT below the card
+        val input: View = when (q.kind) {
+            QKind.KEYPAD -> buildKeypad()
+            QKind.MCQ -> buildOptions(q.options!!) { submitText(it) }
+            QKind.COUNT -> buildOptionRow(q.options!!) { submitText(it) }
+            QKind.TRUE_FALSE -> buildTrueFalse()
+            QKind.ODD_ONE_OUT -> buildOddGrid(q)
+            QKind.COMPARE -> buildCompare(q)
+            QKind.MATCH -> buildMatch(q)
+            QKind.ORDER -> buildSlots(q.orderItems!!, q.answer.split(","))
+            QKind.WORD -> buildSlots(q.letters!!.map { "$it" }, q.answer.map { "$it" })
+            QKind.MEMORY -> View(ctx) // input appears after the reveal delay
+        }
+        col.addView(input, LinearLayout.LayoutParams(match, wrap))
+        cascade(input)
+
+        if (q.kind == QKind.MEMORY) startMemoryPhase(q, card, col, input)
     }
 
+    private fun cardChild(top: Int) =
+        LinearLayout.LayoutParams(match, wrap).apply { topMargin = top }
+
+    /** Rows of tiles, max 4 per row, centered. */
+    private fun tileWrap(tiles: List<Tile>, size: Int): View {
+        val box = LinearLayout(ctx).apply {
+            orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER_HORIZONTAL
+        }
+        var row: LinearLayout? = null
+        tiles.forEachIndexed { i, t ->
+            if (i % 4 == 0) {
+                row = LinearLayout(ctx).apply { gravity = Gravity.CENTER }
+                box.addView(row)
+            }
+            row!!.addView(ShapeTileView(ctx, t, size, bare = true),
+                LinearLayout.LayoutParams(size + dp(10), size + dp(10)).apply {
+                    setMargins(dp(4), dp(4), dp(4), dp(4))
+                })
+        }
+        return box
+    }
+
+    // ---- inputs ----
     private fun buildKeypad(): View {
         val grid = GridLayout(ctx).apply { columnCount = 3 }
         val keys = listOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "del", "0", "ok")
@@ -220,8 +323,7 @@ class LockUi(
             val bg = when (k) { "ok" -> correct; "del" -> 0x33FFFFFF; else -> Color.WHITE }
             val btn = TextView(ctx).apply {
                 gravity = Gravity.CENTER
-                textSize = if (k.length > 1) 20f else 27f
-                setTypeface(null, Typeface.BOLD)
+                textSize = if (k.length > 1) 20f else 26f; brandFont(black = true)
                 text = when (k) { "del" -> "⌫"; "ok" -> "✓"; else -> k }
                 setTextColor(if (k == "ok" || k == "del") Color.WHITE else textDark)
                 background = rounded(bg, dp(20))
@@ -229,103 +331,413 @@ class LockUi(
                 setOnClickListener { if (!busy) onKey(k) }
                 pressable(this)
             }
-            val lp = GridLayout.LayoutParams().apply {
+            grid.addView(btn, GridLayout.LayoutParams().apply {
                 width = 0; columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
-                height = dp(58)
-                setMargins(dp(6), dp(6), dp(6), dp(6))
-            }
-            grid.addView(btn, lp)
+                height = dp(56); setMargins(dp(6), dp(6), dp(6), dp(6))
+            })
         }
         return grid
     }
 
-    private fun buildOptions(): View {
+    private fun buildOptions(options: List<String>, onTap: (String) -> Unit): View {
         val box = LinearLayout(ctx).apply { orientation = LinearLayout.VERTICAL }
-        (current.options ?: emptyList()).forEachIndexed { i, opt ->
+        options.forEachIndexed { i, opt ->
             box.addView(TextView(ctx).apply {
-                text = opt
-                gravity = Gravity.CENTER; textSize = 21f
-                setTypeface(null, Typeface.BOLD)
-                setTextColor(Color.WHITE)
+                text = opt; gravity = Gravity.CENTER
+                textSize = 19f; brandFont(black = true); setTextColor(Color.WHITE)
                 background = rounded(optionColors[i % optionColors.size], dp(22))
                 elevation = dp(4).toFloat()
-                setPadding(0, dp(18), 0, dp(18))
-                setOnClickListener { if (!busy) submit(opt) }
+                setPadding(dp(10), dp(16), dp(10), dp(16))
+                setOnClickListener { if (!busy) onTap(opt) }
                 pressable(this)
-            }, LinearLayout.LayoutParams(match, wrap).apply { setMargins(0, dp(8), 0, dp(8)) })
+            }, LinearLayout.LayoutParams(match, wrap).apply { setMargins(0, dp(7), 0, dp(7)) })
         }
         return box
     }
 
+    /** Horizontal row of small choices (COUNT numbers). */
+    private fun buildOptionRow(options: List<String>, onTap: (String) -> Unit): View {
+        val row = LinearLayout(ctx).apply { gravity = Gravity.CENTER }
+        options.forEachIndexed { i, opt ->
+            row.addView(TextView(ctx).apply {
+                text = opt; gravity = Gravity.CENTER
+                textSize = 24f; brandFont(black = true); setTextColor(Color.WHITE)
+                background = rounded(optionColors[i % optionColors.size], dp(22))
+                elevation = dp(4).toFloat()
+                setOnClickListener { if (!busy) onTap(opt) }
+                pressable(this)
+            }, LinearLayout.LayoutParams(0, dp(64), 1f).apply {
+                setMargins(dp(7), dp(6), dp(7), dp(6))
+            })
+        }
+        return row
+    }
+
+    private fun buildTrueFalse(): View {
+        val row = LinearLayout(ctx).apply { gravity = Gravity.CENTER }
+        listOf("true" to correct, "false" to wrong).forEach { (v, color) ->
+            row.addView(LinearLayout(ctx).apply {
+                orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER
+                background = rounded(color, dp(26)); elevation = dp(4).toFloat()
+                setPadding(0, dp(18), 0, dp(18))
+                addView(TextView(ctx).apply {
+                    text = if (v == "true") "✓" else "✕"
+                    setTextColor(Color.WHITE); textSize = 34f; brandFont(black = true)
+                    gravity = Gravity.CENTER
+                })
+                addView(TextView(ctx).apply {
+                    text = if (v == "true") "TRUE" else "FALSE"
+                    setTextColor(Color.WHITE); textSize = 16f; brandFont(black = true)
+                    gravity = Gravity.CENTER
+                })
+                setOnClickListener { if (!busy) submitText(v) }
+                pressable(this)
+            }, LinearLayout.LayoutParams(0, wrap, 1f).apply {
+                setMargins(dp(8), 0, dp(8), 0)
+            })
+        }
+        return row
+    }
+
+    private fun buildOddGrid(q: Q): View {
+        val grid = GridLayout(ctx).apply { columnCount = 2 }
+        q.tiles!!.forEachIndexed { i, t ->
+            val tile = ShapeTileView(ctx, t, dp(64))
+            tile.setOnClickListener {
+                if (busy) return@setOnClickListener
+                if (i == q.oddIndex) onCorrect() else onWrongOneShot("that one", tile)
+            }
+            pressable(tile)
+            grid.addView(tile, GridLayout.LayoutParams().apply {
+                width = 0; columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
+                height = dp(96); setMargins(dp(8), dp(8), dp(8), dp(8))
+            })
+        }
+        return grid
+    }
+
+    private fun buildCompare(q: Q): View {
+        val row = LinearLayout(ctx).apply { gravity = Gravity.CENTER }
+        q.options!!.forEachIndexed { i, v ->
+            row.addView(TextView(ctx).apply {
+                text = v; gravity = Gravity.CENTER
+                textSize = 30f; brandFont(black = true); setTextColor(textDark)
+                background = rounded(Color.WHITE, dp(26)); elevation = dp(4).toFloat()
+                setPadding(dp(8), dp(26), dp(8), dp(26))
+                setOnClickListener { if (!busy) submitText("$i") }
+                pressable(this)
+            }, LinearLayout.LayoutParams(0, wrap, 1f).apply {
+                setMargins(dp(8), 0, dp(8), 0)
+            })
+        }
+        return row
+    }
+
+    private fun buildMatch(q: Q): View {
+        val row = LinearLayout(ctx)
+        val leftCol = LinearLayout(ctx).apply { orientation = LinearLayout.VERTICAL }
+        val rightCol = LinearLayout(ctx).apply { orientation = LinearLayout.VERTICAL }
+        row.addView(leftCol, LinearLayout.LayoutParams(0, wrap, 1f))
+        row.addView(rightCol, LinearLayout.LayoutParams(0, wrap, 1f))
+
+        val leftViews = mutableListOf<TextView>(); val rightViews = mutableListOf<TextView>()
+        var selectedLeft = -1
+        val lockedLeft = BooleanArray(3); val lockedRight = BooleanArray(3)
+        var lockedCount = 0
+
+        fun pill(text: String): TextView = TextView(ctx).apply {
+            this.text = text; gravity = Gravity.CENTER
+            textSize = 16f; brandFont(black = true); setTextColor(textDark)
+            background = rounded(Color.WHITE, dp(18)); elevation = dp(3).toFloat()
+            setPadding(dp(6), dp(14), dp(6), dp(14))
+        }
+
+        fun refreshLeft() {
+            leftViews.forEachIndexed { i, v ->
+                if (lockedLeft[i]) return@forEachIndexed
+                v.background = if (i == selectedLeft)
+                    GradientDrawable().apply {
+                        cornerRadius = dp(18).toFloat(); setColor(Color.WHITE)
+                        setStroke(dp(3), accent)
+                    }
+                else rounded(Color.WHITE, dp(18))
+            }
+        }
+        fun lock(li: Int, ri: Int) {
+            val c = optionColors[lockedCount % optionColors.size]
+            lockedLeft[li] = true; lockedRight[ri] = true; lockedCount++
+            leftViews[li].background = rounded(c, dp(18))
+            leftViews[li].setTextColor(Color.WHITE)
+            rightViews[ri].background = rounded(c, dp(18))
+            rightViews[ri].setTextColor(Color.WHITE)
+            popIn(leftViews[li]); popIn(rightViews[ri])
+            if (lockedCount == 3) handler.postDelayed({ onCorrect() }, 350)
+            else playSound(successSoundId)
+        }
+
+        q.left!!.forEachIndexed { i, s ->
+            val v = pill(s)
+            v.setOnClickListener {
+                if (busy || lockedLeft[i]) return@setOnClickListener
+                selectedLeft = i; refreshLeft()
+            }
+            pressable(v); leftViews.add(v)
+            leftCol.addView(v, LinearLayout.LayoutParams(match, wrap).apply {
+                setMargins(dp(4), dp(5), dp(4), dp(5))
+            })
+        }
+        q.right!!.forEachIndexed { i, s ->
+            val v = pill(s)
+            v.setOnClickListener {
+                if (busy || lockedRight[i] || selectedLeft < 0) return@setOnClickListener
+                if (q.matchMap!![selectedLeft] == i) {
+                    val li = selectedLeft; selectedLeft = -1
+                    lock(li, i); refreshLeft()
+                } else {
+                    playSound(tryAgainSoundId)
+                    shake(v); leftViews.getOrNull(selectedLeft)?.let { shake(it) }
+                }
+            }
+            pressable(v); rightViews.add(v)
+            rightCol.addView(v, LinearLayout.LayoutParams(match, wrap).apply {
+                setMargins(dp(4), dp(5), dp(4), dp(5))
+            })
+        }
+        return row
+    }
+
+    /** Shared tap-to-place slots UI for ORDER and WORD. */
+    private fun buildSlots(items: List<String>, answerSeq: List<String>): View {
+        val box = LinearLayout(ctx).apply {
+            orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER_HORIZONTAL
+        }
+        val n = items.size
+        val placed = arrayOfNulls<Int>(n) // slot -> tile index
+        val slotViews = mutableListOf<TextView>()
+        val tileViews = mutableListOf<TextView>()
+
+        val slotRow = LinearLayout(ctx).apply { gravity = Gravity.CENTER }
+        val tileRow = LinearLayout(ctx).apply { gravity = Gravity.CENTER }
+
+        fun tvBase(): TextView = TextView(ctx).apply {
+            gravity = Gravity.CENTER; textSize = 22f; brandFont(black = true)
+        }
+        fun checkDone() {
+            if (placed.any { it == null }) return
+            busy = true
+            val got = placed.map { items[it!!] }
+            if (got == answerSeq) { onCorrect() } else {
+                playSound(tryAgainSoundId)
+                feedback("Almost! Try a different order", wrong)
+                cardView?.let { shake(it) }
+                handler.postDelayed({
+                    // return all tiles for another go
+                    for (s in 0 until n) {
+                        placed[s]?.let { t -> tileViews[t].visibility = View.VISIBLE }
+                        placed[s] = null
+                        slotViews[s].text = ""
+                        slotViews[s].background = slotBg(false)
+                    }
+                    feedbackView?.visibility = View.GONE
+                    busy = false
+                }, 900)
+            }
+        }
+        fun place(tileIdx: Int) {
+            val slot = placed.indexOfFirst { it == null }
+            if (slot < 0) return
+            placed[slot] = tileIdx
+            slotViews[slot].text = items[tileIdx]
+            slotViews[slot].background = slotBg(true)
+            tileViews[tileIdx].visibility = View.INVISIBLE
+            popIn(slotViews[slot])
+            checkDone()
+        }
+        fun unplace(slot: Int) {
+            val t = placed[slot] ?: return
+            placed[slot] = null
+            slotViews[slot].text = ""
+            slotViews[slot].background = slotBg(false)
+            tileViews[t].visibility = View.VISIBLE
+        }
+
+        for (s in 0 until n) {
+            val v = tvBase().apply {
+                setTextColor(textDark); background = slotBg(false)
+                setOnClickListener { if (!busy) unplace(s) }
+            }
+            slotViews.add(v)
+            slotRow.addView(v, LinearLayout.LayoutParams(0, dp(58), 1f).apply {
+                setMargins(dp(4), 0, dp(4), 0)
+            })
+        }
+        items.forEachIndexed { i, s ->
+            val v = tvBase().apply {
+                text = s; setTextColor(Color.WHITE)
+                background = rounded(optionColors[i % optionColors.size], dp(16))
+                elevation = dp(3).toFloat()
+                setOnClickListener { if (!busy) place(i) }
+            }
+            pressable(v); tileViews.add(v)
+            tileRow.addView(v, LinearLayout.LayoutParams(0, dp(58), 1f).apply {
+                setMargins(dp(4), dp(12), dp(4), 0)
+            })
+        }
+        box.addView(slotRow, LinearLayout.LayoutParams(match, wrap))
+        box.addView(tileRow, LinearLayout.LayoutParams(match, wrap))
+        return box
+    }
+
+    private fun slotBg(filled: Boolean): GradientDrawable = GradientDrawable().apply {
+        cornerRadius = dp(16).toFloat()
+        if (filled) { setColor(Color.WHITE) } else {
+            setColor(0x22FFFFFF); setStroke(dp(2), 0x66FFFFFF)
+        }
+    }
+
+    private fun startMemoryPhase(q: Q, card: LinearLayout, col: LinearLayout, inputPlaceholder: View) {
+        busy = true
+        handler.postDelayed({
+            busy = false
+            // Hide the shown tiles, swap prompt, present probes.
+            (card.getChildAt(1) as? TextView)?.text = "Which one did you see?"
+            (card.getChildAt(2))?.visibility = View.GONE // the tileWrap
+            val idx = col.indexOfChild(inputPlaceholder)
+            col.removeView(inputPlaceholder)
+            val probes = LinearLayout(ctx).apply { gravity = Gravity.CENTER }
+            q.memoryOptions!!.forEachIndexed { i, t ->
+                val tile = ShapeTileView(ctx, t, dp(60))
+                tile.setOnClickListener {
+                    if (busy) return@setOnClickListener
+                    if (i == q.memoryAnswer) onCorrect() else onWrongOneShot("that one", tile)
+                }
+                pressable(tile)
+                probes.addView(tile, LinearLayout.LayoutParams(0, dp(92), 1f).apply {
+                    setMargins(dp(6), 0, dp(6), 0)
+                })
+            }
+            col.addView(probes, idx, LinearLayout.LayoutParams(match, wrap))
+            cascade(probes)
+        }, 2600)
+    }
+
+    // ---- answer plumbing ----
     private fun onKey(k: String) {
         when (k) {
             "del" -> if (typed.isNotEmpty()) typed = typed.dropLast(1)
-            "ok" -> { if (typed.isNotEmpty()) submit(typed); return }
+            "ok" -> { if (typed.isNotEmpty()) submitText(typed); return }
             else -> if (typed.length < 6) typed += k
         }
         typedView?.text = if (typed.isEmpty()) " " else typed
     }
 
-    private fun submit(given: String) {
+    private fun submitText(given: String) {
+        val q = current ?: return
         if (busy) return
-        if (Questions.isCorrect(current, given)) {
-            busy = true
-            solved++
-            renderStars(popLast = true)
-            bounceOwl()
-            celebrate()
-            if (solved >= target) {
-                feedback("You did it! 🎉", correct)
-                handler.postDelayed({ onEarned() }, 1250)
-            } else {
-                feedback("Great job! 🎉", correct)
-                handler.postDelayed({ busy = false; nextQuestion() }, 800)
-            }
+        if (Questions.isCorrect(q, given)) onCorrect()
+        else onWrongOneShot(prettyAnswer(q), null)
+    }
+
+    private fun prettyAnswer(q: Q): String = when (q.kind) {
+        QKind.COMPARE -> q.options!![q.answer.toInt()]
+        QKind.TRUE_FALSE -> q.answer.uppercase()
+        else -> q.answer
+    }
+
+    private fun onCorrect() {
+        val q = current ?: return
+        busy = true
+        solved++; streak++
+        renderStars(popLast = true)
+        bounceOwl()
+        celebrate(big = q.boss)
+        playSound(if (q.boss && bossSoundId != 0) bossSoundId else successSoundId)
+        val line = if (streak >= 2) "${affirmations.random()}  •  $streak in a row!"
+            else affirmations.random()
+        feedback(if (q.boss) "BOSS CLEARED!  $line" else line, correct)
+        if (solved >= target) {
+            handler.postDelayed({ onEarned() }, if (q.boss) 1500L else 1200L)
         } else {
-            busy = true
-            cardView?.let { shake(it) }
-            feedback("Oops! It was ${current.answer} 🙈", wrong)
-            handler.postDelayed({ busy = false; nextQuestion() }, 1500)
+            handler.postDelayed({
+                busy = false; index++
+                current = session.getOrNull(index)
+                renderQuestion()
+            }, if (q.boss) 1200L else 850L)
         }
     }
 
-    private fun nextQuestion() {
-        val idx = if (solved < plan.size) solved else plan.size - 1
-        current = Questions.generateOne(band, plan[idx])
-        renderQuestion()
+    /** One-shot kinds: gentle reveal, then a fresh question of the same kind. */
+    private fun onWrongOneShot(answerText: String, tappedView: View?) {
+        val q = current ?: return
+        busy = true
+        streak = 0
+        playSound(tryAgainSoundId)
+        tappedView?.let { shake(it) } ?: cardView?.let { shake(it) }
+        val reveal = when (q.kind) {
+            QKind.ODD_ONE_OUT, QKind.MEMORY -> "Oops! Not $answerText — look again"
+            else -> "Oops! It was $answerText"
+        }
+        feedback(reveal, wrong)
+        handler.postDelayed({
+            busy = false
+            current = Questions.regenerate(ctx, band, q.kind).copy(boss = q.boss)
+            renderQuestion()
+        }, 1500)
     }
 
     private fun feedback(text: String, color: Int) {
         feedbackView?.apply {
-            this.text = text
-            setTextColor(color)
-            visibility = View.VISIBLE
+            this.text = text; setTextColor(color); visibility = View.VISIBLE
         }
     }
 
     // ---- celebrations / animations ----
-    private fun celebrate() {
-        val emoji = TextView(ctx).apply {
-            text = celebrateEmojis.random()
-            textSize = 92f
-            gravity = Gravity.CENTER
+    private fun celebrate(big: Boolean = false) {
+        repeat(if (big) 3 else 1) { i ->
+            handler.postDelayed({
+                val emoji = TextView(ctx).apply {
+                    text = celebrateEmojis.random(); textSize = if (big) 100f else 88f
+                    gravity = Gravity.CENTER
+                }
+                root.addView(emoji, FrameLayout.LayoutParams(wrap, wrap).apply {
+                    gravity = Gravity.CENTER
+                    if (big) leftMargin = dp((i - 1) * 70)
+                })
+                emoji.scaleX = 0.3f; emoji.scaleY = 0.3f; emoji.alpha = 0f
+                emoji.animate().scaleX(1.7f).scaleY(1.7f).alpha(1f)
+                    .setDuration(260).setInterpolator(OvershootInterpolator())
+                    .withEndAction {
+                        emoji.animate().alpha(0f).scaleX(2.1f).scaleY(2.1f)
+                            .translationYBy(dp(-40).toFloat()).setDuration(420)
+                            .withEndAction { runCatching { root.removeView(emoji) } }
+                            .start()
+                    }.start()
+            }, i * 140L)
         }
-        root.addView(emoji, FrameLayout.LayoutParams(wrap, wrap).apply { gravity = Gravity.CENTER })
-        emoji.scaleX = 0.3f; emoji.scaleY = 0.3f; emoji.alpha = 0f
-        emoji.animate().scaleX(1.7f).scaleY(1.7f).alpha(1f)
-            .setDuration(260).setInterpolator(OvershootInterpolator())
-            .withEndAction {
-                emoji.animate().alpha(0f).scaleX(2.1f).scaleY(2.1f)
-                    .translationYBy(dp(-40).toFloat()).setDuration(420)
-                    .withEndAction { try { root.removeView(emoji) } catch (_: Throwable) {} }
-                    .start()
-            }.start()
     }
 
     private fun popIn(v: View) {
         v.scaleX = 0.6f; v.scaleY = 0.6f
         v.animate().scaleX(1f).scaleY(1f).setDuration(300)
             .setInterpolator(OvershootInterpolator()).start()
+    }
+
+    /** Children of [group] pop in one after another. */
+    private fun cascade(group: View) {
+        if (group !is ViewGroup) return
+        var d = 0L
+        fun walk(v: View) {
+            if (v is ViewGroup && v !is TextView) {
+                for (i in 0 until v.childCount) walk(v.getChildAt(i))
+            } else {
+                v.alpha = 0f; v.scaleX = 0.7f; v.scaleY = 0.7f
+                v.animate().alpha(1f).scaleX(1f).scaleY(1f)
+                    .setStartDelay(d).setDuration(240)
+                    .setInterpolator(OvershootInterpolator()).start()
+                d += 40
+            }
+        }
+        walk(group)
     }
 
     private fun bounceOwl() {
@@ -338,17 +750,17 @@ class LockUi(
     }
 
     private fun shake(v: View) {
-        val d = dp(14).toFloat()
-        v.animate().translationX(-d).setDuration(60).withEndAction {
-            v.animate().translationX(d).setDuration(70).withEndAction {
-                v.animate().translationX(-d * 0.6f).setDuration(60).withEndAction {
-                    v.animate().translationX(0f).setDuration(60).start()
+        val d = dp(12).toFloat()
+        v.animate().translationX(-d).setDuration(55).withEndAction {
+            v.animate().translationX(d).setDuration(65).withEndAction {
+                v.animate().translationX(-d * 0.5f).setDuration(55).withEndAction {
+                    v.animate().translationX(0f).setDuration(55).start()
                 }.start()
             }.start()
         }.start()
     }
 
-    // ---- DONE FOR TODAY ----
+    // ---------------------------------------------------------------- DONE
     private fun buildDone() {
         val col = LinearLayout(ctx).apply {
             orientation = LinearLayout.VERTICAL
@@ -361,18 +773,19 @@ class LockUi(
         }
         col.addView(TextView(ctx).apply {
             text = "You're a star today! 🌟"
-            setTextColor(Color.WHITE); textSize = 27f
-            setTypeface(null, Typeface.BOLD); gravity = Gravity.CENTER
+            setTextColor(Color.WHITE); textSize = 27f; brandFont(black = true)
+            gravity = Gravity.CENTER
             setPadding(0, dp(8), 0, dp(8))
         })
         col.addView(TextView(ctx).apply {
             text = "Great learning today.\nSee you tomorrow! 👋"
-            setTextColor(0xE6FFFFFF.toInt()); textSize = 17f; gravity = Gravity.CENTER
+            setTextColor(0xE6FFFFFF.toInt()); textSize = 17f; brandFont()
+            gravity = Gravity.CENTER
         })
         root.addView(col, FrameLayout.LayoutParams(match, match))
     }
 
-    // ---- PARENT PIN ENTRY ----
+    // ------------------------------------------------------------ PARENT PIN
     private fun showPinEntry() {
         val overlay = LinearLayout(ctx).apply {
             orientation = LinearLayout.VERTICAL
@@ -384,18 +797,17 @@ class LockUi(
         }
         overlay.addView(TextView(ctx).apply {
             text = "Parent PIN"
-            setTextColor(Color.WHITE); textSize = 22f
-            setTypeface(null, Typeface.BOLD); gravity = Gravity.CENTER
+            setTextColor(Color.WHITE); textSize = 22f; brandFont(black = true)
+            gravity = Gravity.CENTER
             setPadding(0, 0, 0, dp(20))
         })
         val dots = TextView(ctx).apply {
             setTextColor(Color.WHITE); textSize = 28f; gravity = Gravity.CENTER
-            text = "● ● ● ●".replace("●", "○")
         }
         overlay.addView(dots)
         val err = TextView(ctx).apply {
             setTextColor(0xFFFFE0E0.toInt()); textSize = 14f; gravity = Gravity.CENTER
-            setPadding(0, dp(8), 0, dp(8))
+            brandFont(); setPadding(0, dp(8), 0, dp(8))
         }
         overlay.addView(err)
 
@@ -415,7 +827,7 @@ class LockUi(
             grid.addView(TextView(ctx).apply {
                 text = if (k == "del") "⌫" else k
                 gravity = Gravity.CENTER; textSize = if (k == "del") 18f else 24f
-                setTypeface(null, Typeface.BOLD); setTextColor(textDark)
+                brandFont(black = true); setTextColor(textDark)
                 background = rounded(Color.WHITE, dp(16))
                 setOnClickListener {
                     if (k == "del") { if (pin.isNotEmpty()) pin = pin.dropLast(1) }
@@ -432,7 +844,8 @@ class LockUi(
         overlay.addView(grid, LinearLayout.LayoutParams(match, wrap).apply { topMargin = dp(16) })
         overlay.addView(TextView(ctx).apply {
             text = "← Back"
-            setTextColor(0xCCFFFFFF.toInt()); textSize = 15f; gravity = Gravity.CENTER
+            setTextColor(0xCCFFFFFF.toInt()); textSize = 15f; brandFont()
+            gravity = Gravity.CENTER
             setPadding(0, dp(20), 0, 0)
             setOnClickListener { root.removeView(this.parent as View) }
         })
@@ -462,10 +875,126 @@ class LockUi(
         }
     }
 
-    private fun owlBitmap(): android.graphics.Bitmap? = try {
+    private fun owlBitmap(): Bitmap? = runCatching {
         ctx.assets.open("flutter_assets/assets/mascot_opening.png")
             .use { BitmapFactory.decodeStream(it) }
-    } catch (_: Throwable) {
-        null
+    }.getOrNull()
+}
+
+// ===========================================================================
+// ShapeTileView — the hand-drawn tile visual system.
+// Draws a soft white rounded card with a coloured shape (circle / square /
+// star / heart / triangle / diamond / moon). When Tile.sticker names a bundled
+// PNG (flutter_assets/assets/stickers/<name>.png) the illustration is drawn
+// instead — so real character art can drop in with zero code changes.
+// ===========================================================================
+@SuppressLint("ViewConstructor")
+class ShapeTileView(
+    ctx: Context,
+    private val tile: Tile,
+    private val sizePx: Int,
+    private val bare: Boolean = false, // no card background (stars row, in-card displays)
+) : View(ctx) {
+
+    companion object {
+        private val stickerCache = HashMap<String, Bitmap?>()
+    }
+
+    private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+    private val path = Path()
+
+    init {
+        // Shadow layers only render reliably with software rendering.
+        setLayerType(LAYER_TYPE_SOFTWARE, null)
+    }
+    private val sticker: Bitmap? = tile.sticker?.let { name ->
+        stickerCache.getOrPut(name) {
+            runCatching {
+                context.assets.open("flutter_assets/assets/stickers/$name.png")
+                    .use { BitmapFactory.decodeStream(it) }
+            }.getOrNull()
+        }
+    }
+
+    override fun onDraw(canvas: Canvas) {
+        val w = width.toFloat(); val h = height.toFloat()
+        if (!bare) {
+            paint.style = Paint.Style.FILL
+            paint.color = Color.WHITE
+            paint.setShadowLayer(6f, 0f, 3f, 0x33000000)
+            canvas.drawRoundRect(RectF(2f, 2f, w - 2f, h - 2f), h * 0.22f, h * 0.22f, paint)
+            paint.clearShadowLayer()
+        }
+        val s = sticker
+        if (s != null) {
+            val pad = w * 0.14f
+            canvas.drawBitmap(s, null, RectF(pad, pad, w - pad, h - pad), paint)
+            return
+        }
+        paint.color = tile.color
+        val cx = w / 2f; val cy = h / 2f
+        val r = minOf(w, h) * (if (bare) 0.46f else 0.30f)
+        when (tile.shape) {
+            Shape.CIRCLE -> canvas.drawCircle(cx, cy, r, paint)
+            Shape.SQUARE -> canvas.drawRoundRect(
+                RectF(cx - r, cy - r, cx + r, cy + r), r * 0.3f, r * 0.3f, paint)
+            Shape.STAR -> { starPath(cx, cy, r); canvas.drawPath(path, paint) }
+            Shape.HEART -> { heartPath(cx, cy, r); canvas.drawPath(path, paint) }
+            Shape.TRIANGLE -> {
+                path.reset()
+                path.moveTo(cx, cy - r)
+                path.lineTo(cx + r * 0.95f, cy + r * 0.75f)
+                path.lineTo(cx - r * 0.95f, cy + r * 0.75f)
+                path.close()
+                canvas.drawPath(path, paint)
+            }
+            Shape.DIAMOND -> {
+                path.reset()
+                path.moveTo(cx, cy - r)
+                path.lineTo(cx + r * 0.8f, cy)
+                path.lineTo(cx, cy + r)
+                path.lineTo(cx - r * 0.8f, cy)
+                path.close()
+                canvas.drawPath(path, paint)
+            }
+            Shape.MOON -> {
+                path.reset()
+                path.addCircle(cx, cy, r, Path.Direction.CW)
+                val bite = Path().apply {
+                    addCircle(cx + r * 0.55f, cy - r * 0.25f, r * 0.85f, Path.Direction.CW)
+                }
+                path.op(bite, Path.Op.DIFFERENCE)
+                canvas.drawPath(path, paint)
+            }
+        }
+        // Label (rarely used; tiles are mostly pure shapes)
+        if (tile.label.isNotEmpty()) {
+            paint.color = 0xFF1F2333.toInt()
+            paint.textAlign = Paint.Align.CENTER
+            paint.textSize = h * 0.3f
+            canvas.drawText(tile.label, cx, cy + paint.textSize * 0.35f, paint)
+        }
+    }
+
+    private fun starPath(cx: Float, cy: Float, r: Float) {
+        path.reset()
+        val inner = r * 0.45f
+        for (i in 0 until 10) {
+            val rad = if (i % 2 == 0) r else inner
+            val a = Math.toRadians((i * 36 - 90).toDouble())
+            val x = cx + (rad * Math.cos(a)).toFloat()
+            val y = cy + (rad * Math.sin(a)).toFloat()
+            if (i == 0) path.moveTo(x, y) else path.lineTo(x, y)
+        }
+        path.close()
+    }
+
+    private fun heartPath(cx: Float, cy: Float, r: Float) {
+        path.reset()
+        val top = cy - r * 0.35f
+        path.moveTo(cx, cy + r * 0.75f)
+        path.cubicTo(cx - r * 1.6f, cy - r * 0.2f, cx - r * 0.7f, top - r * 0.8f, cx, top)
+        path.cubicTo(cx + r * 0.7f, top - r * 0.8f, cx + r * 1.6f, cy - r * 0.2f, cx, cy + r * 0.75f)
+        path.close()
     }
 }

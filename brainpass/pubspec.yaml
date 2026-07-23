@@ -51,12 +51,8 @@ dependencies:
   cloud_firestore: ^6.6.0
   purchases_flutter: ^10.4.0
   purchases_ui_flutter: ^10.4.0
-  # NOTE: detection + overlay + keep-alive are now handled by our own native
-  # Android Accessibility Service (see android/.../BrainPassAccessibilityService.kt)
-  # instead of plugins, so the engine survives the app being killed. The old
-  # plugins (flutter_accessibility_service / flutter_overlay_window /
-  # flutter_foreground_task) were intentionally removed.
-
+  video_player: ^2.11.1
+  material_symbols_icons: ^4.2951.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -84,6 +80,7 @@ flutter:
     - assets/icon/nupo.png
     - assets/mascot_opening.png
     - assets/mascot_pin.png
+    - assets/videos/
 
   fonts:
     - family: Nunito
