@@ -122,7 +122,10 @@ class _AppRulesScreenState extends State<AppRulesScreen> {
                 child: Column(
                   children: [
                     PrimaryButton(
-                      label: widget.isOnboarding ? 'Finish setup' : 'Save',
+                      // Not the last step — PIN, the permission steps and the
+                      // "all set" screen still follow. Only AllSetScreen says
+                      // "Finish setup".
+                      label: widget.isOnboarding ? 'Continue' : 'Save',
                       onPressed: _save,
                     ),
                     const SizedBox(height: 12),

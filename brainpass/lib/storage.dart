@@ -134,6 +134,12 @@ class Storage {
   static Future<void> setOnboardingComplete(bool v) =>
       _p.setBool(kOnboardingComplete, v);
 
+  /// The scroll story (StoryScreen) runs once, BEFORE login — it is what
+  /// convinces the parent to make an account at all.
+  static const kStorySeen = 'storySeen';
+  static bool get storySeen => _p.getBool(kStorySeen) ?? false;
+  static Future<void> setStorySeen(bool v) => _p.setBool(kStorySeen, v);
+
   // ---- Onboarding survey (LOCAL ONLY — see nupo_onboarding_spec.md §7) ----
   // The child's name never leaves the device. Survey answers personalize the
   // flow on-device; only `attribution` may ever be transmitted (aggregate).
@@ -179,6 +185,21 @@ class Storage {
 
   static List<String> get reachApps =>
       _p.getStringList(kReachApps) ?? const [];
+
+  // ---- Ported from the iOS onboarding ----
+
+  /// Age band from an exact age, matching the four onboarding bands.
+  /// a ≤6, b ≤8, c ≤10, else d.
+  static String bandFromAge(int age) =>
+      age <= 6 ? 'a' : (age <= 8 ? 'b' : (age <= 10 ? 'c' : 'd'));
+
+  /// What the parent picked on the "get better at" step: maths/reading/gk/mix.
+  static const kOnbSubject = 'onbSubject';
+  static String get onbSubject => _p.getString(kOnbSubject) ?? '';
+  static Future<void> setOnbSubject(String v) => _p.setString(kOnbSubject, v);
+
+  /// Alias kept so the ported iOS screens compile unchanged.
+  static Future<void> setOnbReachApps(List<String> v) => setReachApps(v);
   static Future<void> setReachApps(List<String> v) =>
       _p.setStringList(kReachApps, v);
 

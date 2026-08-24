@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;600;700;800;900&family=Baloo+2:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#EDE9E3}
+a{color:#7C3AED}a:hover{color:#5B21B6}
+@keyframes hover{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-6px) rotate(2deg)}}
+@keyframes lean{0%,100%{transform:rotate(0deg)}45%{transform:rotate(-4deg)}70%{transform:rotate(2deg)}}
+@keyframes breathe{0%,100%{transform:scale(1);opacity:.4}50%{transform:scale(1.1);opacity:.7}}
+.snz{animation:hover 5.6s ease-in-out infinite}
+.ln{animation:lean 8s ease-in-out infinite;transform-origin:60% 92%}
+@keyframes cbl{0%,45%{opacity:1}55%,100%{opacity:0}}
+@keyframes nod{0%,100%{transform:translateY(0) scaleY(1)}50%{transform:translateY(-1px) scaleY(1.012)}}
+.nod{animation:nod .5s ease-in-out infinite;transform-origin:50% 100%}
+.cbl{animation:cbl .9s steps(1) infinite}
+.br{animation:breathe 4.4s ease-in-out infinite}
+.sheet::-webkit-scrollbar{width:0}
+</style>
+</helmet>
+
+<section style="padding:44px 40px 60px;font-family:Figtree,sans-serif">
+<div style="display:flex;align-items:baseline;gap:12px">
+<div style="padding:5px 11px;border-radius:8px;background:#241C3B;font:800 12px Figtree,sans-serif;color:#fff">4a</div>
+<h2 style="margin:0;font:800 22px Figtree,sans-serif;color:#241C3B;letter-spacing:-.3px">Parent settings — iOS</h2>
+</div>
+<p style="margin:10px 0 26px;max-width:680px;font:400 13.5px/1.6 Figtree,sans-serif;color:rgba(36,28,59,.6)">One scrolling page, iOS grouped-list conventions: large title that stays put, inset cards, chevrons, a real switch. Nupo waits in the top corner with one short line at a time — tap to hear the next. Flipping <em>Learning</em> off turns the card red, dims the apps and drops Nupo's pose and line to match.</p>
+
+<div style="width:393px;height:852px;border-radius:54px;border:11px solid #1B1330;background:#F4F1FA;position:relative;overflow:hidden;box-shadow:0 40px 90px rgba(36,28,59,.3)">
+
+<div style="position:absolute;left:0;right:0;top:0;height:56px;z-index:6;display:flex;align-items:center;justify-content:space-between;padding:14px 30px 0;box-sizing:border-box;font:700 15px -apple-system,Figtree,sans-serif;color:#1B1330;pointer-events:none">
+<div style="letter-spacing:-.2px">22:51</div>
+<div style="display:flex;align-items:center;gap:6px">
+<svg width="17" height="12" viewBox="0 0 17 12" fill="none"><path d="M1 4.2a11 11 0 0 1 15 0" stroke="#1B1330" stroke-width="1.7" stroke-linecap="round"></path><path d="M4 7.2a7 7 0 0 1 9 0" stroke="#1B1330" stroke-width="1.7" stroke-linecap="round"></path><circle cx="8.5" cy="10.2" r="1.4" fill="#1B1330"></circle></svg>
+<div style="width:25px;height:12px;border-radius:4px;border:1.6px solid rgba(27,19,48,.4);position:relative;padding:1.5px;box-sizing:border-box"><div style="width:46%;height:100%;border-radius:2px;background:#1B1330"></div></div>
+</div>
+</div>
+<div style="position:absolute;left:50%;top:12px;margin-left:-58px;width:116px;height:33px;border-radius:20px;background:#1B1330;z-index:7"></div>
+
+<div style="position:absolute;left:0;right:0;top:0;height:{{navH}};z-index:5;background:rgba(244,241,250,.86);backdrop-filter:blur(18px);border-bottom:1px solid {{navLine}};transition:height .25s ease,border-color .25s ease;pointer-events:none"></div>
+<div style="position:absolute;left:20px;top:62px;z-index:8;display:flex;align-items:center;gap:6px;cursor:pointer" style-active="opacity:.5">
+<svg width="12" height="20" viewBox="0 0 12 20" fill="none"><path d="M10 2 2.5 10 10 18" stroke="#7C3AED" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+<div style="font:600 17px -apple-system,Figtree,sans-serif;color:#7C3AED;letter-spacing:-.3px">Nupo</div>
+</div>
+<div style="position:absolute;left:0;right:0;top:64px;z-index:7;text-align:center;font:700 17px -apple-system,Figtree,sans-serif;color:#1B1330;opacity:{{compactO}};transition:opacity .2s ease;pointer-events:none">Parent settings</div>
+
+<div class="snz" style="position:absolute;right:12px;top:96px;z-index:9;width:88px;height:88px;cursor:pointer;opacity:{{asstO}};pointer-events:{{asstP}};transition:opacity .28s ease" onClick="{{nudge}}">
+<div class="br" style="position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle,rgba(124,58,237,.18) 0%,rgba(124,58,237,0) 70%)"></div>
+<div class="ln" style="position:relative;width:88px;height:88px">
+<div class="{{nodCls}}" style="position:absolute;left:0;bottom:0;width:88px;height:82px">
+<img src="nupo/talk1.png" alt="Nupo talking to a parent" style="position:absolute;left:0;bottom:0;width:88px;height:auto;opacity:{{m0}};transition:opacity .08s linear;filter:drop-shadow(0 8px 14px rgba(60,26,118,.2))">
+<img src="nupo/talk2.png" alt="" aria-hidden="true" style="position:absolute;left:0;bottom:0;width:88px;height:auto;opacity:{{m1}};transition:opacity .08s linear;filter:drop-shadow(0 8px 14px rgba(60,26,118,.2))">
+<img src="nupo/ohno.png" alt="" aria-hidden="true" style="position:absolute;left:0;bottom:0;width:88px;height:auto;opacity:{{n2}};transition:opacity .3s ease;filter:drop-shadow(0 8px 14px rgba(60,26,118,.2))">
+</div>
+</div>
+<div style="position:absolute;right:-2px;top:82px;width:176px;pointer-events:none">
+<div style="position:absolute;right:26px;top:-6px;width:14px;height:14px;transform:rotate(45deg);background:#fff;border-left:1.5px solid {{tipBd}};border-top:1.5px solid {{tipBd}};transition:border-color .3s ease"></div>
+<div style="position:relative;padding:11px 14px;border-radius:18px;background:#fff;border:1.5px solid {{tipBd}};box-shadow:0 10px 22px rgba(60,26,118,.16);font:600 12.5px/1.4 Figtree,sans-serif;color:{{tipInk}};text-align:right;transition:border-color .3s ease,color .3s ease;min-height:17px">{{tipLine}}<span class="cbl" style="display:inline-block;width:2px;height:12px;margin-left:2px;vertical-align:-2px;background:#7C3AED;opacity:{{caretO}}"></span></div>
+</div>
+</div>
+
+<div class="sheet" onScroll="{{onScroll}}" style="position:absolute;inset:0;overflow-y:auto;padding:96px 18px 44px;box-sizing:border-box;scrollbar-width:none">
+
+<h1 style="margin:0 6px 4px;font:800 34px/1.1 -apple-system,'Baloo 2',sans-serif;color:#1B1330;letter-spacing:-.8px;max-width:186px;text-wrap:pretty">Parent settings</h1>
+<p style="margin:0 6px 76px;font:400 14px/1.45 Figtree,sans-serif;color:rgba(27,19,48,.5);max-width:150px">Signed in as +91 93221 06240</p>
+
+<div style="border-radius:22px;background:{{heroBg}};border:1.5px solid {{heroBd}};padding:16px;display:flex;align-items:center;gap:14px;transition:background .3s ease,border-color .3s ease;box-shadow:0 8px 22px rgba(60,26,118,.07)">
+<div style="width:46px;height:46px;border-radius:15px;background:{{heroChip}};display:flex;align-items:center;justify-content:center;flex:0 0 auto;transition:background .3s ease">
+<svg width="21" height="24" viewBox="0 0 21 24" fill="none"><path d="M10.5 1.6 19 4.9v7c0 5.2-3.5 9-8.5 10.6C5.5 20.9 2 17.1 2 11.9v-7z" fill="#fff" opacity=".95"></path><path d="m6.9 11.9 2.6 2.6 4.6-5" stroke="{{heroTick}}" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+</div>
+<div style="flex:1;min-width:0">
+<div style="font:800 17px Figtree,sans-serif;color:{{heroInk}};transition:color .3s ease">{{heroTitle}}</div>
+<div style="margin-top:2px;font:600 13px/1.35 Figtree,sans-serif;color:{{heroSub}};transition:color .3s ease">{{heroLine}}</div>
+</div>
+<div onClick="{{toggle}}" style="width:52px;height:32px;border-radius:16px;background:{{swBg}};position:relative;cursor:pointer;flex:0 0 auto;transition:background .25s ease">
+<div style="position:absolute;top:2px;left:2px;width:28px;height:28px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.22);transform:translateX({{swX}});transition:transform .25s cubic-bezier(.34,1.4,.64,1)"></div>
+</div>
+</div>
+
+<div style="margin:26px 6px 8px;display:flex;align-items:baseline;justify-content:space-between">
+<div style="font:600 13px -apple-system,Figtree,sans-serif;color:rgba(27,19,48,.45);letter-spacing:.02em">Learning apps</div>
+<div onClick="{{edit}}" style="font:600 15px -apple-system,Figtree,sans-serif;color:#7C3AED;cursor:pointer" style-active="opacity:.5">{{editLabel}}</div>
+</div>
+
+<div style="border-radius:20px;background:#fff;overflow:hidden;opacity:{{appsO}};transition:opacity .3s ease;box-shadow:0 6px 18px rgba(60,26,118,.06)">
+<sc-for list="{{apps}}" as="app" hint-placeholder-count="3">
+<div onClick="{{app.tap}}" style="display:flex;align-items:center;gap:13px;padding:13px 16px;cursor:pointer;border-top:{{app.line}}" style-active="background:rgba(124,58,237,.05)">
+<div style="width:42px;height:42px;border-radius:13px;background:{{app.bg}};display:flex;align-items:center;justify-content:center;flex:0 0 auto;box-shadow:0 3px 8px rgba(0,0,0,.12)">{{app.glyph}}</div>
+<div style="flex:1;min-width:0">
+<div style="font:800 16px Figtree,sans-serif;color:#1B1330">{{app.name}}</div>
+<div style="margin-top:2px;display:flex;align-items:center;gap:6px">
+<div style="padding:2px 7px;border-radius:6px;background:rgba(124,58,237,.1);font:800 11px Figtree,sans-serif;color:#7C3AED">{{app.q}} Q</div>
+<div style="font:600 12.5px Figtree,sans-serif;color:rgba(27,19,48,.45)">unlocks {{app.mins}} min</div>
+</div>
+</div>
+<div style="text-align:right">
+<div style="font:800 14px Figtree,sans-serif;color:{{app.usedC}}">{{app.used}}</div>
+<div style="margin-top:1px;font:600 11px Figtree,sans-serif;color:rgba(27,19,48,.35)">today</div>
+</div>
+<svg width="8" height="14" viewBox="0 0 8 14" fill="none" style="flex:0 0 auto"><path d="m1.5 1.5 5 5.5-5 5.5" stroke="rgba(27,19,48,.28)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+</div>
+</sc-for>
+<div onClick="{{edit}}" style="display:flex;align-items:center;gap:13px;padding:13px 16px;cursor:pointer;border-top:1px solid rgba(27,19,48,.07)" style-active="background:rgba(124,58,237,.05)">
+<div style="width:42px;height:42px;border-radius:13px;background:rgba(124,58,237,.1);display:flex;align-items:center;justify-content:center;font:400 24px Figtree,sans-serif;color:#7C3AED;flex:0 0 auto">+</div>
+<div style="flex:1;font:700 16px Figtree,sans-serif;color:#7C3AED">Add an app</div>
+</div>
+</div>
+
+<div style="margin:26px 6px 8px;font:600 13px -apple-system,Figtree,sans-serif;color:rgba(27,19,48,.45)">Child</div>
+<div style="border-radius:20px;background:#fff;overflow:hidden;box-shadow:0 6px 18px rgba(60,26,118,.06)">
+<sc-for list="{{childRows}}" as="row" hint-placeholder-count="3">
+<div onClick="{{row.tap}}" style="display:flex;align-items:center;gap:13px;padding:14px 16px;cursor:pointer;border-top:{{row.line}}" style-active="background:rgba(124,58,237,.05)">
+<div style="width:34px;height:34px;border-radius:11px;background:{{row.bg}};display:flex;align-items:center;justify-content:center;flex:0 0 auto">{{row.icon}}</div>
+<div style="flex:1;font:700 16.5px Figtree,sans-serif;color:#1B1330">{{row.label}}</div>
+<div style="font:600 15px Figtree,sans-serif;color:rgba(27,19,48,.42)">{{row.value}}</div>
+<svg width="8" height="14" viewBox="0 0 8 14" fill="none" style="flex:0 0 auto"><path d="m1.5 1.5 5 5.5-5 5.5" stroke="rgba(27,19,48,.28)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+</div>
+</sc-for>
+</div>
+
+<div style="margin:26px 6px 8px;font:600 13px -apple-system,Figtree,sans-serif;color:rgba(27,19,48,.45)">Account</div>
+<div style="border-radius:20px;background:#fff;overflow:hidden;box-shadow:0 6px 18px rgba(60,26,118,.06)">
+<sc-for list="{{acctRows}}" as="row" hint-placeholder-count="4">
+<div onClick="{{row.tap}}" style="display:flex;align-items:center;gap:13px;padding:14px 16px;cursor:pointer;border-top:{{row.line}}" style-active="background:rgba(124,58,237,.05)">
+<div style="width:34px;height:34px;border-radius:11px;background:{{row.bg}};display:flex;align-items:center;justify-content:center;flex:0 0 auto">{{row.icon}}</div>
+<div style="flex:1;font:700 16.5px Figtree,sans-serif;color:{{row.ink}}">{{row.label}}</div>
+<div style="font:600 15px Figtree,sans-serif;color:{{row.valueC}}">{{row.value}}</div>
+<svg width="8" height="14" viewBox="0 0 8 14" fill="none" style="flex:0 0 auto"><path d="m1.5 1.5 5 5.5-5 5.5" stroke="rgba(27,19,48,.28)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+</div>
+</sc-for>
+</div>
+
+<p style="margin:20px 6px 0;text-align:center;font:600 12px/1.5 Figtree,sans-serif;color:rgba(27,19,48,.32)">Nupo v2.4 · Made for ages 4–12</p>
+<div style="height:12px"></div>
+</div>
+
+<div style="position:absolute;left:50%;bottom:9px;margin-left:-67px;width:134px;height:5px;border-radius:3px;background:rgba(27,19,48,.28);z-index:9"></div>
+</div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:520,&quot;height&quot;:1010}}">
+// SVG strings can't go through a template hole as markup, so each becomes a
+// real <svg> element with its inner markup attached.
+const svg = (w, h, box, inner) => React.createElement('svg', {
+  width: w, height: h, viewBox: box, fill: 'none',
+  style: { flex: '0 0 auto' },
+  dangerouslySetInnerHTML: { __html: inner }
+});
+
+const ICONS = {
+  cake: () => svg(17, 17, '0 0 20 20', "<rect x=\"2.5\" y=\"8.5\" width=\"15\" height=\"8\" rx=\"2.5\" fill=\"#B45309\"></rect><rect x=\"2.5\" y=\"8.5\" width=\"15\" height=\"3.4\" rx=\"1.7\" fill=\"#F9C13C\"></rect><rect x=\"9.2\" y=\"3.5\" width=\"1.6\" height=\"4\" rx=\".8\" fill=\"#B45309\"></rect>"),
+  sliders: () => svg(17, 17, '0 0 20 20', "<g stroke=\"#7C3AED\" stroke-width=\"1.9\" stroke-linecap=\"round\"><path d=\"M3 6h14M3 14h14\"></path></g><circle cx=\"7.5\" cy=\"6\" r=\"2.6\" fill=\"#fff\" stroke=\"#7C3AED\" stroke-width=\"1.9\"></circle><circle cx=\"13\" cy=\"14\" r=\"2.6\" fill=\"#fff\" stroke=\"#7C3AED\" stroke-width=\"1.9\"></circle>"),
+  lock: () => svg(16, 17, '0 0 18 20', "<rect x=\"3\" y=\"8\" width=\"12\" height=\"9.5\" rx=\"3\" fill=\"#7C3AED\"></rect><path d=\"M6 8V5.8a3 3 0 0 1 6 0V8\" stroke=\"#7C3AED\" stroke-width=\"2.1\" stroke-linecap=\"round\"></path><circle cx=\"9\" cy=\"12.6\" r=\"1.5\" fill=\"#fff\"></circle>"),
+  clock: () => svg(17, 17, '0 0 20 20', "<circle cx=\"10\" cy=\"10\" r=\"7.6\" stroke=\"#0E9384\" stroke-width=\"2\"></circle><path d=\"M10 6v4.3l2.8 1.7\" stroke=\"#0E9384\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path>"),
+  phone: () => svg(14, 18, '0 0 16 20', "<rect x=\"2.5\" y=\"1.5\" width=\"11\" height=\"17\" rx=\"3\" fill=\"#12B76A\"></rect><rect x=\"6\" y=\"15.2\" width=\"4\" height=\"1.6\" rx=\".8\" fill=\"#fff\" opacity=\".85\"></rect>"),
+  crown: () => svg(18, 16, '0 0 20 18', "<path d=\"M2.4 13.6 3.4 5l4 3.4L10 3.4l2.6 5L16.6 5l1 8.6z\" fill=\"#F59E0B\"></path><rect x=\"2.4\" y=\"13.6\" width=\"15.2\" height=\"2.3\" rx=\"1.1\" fill=\"#F59E0B\"></rect>"),
+  out: () => svg(17, 17, '0 0 20 20', "<path d=\"M12 3.2H5.4A1.4 1.4 0 0 0 4 4.6v10.8a1.4 1.4 0 0 0 1.4 1.4H12\" stroke=\"#7C3AED\" stroke-width=\"2\" stroke-linecap=\"round\"></path><path d=\"M13 7.2 16.4 10 13 12.8M16 10H8.4\" stroke=\"#7C3AED\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path>"),
+  trash: () => svg(16, 17, '0 0 18 20', "<path d=\"M3.4 5.6h11.2l-.9 11a2 2 0 0 1-2 1.9H6.3a2 2 0 0 1-2-1.9z\" fill=\"#E23D3D\"></path><path d=\"M6.6 5.6V4a1.6 1.6 0 0 1 1.6-1.6h1.6A1.6 1.6 0 0 1 11.4 4v1.6M2 5.6h14\" stroke=\"#E23D3D\" stroke-width=\"1.8\" stroke-linecap=\"round\"></path>"),
+  yt: () => svg(20, 14, '0 0 22 16', "<rect width=\"22\" height=\"16\" rx=\"4.6\" fill=\"#FF0033\"></rect><path d=\"M8.8 4.6 14.6 8l-5.8 3.4z\" fill=\"#fff\"></path>"),
+  rb: () => svg(18, 18, '0 0 20 20', "<path d=\"M8.2 2.6a2.1 2.1 0 1 1 3.6 0v1.1h2.5v2.6a2.1 2.1 0 1 0 0 3.6v2.6H11.8v-1a2.1 2.1 0 1 0-3.6 0v1H5.7v-2.6a2.1 2.1 0 1 1 0-3.6V3.7h2.5z\" fill=\"#fff\"></path>"),
+  duo: () => svg(18, 18, '0 0 20 20', "<circle cx=\"10\" cy=\"10\" r=\"8.4\" fill=\"#fff\" opacity=\".2\"></circle><path d=\"M10 3.6c3.4 0 5.6 2.4 5.6 5.6 0 3.9-3 6.4-5.6 7.2C7.4 15.6 4.4 13.1 4.4 9.2c0-3.2 2.2-5.6 5.6-5.6z\" fill=\"#fff\"></path><circle cx=\"8\" cy=\"9\" r=\"1.2\" fill=\"#58CC02\"></circle><circle cx=\"12\" cy=\"9\" r=\"1.2\" fill=\"#58CC02\"></circle>")
+};
+
+const APPS = [
+  { name: 'YouTube', q: 3, mins: 15, used: '0m', bg: '#fff', glyph: ICONS.yt() },
+  { name: 'Roblox', q: 3, mins: 15, used: '0m', bg: '#1B1330', glyph: ICONS.rb() },
+  { name: 'Duolingo', q: 2, mins: 20, used: '12m', bg: '#58CC02', glyph: ICONS.duo() }
+];
+
+const TIPS = [
+  'Ram\u2019s on a 6-day streak.',
+  'Two questions per unlock. That\u2019s it.',
+  'Change anything here \u2014 he won\u2019t see it.'
+];
+
+const LINE = i => i === 0 ? 'none' : '1px solid rgba(27,19,48,.07)';
+const mkRow = (icon, bg, label, value, extra) => Object.assign({
+  icon, bg, label, value, tap: ()=>{}, ink: '#1B1330', valueC: 'rgba(27,19,48,.42)'
+}, extra || {});
+
+const CHILD_ROWS = [
+  mkRow(ICONS.cake(), 'rgba(249,193,60,.18)', 'Child age', 'Ages 5\u20136'),
+  mkRow(ICONS.clock(), 'rgba(14,147,132,.12)', 'Daily cap', '1h 30m'),
+  mkRow(ICONS.sliders(), 'rgba(124,58,237,.1)', 'Permissions', 'All granted'),
+  mkRow(ICONS.lock(), 'rgba(124,58,237,.1)', 'Change PIN', '\u2022\u2022\u2022\u2022')
+].map((r, i) => Object.assign(r, { line: LINE(i) }));
+
+const ACCT_ROWS = [
+  mkRow(ICONS.phone(), 'rgba(18,183,106,.12)', 'Signed in', '+91 93221 06240'),
+  mkRow(ICONS.crown(), 'rgba(249,193,60,.18)', 'Subscription', 'Inactive', { valueC: '#B45309' }),
+  mkRow(ICONS.out(), 'rgba(124,58,237,.1)', 'Sign out', ''),
+  mkRow(ICONS.trash(), 'rgba(226,61,61,.1)', 'Delete account', '', { ink: '#E23D3D' })
+].map((r, i) => Object.assign(r, { line: LINE(i) }));
+
+const APP_ROWS = APPS.map((a, i) => Object.assign({}, a, {
+  line: LINE(i),
+  usedC: a.used === '0m' ? 'rgba(27,19,48,.35)' : '#0E9384',
+  tap: ()=>{}
+}));
+
+class Component extends DCLogic {
+  state = { on: true, scrolled: false, editing: false, tip: 0, said: 0, talking: false, beak: 0 };
+
+  componentDidMount(){ this.speak(TIPS[0]); }
+
+  // stops after the last line so the page can idle; tapping Nupo replays
+  atEnd(){ return this.state.tip >= TIPS.length - 1; }
+  componentWillUnmount(){ this.stop(); }
+
+  stop(){ clearInterval(this.type); clearTimeout(this.lip); clearTimeout(this.hold); }
+
+  // types the line out while the beak flaps, then holds and moves on
+  speak(line){
+    this.stop();
+    this.setState({ said: 0, talking: true, beak: 0 });
+    const flap = ()=>{
+      const open = !this.state.beak;
+      this.setState({ beak: open ? 1 : 0 });
+      this.lip = setTimeout(flap, open ? 105 : 175);
+    };
+    this.lip = setTimeout(flap, 90);
+    this.type = setInterval(()=>{
+      const n = this.state.said + 1;
+      this.setState({ said: n });
+      if(n >= line.length){
+        clearInterval(this.type);
+        clearTimeout(this.lip);
+        this.setState({ talking: false, beak: 0 });
+        if(!this.atEnd()) this.hold = setTimeout(()=> this.nextTip(), 3200);
+      }
+    }, 42);
+  }
+
+  nextTip(){
+    if(!this.state.on) return;
+    const t = (this.state.tip + 1) % TIPS.length;
+    clearTimeout(this.hold);
+    this.setState({ tip: t });
+    this.speak(TIPS[t]);
+  }
+
+  renderVals(){
+    const s = this.state;
+    return {
+      m0: s.on && !s.beak ? 1 : 0,
+      m1: s.on && s.beak ? 1 : 0,
+      n2: s.on ? 0 : 1,
+      nodCls: s.on && s.talking ? 'nod' : '',
+      tipO: 1,
+      caretO: s.on && s.talking ? 1 : 0,
+      tipLine: s.on ? TIPS[s.tip].slice(0, s.said) : 'Paused. I\u2019ll keep quiet.',
+      tipBd: s.on ? 'rgba(124,58,237,.22)' : 'rgba(226,61,61,.28)',
+      tipInk: s.on ? '#241C3B' : '#912018',
+      nudge: ()=> { clearTimeout(this.hold); this.nextTip(); },
+      compactO: s.scrolled ? 1 : 0,
+      navH: s.scrolled ? '96px' : '56px',
+      navLine: s.scrolled ? 'rgba(27,19,48,.09)' : 'rgba(27,19,48,0)',
+      onScroll: e => {
+        const past = e.target.scrollTop > 44;
+        if(past === s.scrolled) return;
+        if(past) this.stop();
+        this.setState({ scrolled: past, talking: past ? false : s.talking, beak: 0 });
+      },
+      asstO: s.scrolled ? 0 : 1,
+      asstP: s.scrolled ? 'none' : 'auto',
+      toggle: ()=> {
+        const on = !s.on;
+        if(on){ this.setState({ on, tip: 0 }); this.speak(TIPS[0]); }
+        else { this.stop(); this.setState({ on, talking: false, beak: 0 }); }
+      },
+      edit: ()=> this.setState({ editing: !s.editing }),
+      editLabel: s.editing ? 'Done' : 'Edit',
+      swBg: s.on ? '#7C3AED' : 'rgba(27,19,48,.18)',
+      swX: s.on ? '20px' : '0px',
+      heroBg: s.on ? 'rgba(18,183,106,.09)' : 'rgba(226,61,61,.07)',
+      heroBd: s.on ? 'rgba(18,183,106,.24)' : 'rgba(226,61,61,.22)',
+      heroChip: s.on ? '#12B76A' : '#E23D3D',
+      heroTick: s.on ? '#12B76A' : '#E23D3D',
+      heroInk: s.on ? '#05603A' : '#912018',
+      heroSub: s.on ? 'rgba(5,96,58,.62)' : 'rgba(145,32,24,.62)',
+      heroTitle: s.on ? 'Learning on' : 'Learning paused',
+      heroLine: s.on ? 'A quick lesson before play' : 'Apps open with no questions asked',
+      appsO: s.on ? 1 : .42,
+      apps: APP_ROWS,
+      childRows: CHILD_ROWS,
+      acctRows: ACCT_ROWS
+    };
+  }
+}
+</script>
+</body>
+</html>

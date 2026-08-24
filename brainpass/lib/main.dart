@@ -18,6 +18,7 @@ import 'subscription_service.dart';
 import 'screens/paywall_gate_screen.dart';
 import 'screens/login/login_flow.dart';
 import 'screens/onboarding/onboarding_flow.dart';
+import 'screens/onboarding/story_screen.dart';
 import 'screens/splash_screen.dart';
 import 'screens/pin_entry_screen.dart';
 import 'screens/parent_home_screen.dart';
@@ -61,6 +62,7 @@ class BrainPassApp extends StatelessWidget {
 // ---------------------------------------------------------------------------
 // Root router — decides what to show after the splash, and reacts to login /
 // logout / entitlement changes so every gate is always enforced.
+//   story not seen        -> StoryScreen (the scroll story; sells the app)
 //   not signed in         -> LoginFlow (mandatory)
 //   signed in, no setup    -> OnboardingFlow
 //   set up, no Nupo Pro     -> PaywallGateScreen (hard paywall)
@@ -75,6 +77,7 @@ class RootRouter extends StatefulWidget {
 
 class _RootRouterState extends State<RootRouter> {
   late bool _loggedIn = AuthService.isLoggedIn;
+  late bool _storySeen = Storage.storySeen;
   StreamSubscription<Object?>? _sub;
 
   @override
@@ -108,6 +111,22 @@ class _RootRouterState extends State<RootRouter> {
 
   @override
   Widget build(BuildContext context) {
+    // The scroll story runs before anything else for a brand-new install —
+    // a returning parent who taps "I already have an account" skips it too.
+    if (!_storySeen && !_loggedIn) {
+      return OnboardingStory(
+        onFinished: () async {
+          await Storage.setStorySeen(true);
+          if (mounted) setState(() => _storySeen = true);
+        },
+        onLogIn: () async {
+          await Storage.setStorySeen(true);
+          if (mounted) setState(() => _storySeen = true);
+        },
+        // The app they pick in the story pre-ticks the real picker later.
+        onAppPicked: (app) => Storage.setReachApps([app.bundleId]),
+      );
+    }
     if (!_loggedIn) return const LoginFlow();
     if (!Storage.onboardingComplete) {
       return OnboardingFlow(onComplete: () => setState(() {}));

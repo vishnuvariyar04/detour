@@ -170,11 +170,15 @@ class PrimaryButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final IconData? icon;
 
+  /// The design refs put a trailing arrow on primary CTAs.
+  final bool trailingArrow;
+
   const PrimaryButton({
     super.key,
     required this.label,
     required this.onPressed,
     this.icon,
+    this.trailingArrow = false,
   });
 
   @override
@@ -331,15 +335,40 @@ class InfoPill extends StatelessWidget {
   final IconData icon;
   final String text;
   final Color color;
+
+  /// When set, the pill renders as a filled badge (the story's
+  /// "FOR PARENTS · AGES 5–12") instead of the icon + footnote row.
+  final Color? background;
+  final Color? foreground;
+
   const InfoPill({
     super.key,
     required this.text,
     this.icon = Icons.verified_user_rounded,
     this.color = AppColors.textMuted,
+    this.background,
+    this.foreground,
   });
 
   @override
   Widget build(BuildContext context) {
+    if (background != null) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: background,
+          borderRadius: BorderRadius.circular(999),
+        ),
+        child: Text(
+          text,
+          style: TextStyle(
+            color: foreground ?? AppColors.accentDeep,
+            fontSize: 12.5,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      );
+    }
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [

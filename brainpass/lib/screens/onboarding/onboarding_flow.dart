@@ -1,12 +1,25 @@
-// screens/onboarding/onboarding_flow.dart
+// screens/onboarding/onboarding_flow.dart — the value-first onboarding,
+// ported from the iOS build (`iOS-conversion/`) so both platforms tell the
+// same story with the same motion.
 //
-// The full onboarding funnel (nupo_onboarding_spec.md): hook → names →
-// diagnostic → shock/reframe/hope → goals + mirror → empathy → gate demo →
-// owl → projection → commitment → setup (apps, rules, PIN) → permissions →
-// attribution → why-it-works → done (the router then shows the paywall).
+//   1-4    Make it personal   child's name → age → subject → name the owl
+//   5-6    Show the future    curated month plan → projection
+//   7      Close              why it works (Premack, no fake stats)
+//   ——     ANDROID ONLY       apps → rules → PIN → the four permissions
+//   —      Sign in + paywall  handled by the router, not this widget
 //
-// The four permission steps are UNCHANGED from the previous flow — same
-// screens, same checks, same auto-advance behaviour.
+// The scrolled story (`story_screen.dart`) runs BEFORE this, from the router,
+// because on Android it also has to sell the app before the mandatory phone
+// login. On iOS it is step 0 of this widget instead.
+//
+// ## What Android adds
+//
+// The iOS build ends here and does its real setup through Screen Time after
+// the paywall. Android cannot: the gating engine needs usage access, an
+// overlay, a battery exemption and (on some OEMs) autostart, plus a real app
+// picker and a parent PIN. Those steps are appended, in the same visual
+// language, and the four permission steps are UNCHANGED from the previous
+// flow.
 
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
@@ -19,17 +32,16 @@ import '../app_picker_screen.dart';
 import '../app_rules_screen.dart';
 import '../permission_step.dart';
 import '../pin_create_screen.dart';
-import 'building_screen.dart';
-import 'demo_gate_screen.dart';
-import 'hook_screen.dart';
 import 'onb_widgets.dart';
-import 'owl_screens.dart';
-import 'survey_screens.dart';
+import 'permissions_intro.dart';
+import 'plan_screens.dart';
+import 'story_beats.dart' show Nupo;
 
 class OnboardingFlow extends StatefulWidget {
   /// Called once setup is finished; the router then shows the home screen.
   final VoidCallback? onComplete;
   const OnboardingFlow({super.key, this.onComplete});
+
   @override
   State<OnboardingFlow> createState() => _OnboardingFlowState();
 }
@@ -37,6 +49,10 @@ class OnboardingFlow extends StatefulWidget {
 class _OnboardingFlowState extends State<OnboardingFlow> {
   int _step = 0;
   bool _autostartRelevant = false;
+
+  /// The questions carry the progress bar; the Android setup block that
+  /// follows keeps counting so the parent can see the end.
+  static const _total = 7;
 
   @override
   void initState() {
@@ -47,6 +63,9 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
   }
 
   void _next() => setState(() => _step++);
+  void _back() => setState(() => _step = (_step - 1).clamp(0, 99));
+
+  String get _child => Storage.childNameOr();
 
   Future<void> _finish() async {
     await Storage.setOnboardingComplete(true);
@@ -144,185 +163,184 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
   @override
   Widget build(BuildContext context) {
     final permCount = 3 + (_autostartRelevant ? 1 : 0);
-    // Screens before / after the permissions block (counts must match the
-    // lists below so the progress bar is honest).
-    const preCount = 28;
-    const postCount = 2;
-    final total = preCount + permCount + postCount;
+    // Android's own steps continue the count past the seven questions.
+    final grandTotal = _total + 4 + permCount;
+    var n = _total; // the setup block starts after the questions
 
-    var n = 0; // running step number for the progress bar
-    final steps = <Widget>[
-      // PHASE 0 — hook + micro-aha (S1–S4). Immersive, no progress bar.
-      HookScreen(key: ValueKey('hook-${++n}'), onNext: _next),
-      // PHASE 1 — names (S5–S6). Stored locally; never transmitted (§7).
+    final screens = <Widget>[
+      // ---- 1-4 · Make it personal ----
       NameInputScreen(
-        key: const ValueKey('parent-name'),
-        step: ++n,
-        total: total,
-        title: 'First — what should we call you?',
-        hint: 'Your name',
-        initial: Storage.parentName,
-        onDone: (v) async {
-          await Storage.setParentName(v);
-          _next();
-        },
-      ),
-      NameInputScreen(
-        key: const ValueKey('child-name'),
-        step: ++n,
-        total: total,
-        title: 'And what’s your child’s name?',
-        subtitle: 'Nupo will use it to make everything personal. '
-            'It never leaves this phone.',
-        hint: 'Child’s name',
-        initial: Storage.childName,
-        onDone: (v) async {
+        step: 1,
+        total: _total,
+        title: "First — what's their name?",
+        hint: 'Their name',
+        initialValue: Storage.childName,
+        eyebrow: 'Step 1 of 5',
+        stepLabel: '1/5',
+        greeting: (v) => 'Nice to meet you, $v!',
+        onNext: (v) async {
           await Storage.setChildName(v);
           _next();
         },
       ),
-      // PHASE 2 — honest diagnostic (S7–S9)
-      DiagnosticIntroScreen(
-          key: const ValueKey('diag'), step: ++n, total: total, onNext: _next),
-      ChildAgeScreen(
-          key: const ValueKey('age'), step: ++n, total: total, onNext: _next),
-      ScreenTimeScreen(
-          key: const ValueKey('screentime'),
-          step: ++n,
-          total: total,
-          onNext: _next),
-      // PHASE 3 — shock → reframe → hope (S10–S12)
-      ShockScreen(
-          key: const ValueKey('shock'), step: ++n, total: total, onNext: _next),
-      ReframeScreen(
-          key: const ValueKey('reframe'),
-          step: ++n,
-          total: total,
-          onNext: _next),
-      HopeScreen(
-          key: const ValueKey('hope'), step: ++n, total: total, onNext: _next),
-      // PHASE 4 — goals + mirror (S13–S14)
-      GoalsScreen(
-          key: const ValueKey('goals'), step: ++n, total: total, onNext: _next),
-      MirrorScreen(
-          key: const ValueKey('mirror'),
-          step: ++n,
-          total: total,
-          onNext: _next),
-      // PHASE 5 — empathy (S15–S18)
-      VibeScreen(
-          key: const ValueKey('vibe'), step: ++n, total: total, onNext: _next),
-      TriedScreen(
-          key: const ValueKey('tried'), step: ++n, total: total, onNext: _next),
-      WhyBuiltScreen(
-          key: const ValueKey('whybuilt'),
-          step: ++n,
-          total: total,
-          onNext: _next),
-      ReachAppsScreen(
-          key: const ValueKey('reach'), step: ++n, total: total, onNext: _next),
-      // PHASE 6 — building animation (S19). Full-bleed moment.
-      BuildingPlanScreen(key: ValueKey('building-${++n}'), onNext: _next),
-      // PHASE 7 — the big aha: the parent plays the gate (S20–S22)
-      DemoIntroScreen(
-          key: const ValueKey('demo-intro'),
-          step: ++n,
-          total: total,
-          onNext: _next),
-      DemoGateScreen(key: ValueKey('demo-gate-${++n}'), onNext: _next),
-      DemoPayoffScreen(
-          key: const ValueKey('demo-payoff'),
-          step: ++n,
-          total: total,
-          onNext: _next),
-      // PHASE 8 — meet + name the owl (S23–S24)
-      MeetOwlScreen(
-          key: const ValueKey('owl'), step: ++n, total: total, onNext: _next),
-      NameInputScreen(
-        key: const ValueKey('owl-name'),
-        step: ++n,
-        total: total,
-        title: 'What should ${Storage.childNameOr()} call him?',
-        subtitle: 'He can change it any time.',
-        hint: 'Nupo',
-        initial: Storage.owlName,
-        ctaLabel: 'Let’s go',
-        onDone: (v) async {
-          await Storage.setOwlName(v);
+      SingleChoiceScreen(
+        step: 2,
+        total: _total,
+        question: 'How old is *$_child*?',
+        stepLabel: '2/5',
+        // One band per question bank. `Questions.kt` already knows A-D
+        // (5–6 / 7–8 / 9–10 / 11+), so what the parent picks IS what the
+        // native engine uses.
+        options: const [
+          ChoiceOption('a', '5–6 years old',
+              chip: '5–6', description: 'Counting, first words'),
+          ChoiceOption('b', '7–8 years old',
+              chip: '7–8', description: 'Mental maths, nature and the world'),
+          ChoiceOption('c', '9–10 years old',
+              chip: '9–10', description: 'Times tables, fractions'),
+          ChoiceOption('d', '11–12 years old',
+              chip: '11–12', description: 'Word problems, logic'),
+        ],
+        mascotFor: Nupo.teacher,
+        lineFor: (band) => const {
+          'a': 'Little ones get pictures and counting.',
+          'b': 'Mental maths and the world around them.',
+          'c': 'Tables and fractions land best here.',
+          'd': 'I’ll push into word problems and logic.',
+        }[band],
+        onBack: _back,
+        initiallySelected: Storage.bandFromAge(Storage.childAge),
+        onNext: (band) async {
+          const upperBound = {'a': 6, 'b': 8, 'c': 10, 'd': 12};
+          await Storage.setChildAge(upperBound[band]!);
+          await Storage.setAgeBand(band);
           _next();
         },
       ),
-      // PHASE 9–10 — projection + commitment (S25–S27)
-      ProjectionScreen(
-          key: const ValueKey('projection'),
-          step: ++n,
-          total: total,
-          onNext: _next),
-      CommitmentScreen(
-          key: const ValueKey('commitment'),
-          step: ++n,
-          total: total,
-          onNext: _next),
-      ValidationScreen(
-          key: const ValueKey('validation'),
-          step: ++n,
-          total: total,
-          onNext: _next),
-      // PHASE 11 — functional setup (S28–S30)
+      SingleChoiceScreen(
+        step: 3,
+        total: _total,
+        question: 'What should *$_child* get better at?',
+        stepLabel: '3/5',
+        grid: true,
+        options: const [
+          ChoiceOption('maths', 'Maths',
+              chip: '7×8', chipColor: AppColors.primary),
+          ChoiceOption('reading', 'Reading',
+              chip: 'Aa', chipColor: AppColors.done),
+          ChoiceOption('gk', 'General knowledge',
+              chip: '?', chipColor: AppColors.accentDeep),
+          ChoiceOption('mix', 'A bit of everything',
+              icon: Icons.star_rounded, chipColor: AppColors.wrong),
+        ],
+        spot: MascotSpot.right,
+        mascotFor: Nupo.idea,
+        lineFor: (goal) => const {
+          'maths': 'Numbers first. I’ll sneak the rest in.',
+          'reading': 'Words and stories it is.',
+          'gk': 'Capitals, planets, odd facts.',
+          'mix': 'A bit of each, every day.',
+        }[goal],
+        onBack: _back,
+        initiallySelected:
+            Storage.onbSubject.isEmpty ? 'mix' : Storage.onbSubject,
+        onNext: (id) async {
+          await Storage.setOnbSubject(id);
+          _next();
+        },
+      ),
+      NameInputScreen(
+        step: 4,
+        total: _total,
+        title: "Meet $_child's buddy. What should they call him?",
+        hint: 'Nupo',
+        initialValue: Storage.owlName,
+        buttonLabel: "Let's go",
+        onBack: _back,
+        tone: StepTone.cream,
+        buttonTone: ButtonTone.amber,
+        stepLabel: '4/5',
+        greeting: (v) => '$v it is. I like it.',
+        emptyGreeting: 'Nupo works too — that’s me.',
+        mascotTyped: Nupo.cool,
+        mascotEmpty: Nupo.shrug,
+        onNext: (v) async {
+          await Storage.setOwlName(v.trim().isEmpty ? 'Nupo' : v);
+          _next();
+        },
+      ),
+
+      // ---- 5-6 · Show the future ----
+      MonthPlanScreen(
+        step: 5,
+        total: _total,
+        childName: _child,
+        subject: Storage.onbSubject.isEmpty ? 'mix' : Storage.onbSubject,
+        band: Storage.ageBand,
+        onBack: _back,
+        stepLabel: '5/5',
+        onNext: _next,
+      ),
+      PlanProjectionScreen(
+        step: 6,
+        total: _total,
+        childName: _child,
+        onBack: _back,
+        onNext: _next,
+      ),
+
+      // ---- 7 · Close ----
+      WhyItWorksScreen(
+        step: 7,
+        total: _total,
+        childName: _child,
+        onBack: _back,
+        onNext: _next,
+      ),
+
+      // ---- ANDROID ONLY · the real setup the iOS build does via Screen Time --
       AppPickerScreen(
-          key: const ValueKey('picker'), step: ++n, total: total, onNext: _next),
+          key: const ValueKey('picker'),
+          step: ++n,
+          total: grandTotal,
+          onNext: _next),
       AppRulesScreen(
-          key: const ValueKey('rules'), step: ++n, total: total, onNext: _next),
+          key: const ValueKey('rules'),
+          step: ++n,
+          total: grandTotal,
+          onNext: _next),
       PinCreateScreen(
-          key: const ValueKey('pin'), step: ++n, total: total, onNext: _next),
+          key: const ValueKey('pin'),
+          step: ++n,
+          total: grandTotal,
+          onNext: _next),
       PermissionsIntroScreen(
         key: const ValueKey('perm-intro'),
         step: ++n,
-        total: total,
+        total: grandTotal,
         autostart: _autostartRelevant,
         onNext: _next,
       ),
-      // Permissions — UNCHANGED (n advances by permCount inside)
-      ..._permissionSteps(n + 1, total),
-      // PHASE 12–13 — attribution + honest science (S34–S35)
-      AttributionScreen(
-        key: const ValueKey('attribution'),
-        step: n + permCount + 1,
-        total: total,
-        onNext: _next,
-      ),
-      WhyItWorksScreen(
-        key: const ValueKey('why-works'),
-        step: n + permCount + 2,
-        total: total,
-        ctaLabel: 'Finish setup',
-        onNext: _finish,
-      ),
+      ..._permissionSteps(n + 1, grandTotal),
     ];
-    assert(steps.length == total,
-        'onboarding step count drifted: ${steps.length} vs $total');
+
+    final index = _step.clamp(0, screens.length - 1);
+    // The last permission step finishes onboarding.
+    if (_step >= screens.length) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _finish());
+    }
 
     return PopScope(
       canPop: _step == 0,
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop && _step > 0) setState(() => _step--);
+        if (!didPop && _step > 0) _back();
       },
-      child: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 280),
-        switchInCurve: Curves.easeOutCubic,
-        switchOutCurve: Curves.easeInCubic,
-        transitionBuilder: (child, anim) => FadeTransition(
-          opacity: anim,
-          child: SlideTransition(
-            position: Tween(begin: const Offset(0.06, 0), end: Offset.zero)
-                .animate(anim),
-            child: child,
-          ),
-        ),
-        child: KeyedSubtree(
-          key: ValueKey(_step),
-          child: steps[_step.clamp(0, steps.length - 1)],
-        ),
+      // Key each step so Flutter never reuses one step's State for the next —
+      // without this the two adjacent NameInputScreens share a State and the
+      // field keeps the previous value.
+      child: KeyedSubtree(
+        key: ValueKey('onb-step-$index'),
+        child: screens[index],
       ),
     );
   }

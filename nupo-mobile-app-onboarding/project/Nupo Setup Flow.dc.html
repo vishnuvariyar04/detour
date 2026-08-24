@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;600;700;800;900&family=Baloo+2:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#EDE9E3}
+a{color:#7C3AED}a:hover{color:#5B21B6}
+@keyframes floaty{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-11px) rotate(-2deg)}}
+@keyframes floaty2{0%,100%{transform:translateY(0) rotate(1deg)}50%{transform:translateY(-7px) rotate(-2deg)}}
+@keyframes twinkle{0%,100%{opacity:.25;transform:scale(.7)}50%{opacity:1;transform:scale(1.15)}}
+@keyframes halo{0%,100%{transform:scale(1);opacity:.55}50%{transform:scale(1.07);opacity:.85}}
+@keyframes cuedown{0%,100%{transform:translateY(0)}50%{transform:translateY(6px)}}
+@keyframes shimmer{0%{transform:translateX(-140%)}55%,100%{transform:translateX(240%)}}
+@keyframes confetti{0%{transform:translateY(-14px) rotate(0);opacity:0}12%{opacity:1}100%{transform:translateY(300px) rotate(420deg);opacity:0}}
+@keyframes popin{0%{transform:scale(.6);opacity:0}100%{transform:scale(1);opacity:1}}
+@keyframes tick{0%{stroke-dashoffset:60}100%{stroke-dashoffset:0}}
+.fl{animation:floaty 4.6s ease-in-out infinite}
+.fl2{animation:floaty2 5.4s ease-in-out infinite}
+.tw{animation:twinkle 2.6s ease-in-out infinite}
+.tw2{animation:twinkle 3.4s .7s ease-in-out infinite}
+.tw3{animation:twinkle 2.1s 1.2s ease-in-out infinite}
+.hl{animation:halo 5s ease-in-out infinite}
+.cue{animation:cuedown 1.5s ease-in-out infinite}
+.shine{animation:shimmer 3.6s 1.2s ease-in-out infinite}
+.cf{animation:confetti 2.6s ease-in infinite}
+.cf:nth-child(2){animation-delay:.35s}.cf:nth-child(3){animation-delay:.7s}.cf:nth-child(4){animation-delay:1.05s}
+.cf:nth-child(5){animation-delay:1.4s}.cf:nth-child(6){animation-delay:1.75s}
+.pop{animation:popin .5s cubic-bezier(.34,1.5,.64,1) forwards}
+.tk{animation:tick .5s .2s ease-out forwards}
+@keyframes sqw{from{background-position:0 0}to{background-position:-1260px 0}}
+@keyframes sqb{from{background-position:0 0}to{background-position:-1312px 0}}
+@keyframes sql{from{background-position:0 0}to{background-position:-1056px 0}}
+.sqwave{width:180px;height:144px;background:url(nupo/seq-wave.png) 0 0/1260px 144px no-repeat;animation:sqw .98s steps(7) infinite}
+.sqblink{width:164px;height:131px;background:url(nupo/seq-blink.png) 0 0/1312px 131px no-repeat;animation:sqb 3.2s steps(8) infinite}
+.sqlook{width:132px;height:106px;background:url(nupo/seq-look.png) 0 0/1056px 106px no-repeat;animation:sql 4s steps(8) infinite}
+@keyframes fr1{0%,33%{opacity:1}34%,100%{opacity:0}}
+@keyframes fr2{0%,33%{opacity:0}34%,66%{opacity:1}67%,100%{opacity:0}}
+@keyframes fr3{0%,66%{opacity:0}67%,100%{opacity:1}}
+@keyframes glide{0%,100%{transform:translate(0,0) rotate(-3deg)}50%{transform:translate(-10px,-16px) rotate(3deg)}}
+.flap{position:relative;animation:glide 3.4s ease-in-out infinite}
+.flap img{position:absolute;left:0;top:0;width:100%;height:auto;display:block}
+.flap img:nth-child(1){position:relative;animation:fr1 .42s steps(1) infinite}
+.flap img:nth-child(2){animation:fr2 .42s steps(1) infinite}
+.flap img:nth-child(3){animation:fr3 .42s steps(1) infinite}
+</style>
+</helmet>
+
+<section style="padding:44px 40px 60px;font-family:Figtree,sans-serif">
+<div style="display:flex;align-items:baseline;gap:12px">
+<div style="padding:5px 11px;border-radius:8px;background:#241C3B;font:800 12px Figtree,sans-serif;color:#fff">2a</div>
+<h2 style="margin:0;font:800 22px Figtree,sans-serif;color:#241C3B;letter-spacing:-.3px">Setup flow — nine tapped screens</h2>
+</div>
+<p style="margin:10px 0 26px;max-width:640px;font:400 13.5px/1.6 Figtree,sans-serif;color:rgba(36,28,59,.6)">Everything after <em>I want this for my kid</em>. Type a name and it follows you through; every screen is tappable and Nupo changes pose and line per step.</p>
+
+<div style="width:390px;height:844px;border-radius:52px;border:10px solid #241C3B;background:{{tone}};position:relative;overflow:hidden;box-shadow:0 40px 90px rgba(36,28,59,.3);transition:background .45s ease">
+
+<div style="position:absolute;left:0;right:0;top:0;height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;z-index:9;font:800 14px Figtree,sans-serif;color:{{ink}}">
+<div>10:12</div>
+<div style="display:flex;align-items:center;gap:5px"><div style="width:16px;height:10px;border-radius:2px;background:{{ink}}"></div><div style="width:22px;height:11px;border-radius:3px;border:1.5px solid {{ink}}"></div></div>
+</div>
+
+<div style="position:absolute;left:22px;right:22px;top:62px;display:flex;align-items:center;gap:14px;z-index:9">
+<div onClick="{{back}}" style="width:38px;height:38px;border-radius:50%;background:{{chip}};display:flex;align-items:center;justify-content:center;font:800 16px Figtree,sans-serif;color:{{ink}};cursor:pointer;flex:0 0 auto;transition:background .45s ease">‹</div>
+<div style="flex:1;height:5px;border-radius:3px;background:{{track}};position:relative;transition:background .45s ease">
+<div style="position:absolute;left:0;top:0;bottom:0;border-radius:3px;background:{{fill}};width:{{prog}};transition:width .5s cubic-bezier(.34,1.2,.64,1),background .45s ease"></div>
+</div>
+<div style="flex:0 0 auto;font:800 11.5px Figtree,sans-serif;color:{{stepInk}};letter-spacing:.06em">{{stepLabel}}</div>
+</div>
+
+<div style="position:absolute;left:0;right:0;top:118px;bottom:0;perspective:1500px">
+
+<div style="position:absolute;inset:0;padding:0 26px;opacity:{{s0o}};transform:{{s0t}};pointer-events:{{s0p}};transition:opacity .4s ease,transform .5s cubic-bezier(.3,1.1,.6,1)">
+<div style="position:relative;height:210px">
+<div class="hl" style="position:absolute;left:50%;top:24px;margin-left:-84px;width:168px;height:168px;border-radius:50%;background:radial-gradient(circle,#FFF3CE 0%,rgba(255,243,206,0) 70%)"></div>
+<div class="fl" style="position:absolute;left:50%;top:16px;margin-left:-74px;width:148px;filter:drop-shadow(0 18px 26px rgba(60,26,118,.2))">
+<img src="nupo/wave.png" alt="Nupo" style="width:100%;height:auto;display:block;visibility:hidden">
+<div class="sqwave" role="img" aria-label="Nupo waving hello" style="position:absolute;left:-16px;top:-2px;opacity:{{pn0}};transition:opacity .3s ease"></div>
+<img src="nupo/shrug.png" alt="Nupo" style="position:absolute;left:0;top:0;width:100%;height:auto;display:block;opacity:{{pn1}};transition:opacity .3s ease">
+</div>
+<div class="tw" style="position:absolute;left:74px;top:34px;font:800 18px Figtree,sans-serif;color:#F9C13C">✦</div>
+<div class="tw2" style="position:absolute;right:78px;top:70px;font:800 13px Figtree,sans-serif;color:#A855F7">✦</div>
+</div>
+<div style="text-align:center;font:800 10.5px Figtree,sans-serif;color:#7C3AED;letter-spacing:.2em">STEP 1 OF 5</div>
+<h1 style="margin:12px 0 0;font:800 27px/1.24 'Baloo 2',sans-serif;color:#241C3B;text-align:center;text-wrap:pretty">First — what's your kid's name?</h1>
+<div style="position:relative;margin-top:24px">
+<input value="{{name}}" onInput="{{onName}}" placeholder="Ram" style="width:100%;box-sizing:border-box;height:64px;border-radius:22px;border:2.5px solid #7C3AED;background:#fff;padding:0 22px;font:700 19px Figtree,sans-serif;color:#241C3B;outline:none;box-shadow:0 10px 24px rgba(124,58,237,.14)">
+</div>
+<div style="margin-top:16px;display:flex;justify-content:center"><div style="max-width:280px;padding:11px 16px;border-radius:18px 18px 18px 5px;background:rgba(124,58,237,.1);font:700 13.5px Figtree,sans-serif;color:#5B21B6;text-align:center">{{greet}}</div></div>
+<div onClick="{{next}}" style="position:absolute;left:26px;right:26px;bottom:52px;height:60px;border-radius:30px;background:#7C3AED;display:flex;align-items:center;justify-content:center;gap:9px;font:800 17px Figtree,sans-serif;color:#fff;cursor:pointer;overflow:hidden;box-shadow:0 14px 30px rgba(124,58,237,.4)" style-active="transform:translateY(2px)">
+<div class="shine" style="position:absolute;top:0;bottom:0;width:70px;background:linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,.32),rgba(255,255,255,0))"></div>Continue<span>→</span></div>
+</div>
+
+<div style="position:absolute;inset:0;padding:0 26px;opacity:{{s1o}};transform:{{s1t}};pointer-events:{{s1p}};transition:opacity .4s ease,transform .5s cubic-bezier(.3,1.1,.6,1)">
+<div style="position:relative;height:172px">
+<div class="fl2" style="position:absolute;left:20px;top:10px;width:124px;filter:drop-shadow(0 16px 22px rgba(60,26,118,.2))">
+<img src="nupo/sleep.png" alt="Nupo" style="width:100%;height:auto;display:block;visibility:hidden">
+<img src="nupo/sleep.png" alt="Nupo" style="position:absolute;left:0;top:0;width:100%;height:auto;display:block;opacity:{{pa0}};transition:opacity .3s ease">
+<img src="nupo/idea.png" alt="Nupo" style="position:absolute;left:0;top:0;width:100%;height:auto;display:block;opacity:{{pa1}};transition:opacity .3s ease">
+<img src="nupo/teacher.png" alt="Nupo" style="position:absolute;left:0;top:0;width:100%;height:auto;display:block;opacity:{{pa2}};transition:opacity .3s ease">
+</div>
+<div style="position:absolute;right:0;top:34px;max-width:186px;padding:13px 16px;border-radius:20px 20px 4px 20px;background:#fff;border:2px solid #EADFFB;font:700 13.5px/1.4 Figtree,sans-serif;color:#241C3B;box-shadow:0 10px 22px rgba(60,26,118,.12)">{{lineAge}}</div>
+</div>
+<h1 style="margin:0;font:800 26px/1.24 'Baloo 2',sans-serif;color:#241C3B">How old is <span style="color:#7C3AED">{{name}}</span>?</h1>
+<div style="display:flex;flex-direction:column;gap:13px;margin-top:22px">
+<div onClick="{{pickAge0}}" style="height:70px;border-radius:22px;background:{{a0f}};border:2.5px solid {{a0c}};display:flex;align-items:center;gap:14px;padding:0 20px;cursor:pointer;box-shadow:{{a0s}};transition:box-shadow .2s ease,background .2s ease" style-active="transform:scale(.985)">
+<div style="width:46px;height:46px;border-radius:15px;background:rgba(124,58,237,.1);display:flex;align-items:center;justify-content:center;font:800 15px 'Baloo 2',sans-serif;color:#7C3AED">5–7</div>
+<div><div style="font:800 17px Figtree,sans-serif;color:#241C3B">5–7</div><div style="font:600 12px Figtree,sans-serif;color:rgba(36,28,59,.5)">Counting, first words</div></div>
+<div style="margin-left:auto;width:26px;height:26px;border-radius:50%;border:2px solid {{a0c}};background:{{a0d}};display:flex;align-items:center;justify-content:center;font:800 13px Figtree,sans-serif;color:#fff">{{a0k}}</div>
+</div>
+<div onClick="{{pickAge1}}" style="height:70px;border-radius:22px;background:{{a1f}};border:2.5px solid {{a1c}};display:flex;align-items:center;gap:14px;padding:0 20px;cursor:pointer;box-shadow:{{a1s}};transition:box-shadow .2s ease,background .2s ease" style-active="transform:scale(.985)">
+<div style="width:46px;height:46px;border-radius:15px;background:rgba(124,58,237,.1);display:flex;align-items:center;justify-content:center;font:800 15px 'Baloo 2',sans-serif;color:#7C3AED">8–10</div>
+<div><div style="font:800 17px Figtree,sans-serif;color:#241C3B">8–10</div><div style="font:600 12px Figtree,sans-serif;color:rgba(36,28,59,.5)">Times tables, fractions</div></div>
+<div style="margin-left:auto;width:26px;height:26px;border-radius:50%;border:2px solid {{a1c}};background:{{a1d}};display:flex;align-items:center;justify-content:center;font:800 13px Figtree,sans-serif;color:#fff">{{a1k}}</div>
+</div>
+<div onClick="{{pickAge2}}" style="height:70px;border-radius:22px;background:{{a2f}};border:2.5px solid {{a2c}};display:flex;align-items:center;gap:14px;padding:0 20px;cursor:pointer;box-shadow:{{a2s}};transition:box-shadow .2s ease,background .2s ease" style-active="transform:scale(.985)">
+<div style="width:46px;height:46px;border-radius:15px;background:rgba(124,58,237,.1);display:flex;align-items:center;justify-content:center;font:800 14px 'Baloo 2',sans-serif;color:#7C3AED">11–12</div>
+<div><div style="font:800 17px Figtree,sans-serif;color:#241C3B">11–12</div><div style="font:600 12px Figtree,sans-serif;color:rgba(36,28,59,.5)">Word problems, logic</div></div>
+<div style="margin-left:auto;width:26px;height:26px;border-radius:50%;border:2px solid {{a2c}};background:{{a2d}};display:flex;align-items:center;justify-content:center;font:800 13px Figtree,sans-serif;color:#fff">{{a2k}}</div>
+</div>
+</div>
+<div onClick="{{next}}" style="position:absolute;left:26px;right:26px;bottom:52px;height:60px;border-radius:30px;background:#7C3AED;display:flex;align-items:center;justify-content:center;gap:9px;font:800 17px Figtree,sans-serif;color:#fff;cursor:pointer;box-shadow:0 14px 30px rgba(124,58,237,.4)" style-active="transform:translateY(2px)">Continue<span>→</span></div>
+</div>
+
+<div style="position:absolute;inset:0;padding:0 26px;opacity:{{s2o}};transform:{{s2t}};pointer-events:{{s2p}};transition:opacity .4s ease,transform .5s cubic-bezier(.3,1.1,.6,1)">
+<div style="position:relative;height:150px">
+<div class="fl" style="position:absolute;right:8px;top:0;width:132px;filter:drop-shadow(0 16px 22px rgba(60,26,118,.2))">
+<img src="nupo/focused.png" alt="Nupo" style="width:100%;height:auto;display:block;visibility:hidden">
+<img src="nupo/focused.png" alt="Nupo" style="position:absolute;left:0;top:0;width:100%;height:auto;display:block;opacity:{{pg0}};transition:opacity .3s ease">
+<img src="nupo/teacher.png" alt="Nupo" style="position:absolute;left:0;top:0;width:100%;height:auto;display:block;opacity:{{pg1}};transition:opacity .3s ease">
+<img src="nupo/meditate.png" alt="Nupo" style="position:absolute;left:0;top:0;width:100%;height:auto;display:block;opacity:{{pg2}};transition:opacity .3s ease">
+<div class="sqlook" role="img" aria-label="Nupo looking around" style="position:absolute;left:0;top:6px;opacity:{{pg3}};transition:opacity .3s ease"></div>
+</div>
+<div style="position:absolute;left:0;top:40px;max-width:184px;padding:13px 16px;border-radius:20px 20px 20px 4px;background:#fff;border:2px solid #EADFFB;font:700 13.5px/1.4 Figtree,sans-serif;color:#241C3B;box-shadow:0 10px 22px rgba(60,26,118,.12)">{{lineGoal}}</div>
+</div>
+<h1 style="margin:0;font:800 26px/1.24 'Baloo 2',sans-serif;color:#241C3B">What should <span style="color:#7C3AED">{{name}}</span> get better at?</h1>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px">
+<div onClick="{{pickGoal0}}" style="height:118px;border-radius:24px;background:{{g0f}};border:2.5px solid {{g0c}};padding:16px;cursor:pointer;box-shadow:{{g0s}};display:flex;flex-direction:column;justify-content:space-between;transition:box-shadow .2s ease,background .2s ease" style-active="transform:scale(.98)">
+<div style="width:40px;height:40px;border-radius:13px;background:rgba(124,58,237,.12);display:flex;align-items:center;justify-content:center;font:800 15px 'Baloo 2',sans-serif;color:#7C3AED">7×8</div>
+<div style="font:800 16.5px Figtree,sans-serif;color:#241C3B">Maths</div>
+</div>
+<div onClick="{{pickGoal1}}" style="height:118px;border-radius:24px;background:{{g1f}};border:2.5px solid {{g1c}};padding:16px;cursor:pointer;box-shadow:{{g1s}};display:flex;flex-direction:column;justify-content:space-between;transition:box-shadow .2s ease,background .2s ease" style-active="transform:scale(.98)">
+<div style="width:40px;height:40px;border-radius:13px;background:rgba(14,147,132,.12);display:flex;align-items:center;justify-content:center;font:800 15px 'Baloo 2',sans-serif;color:#0E9384">Aa</div>
+<div style="font:800 16.5px Figtree,sans-serif;color:#241C3B">Reading</div>
+</div>
+<div onClick="{{pickGoal2}}" style="height:118px;border-radius:24px;background:{{g2f}};border:2.5px solid {{g2c}};padding:16px;cursor:pointer;box-shadow:{{g2s}};display:flex;flex-direction:column;justify-content:space-between;transition:box-shadow .2s ease,background .2s ease" style-active="transform:scale(.98)">
+<div style="width:40px;height:40px;border-radius:13px;background:rgba(249,168,37,.16);display:flex;align-items:center;justify-content:center;font:800 15px 'Baloo 2',sans-serif;color:#B07206">?</div>
+<div style="font:800 16.5px Figtree,sans-serif;color:#241C3B">General knowledge</div>
+</div>
+<div onClick="{{pickGoal3}}" style="height:118px;border-radius:24px;background:{{g3f}};border:2.5px solid {{g3c}};padding:16px;cursor:pointer;box-shadow:{{g3s}};display:flex;flex-direction:column;justify-content:space-between;transition:box-shadow .2s ease,background .2s ease" style-active="transform:scale(.98)">
+<div style="width:40px;height:40px;border-radius:13px;background:rgba(214,59,59,.12);display:flex;align-items:center;justify-content:center;font:800 15px 'Baloo 2',sans-serif;color:#D63B3B">★</div>
+<div style="font:800 16.5px Figtree,sans-serif;color:#241C3B">A bit of everything</div>
+</div>
+</div>
+<div onClick="{{next}}" style="position:absolute;left:26px;right:26px;bottom:52px;height:60px;border-radius:30px;background:#7C3AED;display:flex;align-items:center;justify-content:center;gap:9px;font:800 17px Figtree,sans-serif;color:#fff;cursor:pointer;box-shadow:0 14px 30px rgba(124,58,237,.4)" style-active="transform:translateY(2px)">Continue<span>→</span></div>
+</div>
+
+<div style="position:absolute;inset:0;padding:0 26px;background:linear-gradient(180deg,#FFFCEF 0%,#FBF3FF 100%);opacity:{{s3o}};transform:{{s3t}};pointer-events:{{s3p}};transition:opacity .4s ease,transform .5s cubic-bezier(.3,1.1,.6,1)">
+<div style="position:relative;height:250px">
+<div class="hl" style="position:absolute;left:50%;top:30px;margin-left:-100px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,#F6E7C8 0%,rgba(246,231,200,0) 70%)"></div>
+<div class="fl" style="position:absolute;left:50%;top:18px;margin-left:-82px;width:164px;filter:drop-shadow(0 20px 28px rgba(60,26,118,.22))">
+<img src="nupo/cheer.png" alt="Nupo" style="width:100%;height:auto;display:block;visibility:hidden">
+<div class="sqblink" role="img" aria-label="Nupo blinking" style="position:absolute;left:0;top:8px;opacity:{{pb0}};transition:opacity .3s ease"></div>
+<img src="nupo/ohno.png" alt="Nupo" style="position:absolute;left:0;top:0;width:100%;height:auto;display:block;opacity:{{pb1}};transition:opacity .3s ease">
+</div>
+<div style="position:absolute;left:50%;bottom:14px;margin-left:-58px;width:116px;height:34px;border-radius:12px;background:#7C3AED;display:flex;align-items:center;justify-content:center;font:800 14px Figtree,sans-serif;color:#fff;box-shadow:0 10px 20px rgba(124,58,237,.34)">{{buddy}}</div>
+<div class="tw" style="position:absolute;left:60px;top:52px;font:800 17px Figtree,sans-serif;color:#F9C13C">✦</div>
+<div class="tw3" style="position:absolute;right:56px;top:88px;font:800 14px Figtree,sans-serif;color:#A855F7">✦</div>
+</div>
+<h1 style="margin:0;font:800 25px/1.28 'Baloo 2',sans-serif;color:#241C3B;text-align:center;text-wrap:pretty">Meet {{name}}'s buddy. What should he call him?</h1>
+<input value="{{buddy}}" onInput="{{onBuddy}}" placeholder="Nupo" style="width:100%;box-sizing:border-box;margin-top:22px;height:62px;border-radius:22px;border:2.5px solid #EADFFB;background:#fff;padding:0 22px;font:700 18px Figtree,sans-serif;color:#241C3B;text-align:center;outline:none">
+<div onClick="{{next}}" style="position:absolute;left:26px;right:26px;bottom:52px;height:60px;border-radius:30px;background:#F9C13C;display:flex;align-items:center;justify-content:center;gap:9px;font:800 17px Figtree,sans-serif;color:#241C3B;cursor:pointer;overflow:hidden;box-shadow:0 14px 30px rgba(249,193,60,.5)" style-active="transform:translateY(2px)">
+<div class="shine" style="position:absolute;top:0;bottom:0;width:70px;background:linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,.5),rgba(255,255,255,0))"></div>Let's go</div>
+</div>
+
+<div style="position:absolute;inset:0;padding:0 24px;opacity:{{s4o}};transform:{{s4t}};pointer-events:{{s4p}};transition:opacity .4s ease,transform .5s cubic-bezier(.3,1.1,.6,1)">
+<div style="display:flex;align-items:flex-end;gap:10px">
+<div style="flex:1"><div style="font:800 10.5px Figtree,sans-serif;color:#7C3AED;letter-spacing:.2em">THE PLAN</div>
+<h1 style="margin:8px 0 0;font:800 26px/1.2 'Baloo 2',sans-serif;color:#241C3B">{{name}}'s first month</h1></div>
+<div class="flap" style="width:96px;flex:0 0 auto;filter:drop-shadow(0 12px 18px rgba(60,26,118,.2))">
+<img src="nupo/fly1.png" alt="Nupo flying in with the plan">
+<img src="nupo/fly2.png" alt="" aria-hidden="true">
+<img src="nupo/fly3.png" alt="" aria-hidden="true">
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px;margin-top:18px;transform-style:preserve-3d">
+<div onClick="{{openW1}}" style="border-radius:22px;background:#fff;border:2.5px solid {{w1c}};padding:16px 18px;cursor:pointer;box-shadow:{{w1s}};transform:{{w1t}};transition:transform .35s cubic-bezier(.3,1.2,.6,1),box-shadow .3s ease">
+<div style="display:flex;align-items:center;gap:10px"><div style="width:26px;height:26px;border-radius:50%;background:#7C3AED;display:flex;align-items:center;justify-content:center;font:800 12px Figtree,sans-serif;color:#fff">1</div><div style="font:800 10.5px Figtree,sans-serif;color:#7C3AED;letter-spacing:.16em">WEEK 1</div></div>
+<div style="margin-top:8px;font:700 15px/1.4 Figtree,sans-serif;color:#241C3B">Times tables to 10 · counting money</div>
+</div>
+<div onClick="{{openW2}}" style="border-radius:22px;background:#fff;border:2.5px solid {{w2c}};padding:16px 18px;cursor:pointer;box-shadow:{{w2s}};transform:{{w2t}};transition:transform .35s cubic-bezier(.3,1.2,.6,1),box-shadow .3s ease">
+<div style="display:flex;align-items:center;gap:10px"><div style="width:26px;height:26px;border-radius:50%;background:#A855F7;display:flex;align-items:center;justify-content:center;font:800 12px Figtree,sans-serif;color:#fff">2</div><div style="font:800 10.5px Figtree,sans-serif;color:#7C3AED;letter-spacing:.16em">WEEK 2</div></div>
+<div style="margin-top:8px;font:700 15px/1.4 Figtree,sans-serif;color:#241C3B">Fractions · world capitals</div>
+</div>
+<div onClick="{{openW3}}" style="border-radius:22px;background:#fff;border:2.5px solid {{w3c}};padding:16px 18px;cursor:pointer;box-shadow:{{w3s}};transform:{{w3t}};transition:transform .35s cubic-bezier(.3,1.2,.6,1),box-shadow .3s ease">
+<div style="display:flex;align-items:center;gap:10px"><div style="width:26px;height:26px;border-radius:50%;background:#F9A825;display:flex;align-items:center;justify-content:center;font:800 12px Figtree,sans-serif;color:#fff">3</div><div style="font:800 10.5px Figtree,sans-serif;color:#7C3AED;letter-spacing:.16em">WEEK 3</div></div>
+<div style="margin-top:8px;font:700 15px/1.4 Figtree,sans-serif;color:#241C3B">Multiplication to 12 · simple logic</div>
+</div>
+<div onClick="{{openW4}}" style="border-radius:22px;background:#fff;border:2.5px solid {{w4c}};padding:16px 18px;cursor:pointer;box-shadow:{{w4s}};transform:{{w4t}};transition:transform .35s cubic-bezier(.3,1.2,.6,1),box-shadow .3s ease">
+<div style="display:flex;align-items:center;gap:10px"><div style="width:26px;height:26px;border-radius:50%;background:#0E9384;display:flex;align-items:center;justify-content:center;font:800 12px Figtree,sans-serif;color:#fff">4</div><div style="font:800 10.5px Figtree,sans-serif;color:#7C3AED;letter-spacing:.16em">WEEK 4</div></div>
+<div style="margin-top:8px;font:700 15px/1.4 Figtree,sans-serif;color:#241C3B">Word problems · the solar system</div>
+</div>
+</div>
+<div onClick="{{next}}" style="position:absolute;left:24px;right:24px;bottom:52px;height:60px;border-radius:30px;background:#7C3AED;display:flex;align-items:center;justify-content:center;gap:9px;font:800 17px Figtree,sans-serif;color:#fff;cursor:pointer;box-shadow:0 14px 30px rgba(124,58,237,.4)" style-active="transform:translateY(2px)">Continue<span>→</span></div>
+</div>
+
+<div style="position:absolute;inset:0;padding:0 28px;background:linear-gradient(180deg,#7C3AED 0%,#6D28D9 100%);opacity:{{s5o}};transform:{{s5t}};pointer-events:{{s5p}};transition:opacity .4s ease,transform .5s cubic-bezier(.3,1.1,.6,1);overflow:hidden">
+<div style="position:absolute;inset:0;pointer-events:none;overflow:hidden">
+<div class="cf" style="position:absolute;left:12%;top:0;width:9px;height:13px;border-radius:2px;background:#F9C13C"></div>
+<div class="cf" style="position:absolute;left:30%;top:0;width:8px;height:8px;border-radius:50%;background:#fff"></div>
+<div class="cf" style="position:absolute;left:52%;top:0;width:9px;height:13px;border-radius:2px;background:#C4A9FF"></div>
+<div class="cf" style="position:absolute;left:70%;top:0;width:8px;height:8px;border-radius:50%;background:#F9C13C"></div>
+<div class="cf" style="position:absolute;left:86%;top:0;width:7px;height:12px;border-radius:2px;background:#fff"></div>
+<div class="cf" style="position:absolute;left:42%;top:0;width:8px;height:8px;border-radius:50%;background:#C4A9FF"></div>
+</div>
+<div style="position:relative;height:100%;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 4px 104px">
+<h1 style="margin:0;font:800 25px/1.3 'Baloo 2',sans-serif;color:#fff;text-align:center;text-wrap:pretty;max-width:296px">In 30 days — and you won't have nagged once.</h1>
+<div style="position:relative;margin-top:132px;width:100%;border-radius:32px;background:#fff;padding:20px 20px 18px;box-sizing:border-box;box-shadow:0 24px 48px rgba(15,4,40,.34)">
+<div style="position:absolute;right:-6px;top:-116px;width:178px">
+<div class="hl" style="position:absolute;left:50%;top:30px;margin-left:-80px;width:160px;height:160px;border-radius:50%;background:radial-gradient(circle,rgba(249,193,60,.5) 0%,rgba(249,193,60,0) 68%)"></div>
+<img class="fl" src="nupo/star-student.png" alt="Nupo in a graduation cap holding a star trophy" style="position:relative;width:178px;height:auto;display:block;filter:drop-shadow(0 14px 20px rgba(15,4,40,.34))">
+</div>
+<div style="display:flex;align-items:baseline;gap:8px">
+<div style="font:900 62px/1 'Baloo 2',sans-serif;color:#7C3AED;letter-spacing:-2px">{{count}}</div>
+<div class="tw" style="font:800 17px Figtree,sans-serif;color:#F9C13C">★</div>
+</div>
+<div style="margin-top:2px;font:800 11px Figtree,sans-serif;color:rgba(36,28,59,.45);letter-spacing:.18em;text-transform:uppercase">questions answered</div>
+<div style="display:grid;grid-template-columns:repeat(10,14px);gap:6px;margin-top:18px">
+<div style="width:14px;height:14px;border-radius:5px;background:rgba(124,58,237,1)"></div><div style="width:14px;height:14px;border-radius:5px;background:rgba(124,58,237,1)"></div><div style="width:14px;height:14px;border-radius:5px;background:rgba(124,58,237,1)"></div><div style="width:14px;height:14px;border-radius:5px;background:rgba(124,58,237,1)"></div><div style="width:14px;height:14px;border-radius:5px;background:rgba(124,58,237,1)"></div><div style="width:14px;height:14px;border-radius:5px;background:rgba(124,58,237,1)"></div><div style="width:14px;height:14px;border-radius:5px;background:rgba(124,58,237,1)"></div><div style="width:14px;height:14px;border-radius:5px;background:rgba(124,58,237,0.78)"></div><div style="width:14px;height:14px;border-radius:5px;background:rgba(124,58,237,0.78)"></div><div style="width:14px;height:14px;border-radius:5px;background:rgba(124,58,237,0.78)"></div><div style="width:14px;height:14px;border-radius:5px;background:rgba(124,58,237,0.78)"></div><div style="width:14px;height:14px;border-radius:5px;background:rgba(124,58,237,0.78)"></div><div style="width:14px;height:14px;border-radius:5px;background:rgba(124,58,237,0.78)"></div><div style="width:14px;height:14px;border-radius:5px;background:rgba(124,58,237,0.78)"></div><div style="width:14px;height:14px;border-radius:5px;background:rgba(124,58,237,0.56)"></div><div style="width:14px;height:14px;border-radius:5px;background:rgba(124,58,237,0.56)"></div><div style="width:14px;height:14px;border-radius:5px;background:rgba(124,58,237,0.56)"></div><div style="width:14px;height:14px;border-radius:5px;background:rgba(124,58,237,0.56)"></div><div style="width:14px;height:14px;border-radius:5px;background:rgba(124,58,237,0.56)"></div><div style="width:14px;height:14px;border-radius:5px;background:rgba(124,58,237,0.56)"></div><div style="width:14px;height:14px;border-radius:5px;background:rgba(124,58,237,0.56)"></div><div style="width:14px;height:14px;border-radius:5px;background:rgba(124,58,237,0.34)"></div><div style="width:14px;height:14px;border-radius:5px;background:rgba(124,58,237,0.34)"></div><div style="width:14px;height:14px;border-radius:5px;background:rgba(124,58,237,0.34)"></div><div style="width:14px;height:14px;border-radius:5px;background:rgba(124,58,237,0.34)"></div><div style="width:14px;height:14px;border-radius:5px;background:rgba(124,58,237,0.34)"></div><div style="width:14px;height:14px;border-radius:5px;background:rgba(124,58,237,0.34)"></div><div style="width:14px;height:14px;border-radius:5px;background:rgba(124,58,237,0.34)"></div><div style="width:14px;height:14px;border-radius:5px;background:rgba(124,58,237,0.2)"></div><div style="width:14px;height:14px;border-radius:5px;background:rgba(124,58,237,0.2)"></div>
+</div>
+<div style="margin-top:9px;font:700 11px Figtree,sans-serif;color:rgba(36,28,59,.42)">2 questions × 30 days</div>
+<div style="height:1px;background:rgba(36,28,59,.08);margin:16px 0 14px"></div>
+<div style="display:flex;gap:8px">
+<div style="padding:8px 13px;border-radius:999px;background:rgba(124,58,237,.1);font:800 11.5px Figtree,sans-serif;color:#5B21B6">2 a day</div>
+<div style="padding:8px 13px;border-radius:999px;background:rgba(124,58,237,.1);font:800 11.5px Figtree,sans-serif;color:#5B21B6">30 seconds each</div>
+<div style="padding:8px 13px;border-radius:999px;background:rgba(249,168,37,.16);font:800 11.5px Figtree,sans-serif;color:#8A5B04">No nagging</div>
+</div>
+</div>
+</div>
+<div onClick="{{next}}" style="position:absolute;left:28px;right:28px;bottom:52px;height:60px;border-radius:30px;background:#F9C13C;display:flex;align-items:center;justify-content:center;gap:9px;font:800 17px Figtree,sans-serif;color:#241C3B;cursor:pointer;overflow:hidden;box-shadow:0 16px 32px rgba(15,4,40,.4)" style-active="transform:translateY(2px)">
+<div class="shine" style="position:absolute;top:0;bottom:0;width:70px;background:linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,.55),rgba(255,255,255,0))"></div>{{planCta}}</div>
+</div>
+
+<div style="position:absolute;inset:0;padding:0 26px;opacity:{{s6o}};transform:{{s6t}};pointer-events:{{s6p}};transition:opacity .4s ease,transform .5s cubic-bezier(.3,1.1,.6,1)">
+<div style="padding-top:8px;font:800 10.5px Figtree,sans-serif;color:#7C3AED;letter-spacing:.2em">THE IDEA</div>
+<h1 style="margin:10px 0 0;font:800 26px/1.24 'Baloo 2',sans-serif;color:#241C3B">Why this actually works</h1>
+<p style="margin:14px 0 0;font:400 15.5px/1.6 Figtree,sans-serif;color:rgba(36,28,59,.66);text-wrap:pretty">It's the oldest trick there is: the good stuff comes right before the fun stuff.</p>
+<div style="display:flex;align-items:stretch;gap:12px;margin-top:22px">
+<div style="flex:1;border-radius:22px;background:#fff;border:2px solid #EFE7DA;padding:14px 14px 12px;text-align:center">
+<img class="fl2" src="nupo/tired.png" alt="Nupo slumped" style="width:62px;height:auto;margin:0 auto;display:block">
+<div style="margin-top:6px;font:800 14.5px Figtree,sans-serif;color:#241C3B">Bored, again</div>
+<div style="margin-top:4px;font:600 12px/1.4 Figtree,sans-serif;color:rgba(36,28,59,.5)">Phone comes out</div>
+</div>
+<div class="cue" style="align-self:center;font:800 20px Figtree,sans-serif;color:#7C3AED;transform:rotate(-90deg)">↓</div>
+<div style="flex:1;border-radius:22px;background:#7C3AED;padding:14px 14px 12px;text-align:center;box-shadow:0 14px 28px rgba(124,58,237,.32)">
+<img class="fl" src="nupo/focused.png" alt="Nupo focused" style="width:62px;height:auto;margin:0 auto;display:block">
+<div style="margin-top:6px;font:800 14.5px Figtree,sans-serif;color:#fff">Two questions</div>
+<div style="margin-top:4px;font:600 12px/1.4 Figtree,sans-serif;color:rgba(255,255,255,.72)">Then the app opens</div>
+</div>
+</div>
+<div style="position:relative;margin-top:26px;padding:18px 20px 18px 22px;border-radius:24px;background:#F6EEFF;border:2px solid #EADFFB">
+<p style="margin:0;font:700 15px/1.55 Figtree,sans-serif;color:#241C3B;max-width:196px;text-wrap:pretty">Veggies before dessert. {{name}} won't fight it the way he fights a workbook.</p>
+<img class="fl2" src="nupo/meditate.png" alt="Nupo meditating" style="position:absolute;right:6px;bottom:2px;width:86px;height:auto;filter:drop-shadow(0 12px 18px rgba(60,26,118,.2))">
+</div>
+<div onClick="{{next}}" style="position:absolute;left:26px;right:26px;bottom:52px;height:60px;border-radius:30px;background:#7C3AED;display:flex;align-items:center;justify-content:center;gap:9px;font:800 17px Figtree,sans-serif;color:#fff;cursor:pointer;box-shadow:0 14px 30px rgba(124,58,237,.4)" style-active="transform:translateY(2px)">Makes sense<span>→</span></div>
+</div>
+
+<div style="position:absolute;inset:0;padding:0 26px;background:linear-gradient(180deg,#FFFCEF 0%,#FBF3FF 100%);opacity:{{s7o}};transform:{{s7t}};pointer-events:{{s7p}};transition:opacity .4s ease,transform .5s cubic-bezier(.3,1.1,.6,1)">
+<div style="position:relative;height:216px">
+<div class="hl" style="position:absolute;left:50%;top:26px;margin-left:-88px;width:176px;height:176px;border-radius:50%;background:radial-gradient(circle,#EFE2FF 0%,rgba(239,226,255,0) 70%)"></div>
+<img class="fl" src="nupo/phone.png" alt="Nupo with a phone" style="position:absolute;left:50%;top:14px;margin-left:-76px;width:152px;height:auto;filter:drop-shadow(0 18px 26px rgba(60,26,118,.2))">
+</div>
+<h1 style="margin:0;font:800 26px/1.24 'Baloo 2',sans-serif;color:#241C3B;text-align:center">Save {{name}}'s plan</h1>
+<p style="margin:10px 0 0;font:400 15px/1.55 Figtree,sans-serif;color:rgba(36,28,59,.6);text-align:center">Create an account so {{buddy}} remembers his progress.</p>
+<div style="display:flex;flex-direction:column;gap:12px;margin-top:26px">
+<div onClick="{{next}}" style="height:58px;border-radius:29px;background:#241C3B;display:flex;align-items:center;justify-content:center;gap:10px;font:800 16px Figtree,sans-serif;color:#fff;cursor:pointer" style-active="transform:translateY(2px)"><span style="font-size:17px"></span>Continue with Apple</div>
+<div onClick="{{next}}" style="height:58px;border-radius:29px;background:#fff;border:2px solid #E6DCF7;display:flex;align-items:center;justify-content:center;gap:10px;font:800 16px Figtree,sans-serif;color:#241C3B;cursor:pointer" style-active="transform:translateY(2px)">
+<svg width="19" height="19" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.6l6.8-6.8C35.6 2.4 30.2 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.2C12.4 13.7 17.7 9.5 24 9.5z"></path><path fill="#4285F4" d="M46.1 24.6c0-1.6-.1-3.2-.4-4.6H24v9.1h12.4c-.5 2.9-2.2 5.4-4.7 7l7.7 6c4.5-4.2 6.7-10.3 6.7-17.5z"></path><path fill="#FBBC05" d="M10.5 28.6c-.5-1.5-.8-3-.8-4.6s.3-3.1.8-4.6l-7.9-6.2C1 16.3 0 20 0 24s1 7.7 2.6 10.8l7.9-6.2z"></path><path fill="#34A853" d="M24 48c6.2 0 11.5-2 15.4-5.6l-7.7-6c-2.1 1.4-4.8 2.3-7.7 2.3-6.3 0-11.6-4.2-13.5-9.9l-7.9 6.2C6.5 42.6 14.6 48 24 48z"></path></svg>Continue with Google</div>
+</div>
+<div style="position:absolute;left:26px;right:26px;bottom:34px;text-align:center;font:600 11.5px/1.5 Figtree,sans-serif;color:rgba(36,28,59,.45)">By continuing you agree to our <a href="#" style="color:#7C3AED;text-decoration:none">Terms</a> &amp; <a href="#" style="color:#7C3AED;text-decoration:none">Privacy Policy</a>.</div>
+<div onClick="{{next}}" style="position:absolute;left:26px;right:26px;bottom:78px;text-align:center;font:800 13px Figtree,sans-serif;color:#7C3AED;cursor:pointer">Skip for now →</div>
+</div>
+
+<div style="position:absolute;inset:0;background:#F6F1FF;opacity:{{s8o}};transform:{{s8t}};pointer-events:{{s8p}};transition:opacity .4s ease,transform .5s cubic-bezier(.3,1.1,.6,1);overflow:hidden">
+<div style="position:absolute;inset:0;overflow-y:auto;padding:0 20px 120px">
+<div style="position:relative;height:190px">
+<div class="hl" style="position:absolute;left:50%;top:18px;margin-left:-82px;width:164px;height:164px;border-radius:50%;background:radial-gradient(circle,#FBE9B8 0%,rgba(251,233,184,0) 70%)"></div>
+<img class="fl" src="nupo/cool.png" alt="Nupo in sunglasses pointing" style="position:absolute;left:50%;top:8px;margin-left:-86px;width:172px;height:auto;filter:drop-shadow(0 18px 26px rgba(60,26,118,.22))">
+<div class="tw" style="position:absolute;left:96px;top:14px;font:800 18px Figtree,sans-serif;color:#F9C13C">★</div>
+<div class="tw2" style="position:absolute;right:88px;top:44px;font:800 14px Figtree,sans-serif;color:#F9C13C">★</div>
+<div class="tw3" style="position:absolute;left:74px;top:112px;font:800 13px Figtree,sans-serif;color:#F9C13C">★</div>
+</div>
+<h1 style="margin:0;text-align:center;font:900 34px/1.1 'Baloo 2',sans-serif;color:#241C3B">Unlock {{buddy}}<br><span style="color:#7C3AED">Premium</span></h1>
+<p style="margin:12px 0 0;text-align:center;font:400 15px/1.5 Figtree,sans-serif;color:rgba(36,28,59,.58)">Smarter learning. Happier kids.<br>Stronger habits for life.</p>
+<div style="margin:18px auto 0;width:fit-content;padding:12px 20px;border-radius:999px;background:#fff;box-shadow:0 6px 16px rgba(60,26,118,.08);display:flex;align-items:center;gap:10px;font:800 13.5px Figtree,sans-serif;color:#241C3B">
+<span style="color:#7C3AED">🔒</span>Private by design<span style="color:rgba(36,28,59,.3)">·</span>No ads, ever</div>
+<div style="display:flex;gap:10px;margin-top:22px;align-items:flex-start">
+<div onClick="{{pickPlan0}}" style="flex:1;position:relative;border-radius:24px;background:{{p0f}};border:2.5px solid {{p0c}};padding:22px 10px 16px;text-align:center;cursor:pointer;box-shadow:{{p0s}};transform:{{p0t}};transition:transform .3s cubic-bezier(.3,1.2,.6,1),box-shadow .3s ease">
+<div style="position:absolute;left:50%;top:-13px;transform:translateX(-50%);padding:5px 11px;border-radius:999px;background:#7C3AED;font:800 10px Figtree,sans-serif;color:#fff;white-space:nowrap">Most Popular</div>
+<div style="font:800 15.5px Figtree,sans-serif;color:#241C3B">Weekly</div>
+<div style="margin-top:6px;font:900 21px 'Baloo 2',sans-serif;color:#7C3AED">$3.99</div>
+<div style="font:700 10.5px Figtree,sans-serif;color:rgba(36,28,59,.5)">/week</div>
+<div style="margin-top:8px;font:600 11px/1.35 Figtree,sans-serif;color:rgba(36,28,59,.5)">Perfect for trying out</div>
+<div style="margin:12px auto 0;width:26px;height:26px;border-radius:50%;border:2px solid {{p0c}};background:{{p0d}};display:flex;align-items:center;justify-content:center;font:800 13px Figtree,sans-serif;color:#fff">{{p0k}}</div>
+</div>
+<div onClick="{{pickPlan1}}" style="flex:1;position:relative;border-radius:24px;background:{{p1f}};border:2.5px solid {{p1c}};padding:22px 10px 16px;text-align:center;cursor:pointer;box-shadow:{{p1s}};transform:{{p1t}};transition:transform .3s cubic-bezier(.3,1.2,.6,1),box-shadow .3s ease">
+<div style="font:800 15.5px Figtree,sans-serif;color:#241C3B">Yearly</div>
+<div style="margin-top:6px;font:900 21px 'Baloo 2',sans-serif;color:#7C3AED">$39.99</div>
+<div style="font:700 10.5px Figtree,sans-serif;color:rgba(36,28,59,.5)">/year</div>
+<div style="margin-top:8px;font:600 11px Figtree,sans-serif;color:rgba(36,28,59,.5)">Best value</div>
+<div style="margin:8px auto 0;width:fit-content;padding:5px 10px;border-radius:999px;background:rgba(124,58,237,.12);font:800 10.5px Figtree,sans-serif;color:#7C3AED">Save 81%</div>
+<div style="margin:10px auto 0;width:26px;height:26px;border-radius:50%;border:2px solid {{p1c}};background:{{p1d}};display:flex;align-items:center;justify-content:center;font:800 13px Figtree,sans-serif;color:#fff">{{p1k}}</div>
+</div>
+<div onClick="{{pickPlan2}}" style="flex:1;position:relative;border-radius:24px;background:{{p2f}};border:2.5px solid {{p2c}};padding:22px 10px 16px;text-align:center;cursor:pointer;box-shadow:{{p2s}};transform:{{p2t}};transition:transform .3s cubic-bezier(.3,1.2,.6,1),box-shadow .3s ease">
+<div style="font:800 15.5px Figtree,sans-serif;color:#241C3B">Lifetime</div>
+<div style="margin-top:6px;font:900 21px 'Baloo 2',sans-serif;color:#7C3AED">$99.99</div>
+<div style="font:700 10.5px Figtree,sans-serif;color:rgba(36,28,59,.5)">once</div>
+<div style="margin-top:8px;font:600 11px/1.35 Figtree,sans-serif;color:rgba(36,28,59,.5)">Pay once, use forever</div>
+<div style="margin:12px auto 0;width:26px;height:26px;border-radius:50%;border:2px solid {{p2c}};background:{{p2d}};display:flex;align-items:center;justify-content:center;font:800 13px Figtree,sans-serif;color:#fff">{{p2k}}</div>
+</div>
+</div>
+<div style="display:flex;gap:8px;margin-top:20px;padding:16px 12px;border-radius:24px;background:#fff;box-shadow:0 8px 20px rgba(60,26,118,.07)">
+<div style="flex:1;text-align:center"><div style="width:38px;height:38px;margin:0 auto;border-radius:12px;background:rgba(124,58,237,.12);display:flex;align-items:center;justify-content:center;font:800 13px Figtree,sans-serif;color:#7C3AED">◧</div><div style="margin-top:8px;font:900 17px 'Baloo 2',sans-serif;color:#241C3B">100%</div><div style="font:600 11px Figtree,sans-serif;color:rgba(36,28,59,.5)">On-device</div></div>
+<div style="flex:1;text-align:center"><div style="width:38px;height:38px;margin:0 auto;border-radius:12px;background:rgba(249,168,37,.16);display:flex;align-items:center;justify-content:center;font:800 13px Figtree,sans-serif;color:#B07206">⊘</div><div style="margin-top:8px;font:900 17px 'Baloo 2',sans-serif;color:#241C3B">Zero</div><div style="font:600 11px Figtree,sans-serif;color:rgba(36,28,59,.5)">Ads &amp; trackers</div></div>
+<div style="flex:1;text-align:center"><div style="width:38px;height:38px;margin:0 auto;border-radius:12px;background:rgba(14,147,132,.14);display:flex;align-items:center;justify-content:center;font:800 13px Figtree,sans-serif;color:#0E9384">✓</div><div style="margin-top:8px;font:900 17px 'Baloo 2',sans-serif;color:#241C3B">Always</div><div style="font:600 11px Figtree,sans-serif;color:rgba(36,28,59,.5)">Phone &amp; SOS free</div></div>
+</div>
+<div style="margin-top:18px;text-align:center;font:400 10.5px/1.55 Figtree,sans-serif;color:rgba(36,28,59,.45)">Subscriptions renew automatically unless cancelled at least 24 hours before the end of the period. Manage in Settings.<br><a href="#" style="color:#7C3AED">Terms of Use</a> · <a href="#" style="color:#7C3AED">Privacy Policy</a></div>
+</div>
+<div style="position:absolute;left:0;right:0;bottom:0;padding:14px 20px 22px;background:linear-gradient(180deg,rgba(246,241,255,0),#F6F1FF 32%)">
+<div onClick="{{done}}" style="height:62px;border-radius:31px;background:linear-gradient(90deg,#7C3AED,#9333EA);display:flex;align-items:center;justify-content:center;gap:10px;font:800 18px Figtree,sans-serif;color:#fff;cursor:pointer;overflow:hidden;box-shadow:0 16px 32px rgba(124,58,237,.42)" style-active="transform:translateY(2px)">
+<div class="shine" style="position:absolute;top:0;bottom:0;width:80px;background:linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,.34),rgba(255,255,255,0))"></div>{{ctaLabel}}<span>→</span></div>
+<div style="margin-top:10px;text-align:center;font:700 12.5px Figtree,sans-serif;color:rgba(36,28,59,.5)">Cancel anytime · <span style="color:#7C3AED">Restore Purchases</span></div>
+</div>
+</div>
+
+<div style="position:absolute;inset:0;background:linear-gradient(180deg,#0E9384 0%,#0B7A6D 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 34px;text-align:center;opacity:{{s9o}};transform:{{s9t}};pointer-events:{{s9p}};transition:opacity .45s ease,transform .55s cubic-bezier(.3,1.1,.6,1);overflow:hidden">
+<div style="position:absolute;inset:0;pointer-events:none;overflow:hidden">
+<div class="cf" style="position:absolute;left:16%;top:0;width:9px;height:13px;border-radius:2px;background:#F9C13C"></div>
+<div class="cf" style="position:absolute;left:38%;top:0;width:8px;height:8px;border-radius:50%;background:#fff"></div>
+<div class="cf" style="position:absolute;left:62%;top:0;width:9px;height:13px;border-radius:2px;background:#BFF3EA"></div>
+<div class="cf" style="position:absolute;left:82%;top:0;width:8px;height:8px;border-radius:50%;background:#F9C13C"></div>
+</div>
+<div style="width:112px;height:112px;border-radius:50%;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center">
+<svg width="58" height="58" viewBox="0 0 58 58" fill="none"><path class="tk" d="M14 31 L24 41 L44 19" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="60" stroke-dashoffset="0"></path></svg>
+</div>
+<img class="fl" src="nupo/break.png" alt="Nupo relaxing in a deck chair" style="margin-top:18px;width:186px;height:auto;filter:drop-shadow(0 20px 28px rgba(4,40,36,.45))">
+<h1 style="margin:16px 0 0;font:800 27px/1.24 'Baloo 2',sans-serif;color:#fff;text-wrap:pretty">{{name}} is all set.</h1>
+<p style="margin:10px 0 0;font:400 15px/1.55 Figtree,sans-serif;color:rgba(255,255,255,.78)">{{buddy}} takes it from here. First two questions land tonight.</p>
+<div onClick="{{restart}}" style="position:absolute;left:34px;right:34px;bottom:52px;height:58px;border-radius:29px;background:#fff;display:flex;align-items:center;justify-content:center;font:800 16px Figtree,sans-serif;color:#0B7A6D;cursor:pointer" style-active="transform:translateY(2px)">Run it again</div>
+</div>
+
+</div>
+</div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:520,&quot;height&quot;:1000}}">
+const SEL = '#7C3AED', OFF = 'rgba(36,28,59,.1)';
+const LIFT = '0 14px 30px rgba(124,58,237,.22)', FLAT = '0 6px 16px rgba(60,26,118,.06)';
+const TONE = [
+  { bg: '#F6F1FF' }, { bg: '#F6F1FF' }, { bg: '#F6F1FF' },
+  { bg: '#FFFCEF' }, { bg: '#F6F1FF' },
+  { bg: '#7C3AED', dark: true }, { bg: '#F6F1FF' }, { bg: '#FFFCEF' },
+  { bg: '#F6F1FF' }, { bg: '#0E9384', dark: true }
+];
+
+class Component extends DCLogic {
+  state = { i: 0, name: 'Ram', age: 1, goal: 0, buddy: 'Nupo', week: 0, plan: 0, count: 0 };
+
+  go(n){
+    const i = Math.max(0, Math.min(9, n));
+    this.setState({ i });
+    if(i === 5) this.runCounter();
+    else if(i > 5) this.setState({ count: 500 });
+  }
+
+  runCounter(){
+    clearInterval(this.timer);
+    this.setState({ count: 0 });
+    const t0 = Date.now();
+    this.timer = setInterval(()=>{
+      const k = Math.min(1, (Date.now() - t0) / 1100);
+      const e = 1 - Math.pow(1 - k, 3);
+      this.setState({ count: Math.round(500 * e) });
+      if(k >= 1) clearInterval(this.timer);
+    }, 40);
+  }
+
+  componentWillUnmount(){ clearInterval(this.timer); }
+
+  sel(on){
+    return {
+      c: on ? SEL : OFF,
+      f: on ? '#F8F2FF' : '#fff',
+      s: on ? LIFT : FLAT,
+      d: on ? SEL : 'transparent',
+      k: on ? '✓' : ''
+    };
+  }
+
+  renderVals(){
+    const s = this.state;
+    const out = {
+      name: s.name || 'your kid',
+      buddy: s.buddy || 'Nupo',
+      count: '~' + s.count,
+      greet: s.name ? 'Nice to meet you, ' + s.name + '!' : 'Type a name and I\u2019ll remember it.',
+      prog: Math.round(Math.min(1, (s.i + 1) / 10) * 100) + '%',
+      planCta: 'Start ' + (s.name || 'your kid') + '\u2019s plan',
+      stepLabel: s.i < 5 ? (s.i + 1) + '/5' : s.i === 9 ? 'Done' : 'Plan',
+      pn0: s.name ? 1 : 0, pn1: s.name ? 0 : 1,
+      pb0: s.buddy ? 1 : 0, pb1: s.buddy ? 0 : 1,
+      pa0: s.age === 0 ? 1 : 0, pa1: s.age === 1 ? 1 : 0, pa2: s.age === 2 ? 1 : 0,
+      pg0: s.goal === 0 ? 1 : 0, pg1: s.goal === 1 ? 1 : 0,
+      pg2: s.goal === 2 ? 1 : 0, pg3: s.goal === 3 ? 1 : 0,
+      lineAge: ['Little ones get pictures and counting.','Tables and fractions land best here.','I\u2019ll push into word problems and logic.'][s.age],
+      lineGoal: ['Numbers first. I\u2019ll sneak the rest in.','Words and stories it is.','Capitals, planets, odd facts.','A bit of each, every day.'][s.goal],
+      tone: TONE[s.i].bg,
+      ink: TONE[s.i].dark ? '#fff' : '#241C3B',
+      chip: TONE[s.i].dark ? 'rgba(255,255,255,.16)' : '#fff',
+      track: TONE[s.i].dark ? 'rgba(255,255,255,.22)' : 'rgba(124,58,237,.16)',
+      fill: TONE[s.i].dark ? '#F9C13C' : '#7C3AED',
+      stepInk: TONE[s.i].dark ? 'rgba(255,255,255,.7)' : 'rgba(36,28,59,.45)',
+      ctaLabel: ['Continue','Continue','Continue'][s.plan] || 'Continue',
+      next: ()=> this.go(s.i + 1),
+      back: ()=> this.go(s.i - 1),
+      done: ()=> this.go(9),
+      restart: ()=> this.go(0),
+      onName: e=> this.setState({ name: e.target.value }),
+      onBuddy: e=> this.setState({ buddy: e.target.value })
+    };
+
+    for(let n = 0; n < 10; n++){
+      const d = n - s.i;
+      out['s' + n + 'o'] = d === 0 ? 1 : 0;
+      out['s' + n + 'p'] = d === 0 ? 'auto' : 'none';
+      out['s' + n + 't'] = d === 0
+        ? 'translateX(0) translateZ(0) rotateY(0deg)'
+        : 'translateX(' + (d > 0 ? 16 : -16) + '%) translateZ(-180px) rotateY(' + (d > 0 ? -14 : 14) + 'deg)';
+    }
+
+    ['a','g','p'].forEach(pfx=>{
+      const cur = pfx === 'a' ? s.age : pfx === 'g' ? s.goal : s.plan;
+      const n = pfx === 'g' ? 4 : 3;
+      for(let k = 0; k < n; k++){
+        const v = this.sel(k === cur);
+        out[pfx + k + 'c'] = v.c; out[pfx + k + 'f'] = v.f;
+        out[pfx + k + 's'] = v.s; out[pfx + k + 'd'] = v.d; out[pfx + k + 'k'] = v.k;
+        if(pfx === 'p') out[pfx + k + 't'] = k === cur ? 'translateY(-10px) scale(1.04)' : 'translateY(0) scale(1)';
+      }
+    });
+    out.pickAge0 = ()=> this.setState({ age: 0 });
+    out.pickAge1 = ()=> this.setState({ age: 1 });
+    out.pickAge2 = ()=> this.setState({ age: 2 });
+    out.pickGoal0 = ()=> this.setState({ goal: 0 });
+    out.pickGoal1 = ()=> this.setState({ goal: 1 });
+    out.pickGoal2 = ()=> this.setState({ goal: 2 });
+    out.pickGoal3 = ()=> this.setState({ goal: 3 });
+    out.pickPlan0 = ()=> this.setState({ plan: 0 });
+    out.pickPlan1 = ()=> this.setState({ plan: 1 });
+    out.pickPlan2 = ()=> this.setState({ plan: 2 });
+
+    for(let k = 1; k <= 4; k++){
+      const on = s.week === k;
+      out['w' + k + 'c'] = on ? SEL : '#EDE4FB';
+      out['w' + k + 's'] = on ? LIFT : FLAT;
+      out['w' + k + 't'] = on ? 'translateZ(26px) scale(1.02)' : 'translateZ(0) scale(1)';
+      out['openW' + k] = ()=> this.setState({ week: on ? 0 : k });
+    }
+    return out;
+  }
+}
+</script>
+</body>
+</html>

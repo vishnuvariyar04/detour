@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics><meta name="design_doc_mode" content="canvas"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;600;700;800;900&family=Baloo+2:wght@600;700;800&display=swap" rel="stylesheet"><style>
+body{margin:0;background:#e9e6df;font-family:Figtree,system-ui,sans-serif}
+a{color:#7C3AED}a:hover{color:#5B21B6}
+.dv-turn{padding:40px 44px 32px;border-bottom:1px solid rgba(0,0,0,.08)}
+.dv-thd{display:flex;align-items:baseline;gap:10px;margin:0 0 20px}
+.dv-tid{font:600 10px ui-monospace,Menlo,monospace;padding:3px 7px;background:#241C3B;color:#fff;border-radius:4px;text-decoration:none}
+.dv-tname{font:700 13px/1.2 Figtree,sans-serif;color:#241C3B}
+.dv-opts{display:flex;flex-wrap:wrap;gap:36px;align-items:flex-start}
+.dv-opt{flex:none;display:flex;flex-direction:column;gap:10px}
+.dv-oid{font:700 10.5px ui-monospace,Menlo,monospace;padding:3px 7px;background:rgba(0,0,0,.08);color:#241C3B;border-radius:5px;text-decoration:none}
+.dv-olabel{display:flex;align-items:baseline;gap:8px;font:400 11.5px/1.3 Figtree,sans-serif;color:rgba(0,0,0,.55);max-width:420px}
+.dv-next{margin:22px 0 0;font:12px/1.6 Figtree,sans-serif;color:rgba(0,0,0,.5)}
+.sc::-webkit-scrollbar{width:0}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@keyframes glow{0%,100%{opacity:.55}50%{opacity:.95}}
+@keyframes eyeblink{0%,86%,100%{transform:scaleY(1)}90%,94%{transform:scaleY(.1)}}
+@keyframes popin{0%{transform:scale(.25);opacity:0}62%{transform:scale(1.09)}100%{transform:scale(1);opacity:1}}
+@keyframes pulsering{0%{transform:scale(.55);opacity:.5}100%{transform:scale(1.5);opacity:0}}
+@keyframes owlreveal{0%{transform:scale(4.4) translateY(3%)}34%{transform:scale(4.4) translateY(3%)}100%{transform:scale(1) translateY(0)}}
+@keyframes discgrow{0%{transform:scale(.2);opacity:0}100%{transform:scale(1);opacity:1}}
+@keyframes ringpop{0%{transform:scale(.3);opacity:0}60%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}
+@keyframes tickdraw{0%{stroke-dashoffset:60}100%{stroke-dashoffset:0}}
+@keyframes riseup{0%{transform:translateY(18px);opacity:0}100%{transform:translateY(0);opacity:1}}
+@keyframes confetti{0%{transform:translateY(-10px) rotate(0);opacity:0}20%{opacity:1}100%{transform:translateY(180px) rotate(220deg);opacity:0}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
+@keyframes lidopen{0%{transform:scaleY(1)}100%{transform:scaleY(0)}}
+@keyframes lidblink{0%,86%,100%{transform:scaleY(0)}91%{transform:scaleY(1)}96%{transform:scaleY(0)}}
+@keyframes pupildart{0%,26%{transform:translate(0,0)}38%,52%{transform:translate(9px,-2px)}64%,78%{transform:translate(-7px,1px)}90%,100%{transform:translate(0,0)}}
+@keyframes eyerise{0%{transform:scale(.42);opacity:0}62%{transform:scale(1.06)}100%{transform:scale(1);opacity:1}}
+@keyframes sparkle{0%,100%{opacity:0;transform:scale(.4) rotate(0deg)}50%{opacity:.9;transform:scale(1) rotate(45deg)}}
+@keyframes loadbar{0%{transform:scaleX(0)}100%{transform:scaleX(1)}}
+@keyframes twinkle{0%,100%{opacity:.15;transform:scale(.8)}50%{opacity:.8;transform:scale(1)}}
+@keyframes wavehand{0%,100%{transform:rotate(0deg)}20%{transform:rotate(-9deg)}38%{transform:rotate(1deg)}56%{transform:rotate(-7deg)}72%{transform:rotate(0deg)}}
+.sqwave{width:180px;height:144px;background:url(nupo/seq-wave.png) 0 0/1260px 144px no-repeat;animation:sqw .98s steps(7) infinite}
+@keyframes sqw{from{background-position:0 0}to{background-position:-1260px 0}}
+.u-ring{animation:ringpop .55s cubic-bezier(.34,1.5,.64,1) forwards}
+.u-tick{animation:tickdraw .45s .35s ease-out forwards}
+.u-owl{animation:riseup .5s .5s forwards,bob 3.2s .95s ease-in-out infinite}
+.u-txt{animation:riseup .5s .66s forwards}
+.u-star{animation:popin .55s .92s cubic-bezier(.34,1.5,.64,1) forwards}
+.u-hint{animation:riseup .5s 1.25s forwards}
+.u-cf{animation:confetti 2.4s ease-in infinite}
+.u-cf:nth-child(2){animation-delay:.4s}.u-cf:nth-child(3){animation-delay:.8s}.u-cf:nth-child(4){animation-delay:1.2s}.u-cf:nth-child(5){animation-delay:1.6s}
+@keyframes cuebounce{0%,100%{transform:translateY(0)}50%{transform:translateY(7px)}}
+.pk-cue{animation:cuebounce 1.5s ease-in-out infinite}
+@keyframes tailpop{0%{transform:scale(0);opacity:0}100%{transform:scale(1);opacity:1}}
+@keyframes zz{0%{opacity:0;transform:translate(0,0) scale(.7)}30%{opacity:1}100%{opacity:0;transform:translate(14px,-26px) scale(1.1)}}
+</style></helmet>
+
+<section class="dv-turn" id="t1">
+<div class="dv-thd"><a class="dv-tid" href="#t1">1</a><span class="dv-tname">Scroll-story onboarding — two treatments</span></div>
+
+<div style="max-width:760px;margin:0 0 26px;font:400 13px/1.65 Figtree,sans-serif;color:rgba(0,0,0,.62)">
+<p style="margin:0 0 10px"><strong style="color:#241C3B">What I assumed.</strong> Copy is verbatim from your screens. The welcome screen is now a normal tapped screen — Get started begins the scroll, and the story itself carries no buttons until the closing CTA; the name/age/goal forms stay as the tapped flow after "I want this for my kid". Palette and buttons follow your current screens (purple #7C3AED, cream #FFFCEF, amber, green) rather than the indigo in <code>brainpass/lib/theme.dart</code>, which looks like the older build.</p>
+<p style="margin:0 0 10px"><strong style="color:#241C3B">The bird.</strong> Cut out of the sheets you sent — 14 poses at ~110px, so Nupo works at companion scale but not as a hero illustration. The bedroom scene is a shaded vector illustration — closest I can get to your sketch reference without a real illustration asset. Drop one in and I'll swap it.</p>
+<p style="margin:0"><strong style="color:#241C3B">Try it.</strong> Tap Get started, then scroll inside either phone. Real taps: the app picker and the 7 × 8 quiz. Nupo follows the scroll, reacts per beat, and dives into the phone right before the Nupo card appears.</p>
+</div>
+
+<div class="dv-opts">
+
+<div class="dv-opt" id="1a">
+<div class="dv-olabel"><a class="dv-oid" href="#1a">1a</a>Cinematic — cream stage, editorial type, camera pushes into the kid's phone until the screen takes over.</div>
+<div style="width:412px;padding:11px;background:#241C3B;border-radius:52px;box-shadow:0 22px 50px rgba(36,28,59,.28)">
+<div style="position:relative;width:390px;height:844px;border-radius:42px;overflow:hidden;background:#FFFCEF">
+<div data-role="splash" style="position:absolute;inset:0;z-index:9;overflow:hidden;background:radial-gradient(120% 84% at 50% 40%,#8F5CF7 0%,#6D28D9 40%,#3C1A76 76%,#28104F 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:{{aSplashOp}};pointer-events:{{aSplashPe}};transform:scale({{aSplashSc}});visibility:{{aSplashVis}};display:{{aSplashDisp}}">
+<div style="position:absolute;inset:0;opacity:.55;background:radial-gradient(1.4px 1.4px at 44px 128px,#fff,transparent),radial-gradient(1.6px 1.6px at 322px 92px,#fff,transparent),radial-gradient(1.2px 1.2px at 88px 654px,#fff,transparent),radial-gradient(1.5px 1.5px at 306px 690px,#fff,transparent),radial-gradient(1.2px 1.2px at 196px 54px,#fff,transparent),radial-gradient(1.4px 1.4px at 52px 430px,#fff,transparent),radial-gradient(1.3px 1.3px at 350px 392px,#fff,transparent),radial-gradient(1.2px 1.2px at 150px 760px,#fff,transparent)"></div>
+<div style="position:absolute;width:392px;height:392px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.15),transparent 66%);animation:discgrow 1.2s .35s cubic-bezier(.2,.9,.2,1) both"></div>
+<div style="position:absolute;width:340px;height:340px;border-radius:50%;border:1px solid rgba(255,255,255,.13);animation:pulsering 3.2s ease-out infinite"></div>
+<div style="position:relative;width:262px;height:132px;animation:eyerise .85s cubic-bezier(.34,1.5,.64,1) both">
+<svg viewBox="0 0 248 120" style="width:100%;height:100%;display:block;overflow:visible;filter:drop-shadow(0 14px 26px rgba(20,6,50,.45))"><g transform="translate(0,0)">
+<ellipse cx="58" cy="60" rx="55" ry="57" fill="#2A1156" opacity=".55"></ellipse>
+<ellipse cx="58" cy="58" rx="53" ry="55" fill="#F7F3FF"></ellipse>
+<ellipse cx="58" cy="30" rx="46" ry="26" fill="#DCCEF7" opacity=".55"></ellipse>
+<g style="animation:pupildart 6.5s 1.5s ease-in-out infinite">
+<ellipse cx="62" cy="64" rx="29" ry="31" fill="#160B2E"></ellipse>
+<circle cx="52" cy="50" r="9" fill="#fff" opacity=".95"></circle>
+<circle cx="73" cy="76" r="5" fill="#8B6FE8" opacity=".7"></circle>
+</g>
+<ellipse cx="58" cy="4" rx="56" ry="58" fill="#6D28D9" style="transform-origin:58px 2px;animation:lidopen .5s .95s both,lidblink 5.4s 2s infinite"></ellipse>
+</g><g transform="translate(132,0)">
+<ellipse cx="58" cy="60" rx="55" ry="57" fill="#2A1156" opacity=".55"></ellipse>
+<ellipse cx="58" cy="58" rx="53" ry="55" fill="#F7F3FF"></ellipse>
+<ellipse cx="58" cy="30" rx="46" ry="26" fill="#DCCEF7" opacity=".55"></ellipse>
+<g style="animation:pupildart 6.5s 1.5s ease-in-out infinite">
+<ellipse cx="54" cy="64" rx="29" ry="31" fill="#160B2E"></ellipse>
+<circle cx="44" cy="50" r="9" fill="#fff" opacity=".95"></circle>
+<circle cx="65" cy="76" r="5" fill="#8B6FE8" opacity=".7"></circle>
+</g>
+<ellipse cx="58" cy="4" rx="56" ry="58" fill="#6D28D9" style="transform-origin:58px 2px;animation:lidopen .5s .95s both,lidblink 5.4s 2s infinite"></ellipse>
+</g></svg>
+<div style="position:absolute;left:-16px;top:-6px;width:16px;height:16px;background:#F9C13C;clip-path:polygon(50% 0,60% 40%,100% 50%,60% 60%,50% 100%,40% 60%,0 50%,40% 40%);animation:sparkle 2.6s 1.2s ease-in-out infinite"></div>
+<div style="position:absolute;right:-8px;bottom:2px;width:11px;height:11px;background:#fff;clip-path:polygon(50% 0,60% 40%,100% 50%,60% 60%,50% 100%,40% 60%,0 50%,40% 40%);animation:sparkle 2.9s 2.1s ease-in-out infinite"></div>
+</div>
+<div style="margin-top:40px;display:flex;align-items:baseline;gap:4px;animation:popin .5s 1.5s both">
+<div style="font:800 46px 'Baloo 2',sans-serif;color:#fff;letter-spacing:.01em">Nupo</div>
+<div style="width:10px;height:10px;border-radius:50%;background:#F9C13C;margin-bottom:7px"></div>
+</div>
+<div style="margin-top:10px;font:700 10px Figtree,sans-serif;color:rgba(255,255,255,.5);letter-spacing:.26em;animation:popin .5s 1.72s both">LEARN FIRST · PLAY AFTER</div>
+<div style="position:absolute;bottom:72px;width:118px;height:3px;border-radius:2px;background:rgba(255,255,255,.15);overflow:hidden">
+<div style="width:100%;height:100%;border-radius:2px;background:#F9C13C;transform-origin:left;animation:loadbar 2.1s .3s ease-out both"></div>
+</div>
+</div>
+<div data-role="welcome" style="position:absolute;inset:0;z-index:5;overflow:hidden;background:linear-gradient(180deg,#FFFCEF 0%,#FBF3FF 68%,#F1E6FF 100%);display:flex;flex-direction:column;align-items:center;padding:76px 30px 0;text-align:center;opacity:{{aWelOp}};pointer-events:{{aWelPe}};transform:scale({{aWelSc}});visibility:{{aWelVis}};display:{{aWelDisp}}">
+<div style="position:absolute;top:-90px;width:340px;height:340px;border-radius:50%;background:radial-gradient(circle,rgba(124,58,237,.16),transparent 68%)"></div>
+<div style="position:absolute;top:96px;left:34px;width:9px;height:9px;border-radius:50%;background:#F9C13C;opacity:.8;animation:bob 4.2s ease-in-out infinite"></div>
+<div style="position:absolute;top:150px;right:40px;width:6px;height:6px;border-radius:50%;background:#7C3AED;opacity:.7;animation:bob 5.1s .6s ease-in-out infinite"></div>
+<div style="position:relative;width:212px;height:212px;display:flex;align-items:flex-end;justify-content:center">
+<div style="position:absolute;inset:0;border-radius:50%;background:rgba(124,58,237,.09)"></div>
+<div style="position:absolute;left:26px;right:26px;top:26px;bottom:26px;border-radius:50%;background:rgba(124,58,237,.07)"></div>
+<div class="sqwave" role="img" aria-label="Nupo waving hello" style="margin-bottom:6px;filter:drop-shadow(0 16px 26px rgba(36,10,80,.22))"></div>
+</div>
+<div style="margin-top:26px;padding:6px 13px;border-radius:999px;background:rgba(249,193,60,.24);font:800 10px Figtree,sans-serif;color:#8A6100;letter-spacing:.2em">FOR PARENTS OF KIDS 5–12</div>
+<h1 style="margin:16px 0 0;font:800 30px/1.16 'Baloo 2',sans-serif;color:#241C3B;letter-spacing:-.2px">Learning kids will<br>actually do</h1>
+<p style="margin:12px 0 0;font:400 15px/1.55 Figtree,sans-serif;color:rgba(36,28,59,.6);max-width:288px">A little learning before the apps they love. Set it up in two minutes.</p>
+<div style="position:absolute;left:28px;right:28px;bottom:38px;display:flex;flex-direction:column;gap:15px;align-items:center">
+<div data-role="start" style="width:100%;height:56px;border-radius:28px;background:#F9C13C;display:flex;align-items:center;justify-content:center;gap:8px;font:800 16.5px Figtree,sans-serif;color:#241C3B;box-shadow:0 10px 22px rgba(249,193,60,.45);cursor:pointer">Get started<span style="font-size:17px">→</span></div>
+<div style="font:600 13px Figtree,sans-serif;color:#7C3AED;cursor:pointer">I already have an account · Log in</div>
+</div>
+</div>
+<div class="sc" data-scroller="a" style="position:absolute;inset:0;overflow-y:scroll;scrollbar-width:none;-webkit-overflow-scrolling:touch">
+<div style="position:sticky;top:0;height:844px;overflow:hidden">
+<div data-role="sky" style="position:absolute;inset:0;background:#FFFCEF"></div>
+
+<div data-i="1" data-anim="fade" style="position:absolute;inset:0;background:linear-gradient(180deg,#FFFDF4 0%,#FBF6FF 58%,#F1E9FF 100%);padding:0 30px;display:flex;flex-direction:column;justify-content:flex-start;overflow:hidden">
+<div style="height:88px"></div>
+<div style="font:800 10.5px Figtree,sans-serif;color:#7C3AED;letter-spacing:.16em;text-transform:uppercase">for parents of kids 5–12</div>
+<h1 style="margin:12px 0 0;font:800 27px/1.24 Figtree,sans-serif;color:#241C3B;letter-spacing:-.4px">Your kid grabs the phone the second they're bored.</h1>
+<p style="margin:12px 0 0;font:400 15px/1.5 Figtree,sans-serif;color:rgba(36,28,59,.58)">You already know how this goes.</p>
+<div data-role="room" style="position:absolute;left:0;right:0;bottom:0;height:470px"><img src="nupo/room-boy.png" alt="A boy on his bed, phone in hand, Nupo flying in" style="position:absolute;left:50%;bottom:-26px;transform:translateX(-50%);width:400px;height:auto;display:block"></div>
+<div data-role="hint" style="position:absolute;left:0;right:0;bottom:26px;display:flex;flex-direction:column;align-items:center;gap:3px;font:600 10.5px Figtree,sans-serif;color:rgba(36,28,59,.42);letter-spacing:.14em">KEEP SCROLLING<span style="font-size:15px">↓</span></div>
+</div>
+
+<div data-i="2" data-anim="fade" style="position:absolute;inset:0;background:#7C3AED;padding:0 32px;display:flex;flex-direction:column;justify-content:center;text-align:center;align-items:center">
+<div style="position:absolute;inset:0;pointer-events:none;overflow:hidden;font-family:'Baloo 2',sans-serif;font-weight:800;color:rgba(255,255,255,.2)">
+<span style="position:absolute;left:20px;top:112px;font-size:38px;animation:bob 5.2s ease-in-out infinite">7×8</span>
+<span style="position:absolute;right:26px;top:186px;font-size:28px;animation:bob 6.1s .8s ease-in-out infinite">A B C</span>
+<span style="position:absolute;left:34px;bottom:172px;font-size:32px;animation:bob 4.6s .4s ease-in-out infinite">½</span>
+<span style="position:absolute;right:34px;bottom:126px;font-size:34px;animation:bob 5.7s 1.2s ease-in-out infinite">?</span>
+<span style="position:absolute;left:50%;bottom:78px;font-size:24px;animation:bob 6.4s .2s ease-in-out infinite">★</span>
+</div>
+<div style="height:120px"></div>
+<h1 style="margin:0;font:800 30px/1.24 Figtree,sans-serif;color:#fff;letter-spacing:-.5px">What if they had to earn it — with 30 seconds of learning?</h1>
+</div>
+
+<div data-i="3" data-anim="fade" style="position:absolute;inset:0;background:#FFFCEF;padding:0 32px;display:flex;flex-direction:column;justify-content:center;text-align:center;align-items:center">
+<div style="height:150px"></div>
+<h1 style="margin:0;font:800 34px/1.1 Figtree,sans-serif;color:#241C3B;letter-spacing:-.6px">That's Nupo.</h1>
+<p style="margin:14px 0 0;font:400 15px/1.55 Figtree,sans-serif;color:rgba(36,28,59,.6);max-width:290px">A couple of quick questions before their favourite apps open. That's the whole thing.</p>
+</div>
+
+<div data-i="4" data-anim="fade" style="position:absolute;inset:0;background:#F2ECFD;overflow:hidden">
+<div style="position:absolute;inset:0;background:radial-gradient(130% 62% at 62% 2%,rgba(255,255,255,.95),rgba(255,255,255,0) 62%)"></div>
+<div style="position:absolute;inset:0;opacity:.5;background-image:radial-gradient(rgba(124,58,237,.13) 1.1px,transparent 1.1px);background-size:17px 17px"></div>
+<div style="position:absolute;left:0;right:0;bottom:0;height:128px;background:#E4D8F8"></div>
+<div style="position:absolute;left:0;right:0;bottom:128px;height:12px;background:rgba(36,28,59,.07)"></div>
+<div style="position:absolute;left:0;right:0;bottom:0;height:6px;background:rgba(36,28,59,.06)"></div>
+<div style="position:relative;padding:64px 24px 0">
+<div style="text-align:center;font:800 10px Figtree,sans-serif;color:#7C3AED;letter-spacing:.22em">NUPO ASKS</div>
+<div style="position:relative;width:296px;height:150px;margin:14px auto 0;animation:bob 6s ease-in-out infinite">
+<svg viewBox="0 0 330 168" style="position:absolute;left:0;top:0;width:100%;height:100%;display:block;filter:drop-shadow(0 14px 26px rgba(60,26,118,.18))" fill="none">
+<path d="M62 150 C30 150 14 128 26 110 C8 94 22 66 46 68 C50 38 86 26 108 44 C126 12 176 10 194 40 C224 24 262 38 262 66 C294 64 310 90 296 112 C312 128 298 152 270 150 Z" fill="#fff" stroke="#E0D2FA" stroke-width="2.5"></path>
+</svg>
+<div style="position:relative;height:100%;display:flex;align-items:center;justify-content:center;padding:16px 40px 8px;text-align:center">
+<h1 data-role="cloudtext" style="margin:0;font:800 19px/1.3 'Baloo 2',sans-serif;color:#241C3B">Which app does your kid open the most?</h1>
+</div>
+</div>
+<div style="position:relative;height:104px;margin-top:-6px">
+<div style="position:absolute;right:132px;top:2px;width:15px;height:15px;border-radius:50%;background:#fff;border:2px solid #E0D2FA;animation:tailpop .3s .1s both"></div>
+<div style="position:absolute;right:118px;top:24px;width:9px;height:9px;border-radius:50%;background:#fff;border:2px solid #E0D2FA;animation:tailpop .3s .2s both"></div>
+<img data-role="pickowl" src="nupo/idea.png" alt="Nupo" style="position:absolute;right:14px;bottom:0;width:126px;height:auto;filter:drop-shadow(0 14px 20px rgba(60,26,118,.22))">
+<div data-role="pickaside" style="position:absolute;left:6px;bottom:16px;max-width:150px;padding:9px 14px;border-radius:16px 16px 4px 16px;background:rgba(124,58,237,.1);font:700 12.5px/1.35 Figtree,sans-serif;color:#5B21B6">Pick the one they reach for first</div>
+</div>
+<div data-picker="a" style="display:flex;flex-direction:column;gap:12px;margin-top:10px">
+<div data-app="YouTube" style="position:relative;height:66px;border-radius:22px;background:#fff;border:2px solid #7C3AED;display:flex;align-items:center;padding:0 18px;gap:14px;font:700 16.5px Figtree,sans-serif;color:#241C3B;cursor:pointer;box-shadow:0 8px 20px rgba(60,26,118,.09);transition:transform .18s ease,box-shadow .18s ease" style-active="transform:scale(.975)">
+<span style="width:40px;height:40px;border-radius:13px;background:#FDE7E7;display:flex;align-items:center;justify-content:center;font:800 15px Figtree,sans-serif;color:#D63B3B">▶</span>YouTube
+<span style="margin-left:auto;width:22px;height:22px;border-radius:50%;border:2px solid rgba(36,28,59,.14)"></span>
+</div>
+<div data-app="Roblox" style="position:relative;height:66px;border-radius:22px;background:#fff;border:2px solid rgba(36,28,59,.09);display:flex;align-items:center;padding:0 18px;gap:14px;font:700 16.5px Figtree,sans-serif;color:#241C3B;cursor:pointer;box-shadow:0 8px 20px rgba(60,26,118,.09);transition:transform .18s ease,box-shadow .18s ease" style-active="transform:scale(.975)">
+<span style="width:40px;height:40px;border-radius:13px;background:#E7EDFD;display:flex;align-items:center;justify-content:center;font:800 15px Figtree,sans-serif;color:#3B5BD6">◼</span>Roblox
+<span style="margin-left:auto;width:22px;height:22px;border-radius:50%;border:2px solid rgba(36,28,59,.14)"></span>
+</div>
+<div data-app="TikTok" style="position:relative;height:66px;border-radius:22px;background:#fff;border:2px solid rgba(36,28,59,.09);display:flex;align-items:center;padding:0 18px;gap:14px;font:700 16.5px Figtree,sans-serif;color:#241C3B;cursor:pointer;box-shadow:0 8px 20px rgba(60,26,118,.09);transition:transform .18s ease,box-shadow .18s ease" style-active="transform:scale(.975)">
+<span style="width:40px;height:40px;border-radius:13px;background:#E4F6F4;display:flex;align-items:center;justify-content:center;font:800 15px Figtree,sans-serif;color:#0E9384">♪</span>TikTok
+<span style="margin-left:auto;width:22px;height:22px;border-radius:50%;border:2px solid rgba(36,28,59,.14)"></span>
+</div>
+</div>
+<div data-role="pickcue" style="margin-top:22px;display:flex;flex-direction:column;align-items:center;gap:6px;opacity:0">
+<div style="padding:9px 18px;border-radius:999px;background:#241C3B;font:800 12px/1.2 Figtree,sans-serif;color:#fff;white-space:nowrap">Nupo remembers <span data-role="pickname">that</span></div>
+<div class="pk-cue" style="font:700 20px Figtree,sans-serif;color:#7C3AED">↓</div>
+</div>
+</div>
+</div>
+
+<div data-i="6" data-span="1.7" data-hold="4.3,7.3" data-anim="fade" style="position:absolute;inset:0;background:#241C3B;display:flex;align-items:center;justify-content:center">
+<div data-role="device" style="position:relative;width:330px;height:700px;border-radius:38px;background:#0F0A1E;border:9px solid #060410;overflow:hidden;box-shadow:0 0 0 2px rgba(255,255,255,.06)">
+<div style="height:44px;background:#0F0A1E;display:flex;align-items:center;padding:0 16px;gap:8px"><div style="width:14px;height:14px;border-radius:4px;background:#E5484D"></div><div style="flex:1;height:8px;border-radius:4px;background:rgba(255,255,255,.12)"></div></div>
+<div style="padding:8px 12px;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;gap:10px;align-items:center"><div style="width:66px;height:44px;border-radius:8px;background:#2A2140"></div><div style="flex:1;display:flex;flex-direction:column;gap:6px"><div style="height:8px;border-radius:4px;background:#3A2F55"></div><div style="height:8px;width:58%;border-radius:4px;background:#2A2140"></div></div></div>
+<div style="display:flex;gap:10px;align-items:center"><div style="width:66px;height:44px;border-radius:8px;background:#2A2140"></div><div style="flex:1;display:flex;flex-direction:column;gap:6px"><div style="height:8px;border-radius:4px;background:#3A2F55"></div><div style="height:8px;width:70%;border-radius:4px;background:#2A2140"></div></div></div>
+<div style="display:flex;gap:10px;align-items:center"><div style="width:66px;height:44px;border-radius:8px;background:#2A2140"></div><div style="flex:1;display:flex;flex-direction:column;gap:6px"><div style="height:8px;border-radius:4px;background:#3A2F55"></div><div style="height:8px;width:44%;border-radius:4px;background:#2A2140"></div></div></div>
+<div style="display:flex;gap:10px;align-items:center"><div style="width:66px;height:44px;border-radius:8px;background:#2A2140"></div><div style="flex:1;display:flex;flex-direction:column;gap:6px"><div style="height:8px;border-radius:4px;background:#3A2F55"></div><div style="height:8px;width:64%;border-radius:4px;background:#2A2140"></div></div></div>
+</div>
+<div data-role="tapbanner" style="position:absolute;left:12px;right:12px;bottom:14px;height:44px;border-radius:14px;background:#7C3AED;display:flex;align-items:center;justify-content:center;font:700 13px Figtree,sans-serif;color:#fff">Ram just tapped YouTube. Watch ↓</div>
+<div data-role="nupocard" style="position:absolute;left:10px;right:10px;top:10px;bottom:10px;border-radius:28px;background:#7C3AED;padding:26px 18px;text-align:center;display:flex;flex-direction:column;justify-content:center">
+<img data-role="cardowl" src="nupo/teacher.png" alt="Nupo" style="width:76px;height:auto;display:block;margin:0 auto">
+<div data-role="quizask" style="margin:6px 0 0;font:800 20px 'Baloo 2',sans-serif;color:#fff">Quick one first!</div>
+<div style="display:flex;gap:6px;justify-content:center;margin:8px 0 18px"><div style="width:7px;height:7px;border-radius:50%;background:#F9C13C"></div><div style="width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.35)"></div><div style="width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.35)"></div></div>
+<div style="height:74px;border-radius:20px;background:#fff;display:flex;align-items:center;justify-content:center;font:800 28px Figtree,sans-serif;color:#241C3B">7 × 8 = ?</div>
+<div data-quiz="a" style="display:flex;gap:10px;margin-top:14px">
+<div data-ans="54" style="flex:1;height:56px;border-radius:16px;background:#fff;display:flex;align-items:center;justify-content:center;font:700 18px Figtree,sans-serif;color:#241C3B;cursor:pointer">54</div>
+<div data-ans="56" data-correct="1" style="flex:1;height:56px;border-radius:16px;background:#fff;display:flex;align-items:center;justify-content:center;font:700 18px Figtree,sans-serif;color:#241C3B;cursor:pointer">56</div>
+<div data-ans="48" style="flex:1;height:56px;border-radius:16px;background:#fff;display:flex;align-items:center;justify-content:center;font:700 18px Figtree,sans-serif;color:#241C3B;cursor:pointer">48</div>
+</div>
+<div data-role="quizhint" style="margin-top:16px;font:600 12px Figtree,sans-serif;color:rgba(255,255,255,.6)">Tap the answer — this is what your kid sees.</div>
+</div>
+<div data-role="okbanner" style="position:absolute;left:10px;right:10px;bottom:10px;border-radius:20px;background:#17976A;padding:14px 12px;text-align:center;opacity:0;visibility:hidden">
+<div style="font:800 15px Figtree,sans-serif;color:#fff">Nice! YouTube's open — 15 mins.</div>
+<div style="margin-top:3px;font:400 12px Figtree,sans-serif;color:rgba(255,255,255,.75)">Then Nupo asks again.</div>
+</div><div data-role="unlock" style="position:absolute;inset:0;z-index:6;background:linear-gradient(180deg,#17976A,#0E6E4C);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 26px;text-align:center;opacity:0;visibility:hidden">
+<div data-role="confetti" style="position:absolute;inset:0;overflow:hidden;pointer-events:none">
+<div class="u-cf" style="position:absolute;left:14%;top:80px;width:8px;height:12px;border-radius:2px;background:#F9C13C"></div>
+<div class="u-cf" style="position:absolute;left:34%;top:60px;width:8px;height:8px;border-radius:50%;background:#fff"></div>
+<div class="u-cf" style="position:absolute;left:58%;top:74px;width:9px;height:13px;border-radius:2px;background:#C4A9FF"></div>
+<div class="u-cf" style="position:absolute;left:78%;top:56px;width:8px;height:8px;border-radius:50%;background:#F9C13C"></div>
+<div class="u-cf" style="position:absolute;left:46%;top:96px;width:7px;height:11px;border-radius:2px;background:#fff"></div>
+</div>
+<div class="u-ring" data-role="unlockring" style="position:relative;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center">
+<div style="width:88px;height:88px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center">
+<svg width="46" height="46" viewBox="0 0 46 46" fill="none"><path class="u-tick" data-role="tick" d="M11 24.5 L20 33 L35 15" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="60" stroke-dashoffset="0"></path></svg>
+</div>
+</div>
+<img class="u-owl" data-role="unlockowl" src="nupo/cheer.png" alt="Nupo" style="width:96px;height:auto;margin-top:18px">
+<div class="u-txt" data-role="unlocktext" style="margin-top:12px">
+<div style="font:800 25px/1.2 'Baloo 2',sans-serif;color:#fff">Nice! YouTube's open — 15 mins.</div>
+<div style="margin-top:8px;font:400 15px Figtree,sans-serif;color:rgba(255,255,255,.78)">Then Nupo asks again.</div>
+</div>
+<div class="u-star" data-role="star" style="margin-top:16px;display:flex;align-items:center;gap:8px;padding:9px 16px;border-radius:999px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.22);font:800 13.5px Figtree,sans-serif;color:#fff"><span style="color:#F9C13C;font-size:15px">★</span>+1 star for Ram</div>
+<div class="u-hint" data-role="unlockhint" style="position:absolute;left:0;right:0;bottom:34px;font:600 10.5px Figtree,sans-serif;color:rgba(255,255,255,.55);letter-spacing:.14em">KEEP SCROLLING ↓</div>
+</div>
+
+</div>
+</div>
+
+<div data-i="8.4" data-hold="7.57,99" data-anim="fade" style="position:absolute;inset:0;background:#FFFCEF;padding:0 32px;display:flex;flex-direction:column;justify-content:center;text-align:center;align-items:center">
+<div style="height:150px"></div>
+<h1 style="margin:0;font:800 32px/1.14 Figtree,sans-serif;color:#241C3B;letter-spacing:-.5px">That's it.</h1>
+<p style="margin:14px 0 0;font:400 15px/1.55 Figtree,sans-serif;color:rgba(36,28,59,.6);max-width:300px">Nothing to police. No arguing. They learn a little, then they're off — every single time.</p>
+<div style="position:absolute;left:22px;right:22px;bottom:106px;display:flex;gap:7px;justify-content:center">
+<div style="padding:7px 12px;border-radius:999px;background:rgba(124,58,237,.1);font:700 10.5px Figtree,sans-serif;color:#5B21B6">2-min setup</div>
+<div style="padding:7px 12px;border-radius:999px;background:rgba(124,58,237,.1);font:700 10.5px Figtree,sans-serif;color:#5B21B6">No ads</div>
+<div style="padding:7px 12px;border-radius:999px;background:rgba(124,58,237,.1);font:700 10.5px Figtree,sans-serif;color:#5B21B6">You set the rules</div>
+</div>
+<div style="position:absolute;left:26px;right:26px;bottom:34px;height:56px;border-radius:28px;background:#7C3AED;display:flex;align-items:center;justify-content:center;gap:8px;font:700 16.5px Figtree,sans-serif;color:#fff;box-shadow:0 12px 26px rgba(124,58,237,.4)">I want this for my kid<span style="font-size:17px">→</span></div>
+</div>
+
+<div data-role="prog" style="position:absolute;left:24px;right:24px;top:24px;height:6px;border-radius:4px;background:rgba(36,28,59,.14);z-index:4">
+<div data-role="progfill" style="height:100%;width:0%;border-radius:4px;background:linear-gradient(90deg,#F9C13C,#FF9445)"></div>
+<div data-role="progdot" style="position:absolute;top:-8px;left:0;width:22px;height:22px;margin-left:-11px;border-radius:50%;background:#fff;box-shadow:0 4px 10px rgba(36,28,59,.3);display:flex;align-items:center;justify-content:center;font:800 11px Figtree,sans-serif;color:#F9A825">★</div>
+</div>
+<img data-role="bird" src="nupo/wave.png" alt="Nupo" style="position:absolute;left:0;top:0;width:132px;height:auto;pointer-events:none;filter:drop-shadow(0 12px 18px rgba(36,28,59,.22))">
+</div>
+<div style="height:6420px"></div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="dv-opt" id="1b">
+<div class="dv-olabel"><a class="dv-oid" href="#1b">1b</a>Companion — night sky warms to dawn as you scroll, Nupo speaks every subhead from a bubble, beats arrive as cards on a path.</div>
+<div style="width:412px;padding:11px;background:#241C3B;border-radius:52px;box-shadow:0 22px 50px rgba(36,28,59,.28)">
+<div style="position:relative;width:390px;height:844px;border-radius:42px;overflow:hidden;background:#1B1338">
+<div data-role="splash" style="position:absolute;inset:0;z-index:9;overflow:hidden;background:radial-gradient(120% 84% at 50% 40%,#8F5CF7 0%,#6D28D9 40%,#3C1A76 76%,#28104F 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:{{bSplashOp}};pointer-events:{{bSplashPe}};transform:scale({{bSplashSc}});visibility:{{bSplashVis}};display:{{bSplashDisp}}">
+<div style="position:absolute;inset:0;opacity:.55;background:radial-gradient(1.4px 1.4px at 44px 128px,#fff,transparent),radial-gradient(1.6px 1.6px at 322px 92px,#fff,transparent),radial-gradient(1.2px 1.2px at 88px 654px,#fff,transparent),radial-gradient(1.5px 1.5px at 306px 690px,#fff,transparent),radial-gradient(1.2px 1.2px at 196px 54px,#fff,transparent),radial-gradient(1.4px 1.4px at 52px 430px,#fff,transparent),radial-gradient(1.3px 1.3px at 350px 392px,#fff,transparent),radial-gradient(1.2px 1.2px at 150px 760px,#fff,transparent)"></div>
+<div style="position:absolute;width:392px;height:392px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.15),transparent 66%);animation:discgrow 1.2s .35s cubic-bezier(.2,.9,.2,1) both"></div>
+<div style="position:absolute;width:340px;height:340px;border-radius:50%;border:1px solid rgba(255,255,255,.13);animation:pulsering 3.2s ease-out infinite"></div>
+<div style="position:relative;width:262px;height:132px;animation:eyerise .85s cubic-bezier(.34,1.5,.64,1) both">
+<svg viewBox="0 0 248 120" style="width:100%;height:100%;display:block;overflow:visible;filter:drop-shadow(0 14px 26px rgba(20,6,50,.45))"><g transform="translate(0,0)">
+<ellipse cx="58" cy="60" rx="55" ry="57" fill="#2A1156" opacity=".55"></ellipse>
+<ellipse cx="58" cy="58" rx="53" ry="55" fill="#F7F3FF"></ellipse>
+<ellipse cx="58" cy="30" rx="46" ry="26" fill="#DCCEF7" opacity=".55"></ellipse>
+<g style="animation:pupildart 6.5s 1.5s ease-in-out infinite">
+<ellipse cx="62" cy="64" rx="29" ry="31" fill="#160B2E"></ellipse>
+<circle cx="52" cy="50" r="9" fill="#fff" opacity=".95"></circle>
+<circle cx="73" cy="76" r="5" fill="#8B6FE8" opacity=".7"></circle>
+</g>
+<ellipse cx="58" cy="4" rx="56" ry="58" fill="#6D28D9" style="transform-origin:58px 2px;animation:lidopen .5s .95s both,lidblink 5.4s 2s infinite"></ellipse>
+</g><g transform="translate(132,0)">
+<ellipse cx="58" cy="60" rx="55" ry="57" fill="#2A1156" opacity=".55"></ellipse>
+<ellipse cx="58" cy="58" rx="53" ry="55" fill="#F7F3FF"></ellipse>
+<ellipse cx="58" cy="30" rx="46" ry="26" fill="#DCCEF7" opacity=".55"></ellipse>
+<g style="animation:pupildart 6.5s 1.5s ease-in-out infinite">
+<ellipse cx="54" cy="64" rx="29" ry="31" fill="#160B2E"></ellipse>
+<circle cx="44" cy="50" r="9" fill="#fff" opacity=".95"></circle>
+<circle cx="65" cy="76" r="5" fill="#8B6FE8" opacity=".7"></circle>
+</g>
+<ellipse cx="58" cy="4" rx="56" ry="58" fill="#6D28D9" style="transform-origin:58px 2px;animation:lidopen .5s .95s both,lidblink 5.4s 2s infinite"></ellipse>
+</g></svg>
+<div style="position:absolute;left:-16px;top:-6px;width:16px;height:16px;background:#F9C13C;clip-path:polygon(50% 0,60% 40%,100% 50%,60% 60%,50% 100%,40% 60%,0 50%,40% 40%);animation:sparkle 2.6s 1.2s ease-in-out infinite"></div>
+<div style="position:absolute;right:-8px;bottom:2px;width:11px;height:11px;background:#fff;clip-path:polygon(50% 0,60% 40%,100% 50%,60% 60%,50% 100%,40% 60%,0 50%,40% 40%);animation:sparkle 2.9s 2.1s ease-in-out infinite"></div>
+</div>
+<div style="margin-top:40px;display:flex;align-items:baseline;gap:4px;animation:popin .5s 1.5s both">
+<div style="font:800 46px 'Baloo 2',sans-serif;color:#fff;letter-spacing:.01em">Nupo</div>
+<div style="width:10px;height:10px;border-radius:50%;background:#F9C13C;margin-bottom:7px"></div>
+</div>
+<div style="margin-top:10px;font:700 10px Figtree,sans-serif;color:rgba(255,255,255,.5);letter-spacing:.26em;animation:popin .5s 1.72s both">LEARN FIRST · PLAY AFTER</div>
+<div style="position:absolute;bottom:72px;width:118px;height:3px;border-radius:2px;background:rgba(255,255,255,.15);overflow:hidden">
+<div style="width:100%;height:100%;border-radius:2px;background:#F9C13C;transform-origin:left;animation:loadbar 2.1s .3s ease-out both"></div>
+</div>
+</div>
+<div data-role="welcome" style="position:absolute;inset:0;z-index:5;overflow:hidden;background:linear-gradient(180deg,#1B1338 0%,#33205E 62%,#4A2C86 100%);display:flex;flex-direction:column;align-items:center;padding:76px 30px 0;text-align:center;opacity:{{bWelOp}};pointer-events:{{bWelPe}};transform:scale({{bWelSc}});visibility:{{bWelVis}};display:{{bWelDisp}}">
+<div style="position:absolute;top:-90px;width:340px;height:340px;border-radius:50%;background:radial-gradient(circle,rgba(139,92,246,.5),transparent 68%)"></div>
+<div style="position:absolute;top:96px;left:34px;width:9px;height:9px;border-radius:50%;background:#F9C13C;opacity:.8;animation:bob 4.2s ease-in-out infinite"></div>
+<div style="position:absolute;top:150px;right:40px;width:6px;height:6px;border-radius:50%;background:#C4A9FF;opacity:.7;animation:bob 5.1s .6s ease-in-out infinite"></div>
+<div style="position:relative;width:212px;height:212px;display:flex;align-items:flex-end;justify-content:center">
+<div style="position:absolute;inset:0;border-radius:50%;background:rgba(255,255,255,.07)"></div>
+<div style="position:absolute;left:26px;right:26px;top:26px;bottom:26px;border-radius:50%;background:rgba(255,255,255,.06)"></div>
+<div class="sqwave" role="img" aria-label="Nupo waving hello" style="margin-bottom:6px;filter:drop-shadow(0 16px 26px rgba(36,10,80,.5))"></div>
+</div>
+<div style="margin-top:26px;padding:6px 13px;border-radius:999px;background:rgba(249,193,60,.16);font:800 10px Figtree,sans-serif;color:#F9C13C;letter-spacing:.2em">FOR PARENTS OF KIDS 5–12</div>
+<h1 style="margin:16px 0 0;font:800 30px/1.16 'Baloo 2',sans-serif;color:#fff;letter-spacing:-.2px">Learning kids will<br>actually do</h1>
+<p style="margin:12px 0 0;font:400 15px/1.55 Figtree,sans-serif;color:rgba(255,255,255,.66);max-width:288px">A little learning before the apps they love. Set it up in two minutes.</p>
+<div style="position:absolute;left:28px;right:28px;bottom:38px;display:flex;flex-direction:column;gap:15px;align-items:center">
+<div data-role="start" style="width:100%;height:56px;border-radius:28px;background:#F9C13C;display:flex;align-items:center;justify-content:center;gap:8px;font:800 16.5px Figtree,sans-serif;color:#241C3B;box-shadow:0 10px 22px rgba(249,193,60,.32);cursor:pointer">Get started<span style="font-size:17px">→</span></div>
+<div style="font:600 13px Figtree,sans-serif;color:#C4A9FF;cursor:pointer">I already have an account · Log in</div>
+</div>
+</div>
+<div class="sc" data-scroller="b" style="position:absolute;inset:0;overflow-y:scroll;scrollbar-width:none">
+<div style="position:sticky;top:0;height:844px;overflow:hidden">
+<div data-role="sky" style="position:absolute;inset:0;background:linear-gradient(180deg,#1B1338,#3A2569)"></div>
+<div data-role="path" style="position:absolute;left:64px;top:0;bottom:0;width:2px;background:repeating-linear-gradient(180deg,rgba(255,255,255,.28) 0 8px,transparent 8px 18px)"></div>
+
+<div data-i="1" data-anim="rise" style="position:absolute;inset:0;padding:104px 26px 0;overflow:hidden">
+<div style="margin-left:74px">
+<div style="font:800 10.5px Figtree,sans-serif;color:#C4A9FF;letter-spacing:.16em;text-transform:uppercase">for parents of kids 5–12</div>
+<h1 style="margin:12px 0 0;font:800 26px/1.24 Figtree,sans-serif;color:#fff">Your kid grabs the phone the second they're bored.</h1>
+<div data-bubble style="margin-top:16px;max-width:220px;padding:13px 16px;border-radius:20px 20px 20px 4px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);font:400 14px Figtree,sans-serif;color:rgba(255,255,255,.82)">You already know how this goes.</div>
+</div>
+<div data-role="room" style="position:absolute;left:0;right:0;bottom:0;height:430px">
+<div style="position:absolute;left:14px;right:14px;bottom:-34px;top:8px;border-radius:34px 34px 0 0;background:linear-gradient(180deg,rgba(255,253,244,.94),rgba(247,240,255,.9))"></div>
+<img src="nupo/room-boy.png" alt="A boy on his bed, phone in hand, Nupo flying in" style="position:absolute;left:50%;bottom:-18px;transform:translateX(-50%);width:372px;height:auto;display:block">
+</div>
+<div data-role="hint" style="position:absolute;left:0;right:0;bottom:26px;display:flex;flex-direction:column;align-items:center;gap:3px;font:600 10.5px Figtree,sans-serif;color:rgba(36,28,59,.42);letter-spacing:.14em">KEEP SCROLLING<span style="font-size:15px">↓</span></div>
+</div>
+
+<div data-i="2" data-anim="rise" style="position:absolute;inset:0;padding:150px 26px 0">
+<div style="position:absolute;inset:0;pointer-events:none;overflow:hidden;font-family:'Baloo 2',sans-serif;font-weight:800;color:rgba(255,255,255,.16)">
+<span style="position:absolute;left:20px;top:112px;font-size:38px;animation:bob 5.2s ease-in-out infinite">7×8</span>
+<span style="position:absolute;right:26px;top:186px;font-size:28px;animation:bob 6.1s .8s ease-in-out infinite">A B C</span>
+<span style="position:absolute;left:34px;bottom:172px;font-size:32px;animation:bob 4.6s .4s ease-in-out infinite">½</span>
+<span style="position:absolute;right:34px;bottom:126px;font-size:34px;animation:bob 5.7s 1.2s ease-in-out infinite">?</span>
+<span style="position:absolute;left:50%;bottom:78px;font-size:24px;animation:bob 6.4s .2s ease-in-out infinite">★</span>
+</div>
+<div style="margin-left:74px;padding:26px 22px;border-radius:26px;background:#F9C13C">
+<h1 style="margin:0;font:800 25px/1.26 Figtree,sans-serif;color:#241C3B">What if they had to earn it — with 30 seconds of learning?</h1>
+</div>
+</div>
+
+<div data-i="3" data-anim="rise" style="position:absolute;inset:0;padding:140px 26px 0">
+<div style="margin-left:74px">
+<h1 style="margin:0;font:800 34px/1.1 Figtree,sans-serif;color:#fff;letter-spacing:-.5px">That's Nupo.</h1>
+<div data-bubble style="margin-top:16px;max-width:246px;padding:14px 16px;border-radius:20px 20px 20px 4px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);font:400 14px/1.5 Figtree,sans-serif;color:#fff">A couple of quick questions before their favourite apps open. That's the whole thing.</div>
+</div>
+</div>
+
+<div data-i="4" data-anim="rise" style="position:absolute;inset:0;padding:104px 22px 0">
+<div style="position:relative;margin-left:44px;height:206px;animation:bob 5.4s ease-in-out infinite">
+<svg viewBox="0 0 330 208" style="position:absolute;left:0;top:0;width:100%;height:100%;display:block" fill="none">
+<path d="M62 150 C30 150 14 128 26 110 C8 94 22 66 46 68 C50 38 86 26 108 44 C126 12 176 10 194 40 C224 24 262 38 262 66 C294 64 310 90 296 112 C312 128 298 152 270 150 Z" fill="#fff"></path>
+<circle cx="56" cy="168" r="11" fill="#fff"></circle><circle cx="32" cy="190" r="6.5" fill="#fff"></circle>
+</svg>
+<div style="position:relative;padding:50px 40px 0;text-align:center">
+<h1 data-role="cloudtext" style="margin:0;font:800 17.5px/1.32 'Baloo 2',sans-serif;color:#241C3B">Which app does your kid open the most?</h1>
+</div>
+</div>
+<div data-picker="b" style="display:flex;flex-direction:column;gap:11px;margin-top:22px">
+<div data-app="YouTube" style="height:56px;border-radius:17px;background:rgba(255,255,255,.97);border:2px solid #F9C13C;display:flex;align-items:center;padding:0 16px;gap:12px;font:700 15px Figtree,sans-serif;color:#241C3B;cursor:pointer"><span style="width:32px;height:32px;border-radius:10px;background:#FDE7E7;display:flex;align-items:center;justify-content:center;font:800 12px Figtree,sans-serif;color:#D63B3B">▶</span>YouTube</div>
+<div data-app="Roblox" style="height:56px;border-radius:17px;background:rgba(255,255,255,.97);border:2px solid transparent;display:flex;align-items:center;padding:0 16px;gap:12px;font:700 15px Figtree,sans-serif;color:#241C3B;cursor:pointer"><span style="width:32px;height:32px;border-radius:10px;background:#E7EDFD;display:flex;align-items:center;justify-content:center;font:800 12px Figtree,sans-serif;color:#3B5BD6">◼</span>Roblox</div>
+<div data-app="TikTok" style="height:56px;border-radius:17px;background:rgba(255,255,255,.97);border:2px solid transparent;display:flex;align-items:center;padding:0 16px;gap:12px;font:700 15px Figtree,sans-serif;color:#241C3B;cursor:pointer"><span style="width:32px;height:32px;border-radius:10px;background:#E4F6F4;display:flex;align-items:center;justify-content:center;font:800 12px Figtree,sans-serif;color:#0E9384">♪</span>TikTok</div>
+</div>
+</div>
+
+<div data-i="6" data-span="1.7" data-hold="4.3,7.3" data-anim="fade" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">
+<div data-role="device" style="position:relative;width:318px;height:664px;border-radius:36px;background:#0F0A1E;border:9px solid #060410;overflow:hidden">
+<div style="height:40px;background:#0F0A1E;display:flex;align-items:center;padding:0 14px;gap:8px"><div style="width:13px;height:13px;border-radius:4px;background:#E5484D"></div><div style="flex:1;height:8px;border-radius:4px;background:rgba(255,255,255,.12)"></div></div>
+<div style="padding:8px 12px;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;gap:10px;align-items:center"><div style="width:62px;height:42px;border-radius:8px;background:#2A2140"></div><div style="flex:1;display:flex;flex-direction:column;gap:6px"><div style="height:8px;border-radius:4px;background:#3A2F55"></div><div style="height:8px;width:58%;border-radius:4px;background:#2A2140"></div></div></div>
+<div style="display:flex;gap:10px;align-items:center"><div style="width:62px;height:42px;border-radius:8px;background:#2A2140"></div><div style="flex:1;display:flex;flex-direction:column;gap:6px"><div style="height:8px;border-radius:4px;background:#3A2F55"></div><div style="height:8px;width:68%;border-radius:4px;background:#2A2140"></div></div></div>
+<div style="display:flex;gap:10px;align-items:center"><div style="width:62px;height:42px;border-radius:8px;background:#2A2140"></div><div style="flex:1;display:flex;flex-direction:column;gap:6px"><div style="height:8px;border-radius:4px;background:#3A2F55"></div><div style="height:8px;width:46%;border-radius:4px;background:#2A2140"></div></div></div>
+</div>
+<div data-role="tapbanner" style="position:absolute;left:12px;right:12px;bottom:14px;height:44px;border-radius:14px;background:#7C3AED;display:flex;align-items:center;justify-content:center;font:700 13px Figtree,sans-serif;color:#fff">Ram just tapped YouTube. Watch ↓</div>
+<div data-role="nupocard" style="position:absolute;left:10px;right:10px;top:10px;bottom:10px;border-radius:26px;background:linear-gradient(180deg,#8B5CF6,#6D28D9);padding:24px 16px;text-align:center;display:flex;flex-direction:column;justify-content:center">
+<img data-role="cardowl" src="nupo/wave.png" alt="Nupo" style="width:72px;height:auto;display:block;margin:0 auto">
+<div data-role="quizask" style="margin:4px 0 0;font:800 20px 'Baloo 2',sans-serif;color:#fff">Quick one first!</div>
+<div style="display:flex;gap:6px;justify-content:center;margin:8px 0 16px"><div style="width:7px;height:7px;border-radius:50%;background:#F9C13C"></div><div style="width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.35)"></div><div style="width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.35)"></div></div>
+<div style="height:70px;border-radius:20px;background:#fff;display:flex;align-items:center;justify-content:center;font:800 27px Figtree,sans-serif;color:#241C3B">7 × 8 = ?</div>
+<div data-quiz="b" style="display:flex;gap:10px;margin-top:14px">
+<div data-ans="54" style="flex:1;height:54px;border-radius:16px;background:#fff;display:flex;align-items:center;justify-content:center;font:700 18px Figtree,sans-serif;color:#241C3B;cursor:pointer">54</div>
+<div data-ans="56" data-correct="1" style="flex:1;height:54px;border-radius:16px;background:#fff;display:flex;align-items:center;justify-content:center;font:700 18px Figtree,sans-serif;color:#241C3B;cursor:pointer">56</div>
+<div data-ans="48" style="flex:1;height:54px;border-radius:16px;background:#fff;display:flex;align-items:center;justify-content:center;font:700 18px Figtree,sans-serif;color:#241C3B;cursor:pointer">48</div>
+</div>
+<div data-role="quizhint" style="margin-top:14px;font:600 12px Figtree,sans-serif;color:rgba(255,255,255,.6)">Tap the answer — this is what your kid sees.</div>
+</div>
+<div data-role="okbanner" style="position:absolute;left:10px;right:10px;bottom:10px;border-radius:20px;background:#17976A;padding:14px 12px;text-align:center;opacity:0;visibility:hidden">
+<div style="font:800 15px Figtree,sans-serif;color:#fff">Nice! YouTube's open — 15 mins.</div>
+<div style="margin-top:3px;font:400 12px Figtree,sans-serif;color:rgba(255,255,255,.75)">Then Nupo asks again.</div>
+</div><div data-role="unlock" style="position:absolute;inset:0;z-index:6;background:linear-gradient(180deg,#0E7C57,#0B5C41);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 26px;text-align:center;opacity:0;visibility:hidden">
+<div data-role="confetti" style="position:absolute;inset:0;overflow:hidden;pointer-events:none">
+<div class="u-cf" style="position:absolute;left:14%;top:80px;width:8px;height:12px;border-radius:2px;background:#F9C13C"></div>
+<div class="u-cf" style="position:absolute;left:34%;top:60px;width:8px;height:8px;border-radius:50%;background:#fff"></div>
+<div class="u-cf" style="position:absolute;left:58%;top:74px;width:9px;height:13px;border-radius:2px;background:#C4A9FF"></div>
+<div class="u-cf" style="position:absolute;left:78%;top:56px;width:8px;height:8px;border-radius:50%;background:#F9C13C"></div>
+<div class="u-cf" style="position:absolute;left:46%;top:96px;width:7px;height:11px;border-radius:2px;background:#fff"></div>
+</div>
+<div class="u-ring" data-role="unlockring" style="position:relative;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center">
+<div style="width:88px;height:88px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center">
+<svg width="46" height="46" viewBox="0 0 46 46" fill="none"><path class="u-tick" data-role="tick" d="M11 24.5 L20 33 L35 15" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="60" stroke-dashoffset="0"></path></svg>
+</div>
+</div>
+<img class="u-owl" data-role="unlockowl" src="nupo/cheer.png" alt="Nupo" style="width:96px;height:auto;margin-top:18px">
+<div class="u-txt" data-role="unlocktext" style="margin-top:12px">
+<div style="font:800 25px/1.2 'Baloo 2',sans-serif;color:#fff">Nice! YouTube's open — 15 mins.</div>
+<div style="margin-top:8px;font:400 15px Figtree,sans-serif;color:rgba(255,255,255,.78)">Then Nupo asks again.</div>
+</div>
+<div class="u-star" data-role="star" style="margin-top:16px;display:flex;align-items:center;gap:8px;padding:9px 16px;border-radius:999px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.22);font:800 13.5px Figtree,sans-serif;color:#fff"><span style="color:#F9C13C;font-size:15px">★</span>+1 star for Ram</div>
+<div class="u-hint" data-role="unlockhint" style="position:absolute;left:0;right:0;bottom:34px;font:600 10.5px Figtree,sans-serif;color:rgba(255,255,255,.55);letter-spacing:.14em">KEEP SCROLLING ↓</div>
+</div>
+
+</div>
+</div>
+
+<div data-i="8.4" data-hold="7.57,99" data-anim="rise" style="position:absolute;inset:0;padding:150px 26px 0">
+<div style="margin-left:74px">
+<h1 style="margin:0;font:800 32px/1.14 Figtree,sans-serif;color:#241C3B;letter-spacing:-.5px">That's it.</h1>
+<div data-bubble style="margin-top:16px;max-width:250px;padding:14px 16px;border-radius:20px 20px 20px 4px;background:#fff;font:400 14px/1.5 Figtree,sans-serif;color:rgba(36,28,59,.7)">Nothing to police. No arguing. They learn a little, then they're off — every single time.</div>
+</div>
+<div style="position:absolute;left:22px;right:22px;bottom:106px;display:flex;gap:7px;justify-content:center">
+<div style="padding:7px 12px;border-radius:999px;background:rgba(124,58,237,.1);font:700 10.5px Figtree,sans-serif;color:#5B21B6">2-min setup</div>
+<div style="padding:7px 12px;border-radius:999px;background:rgba(124,58,237,.1);font:700 10.5px Figtree,sans-serif;color:#5B21B6">No ads</div>
+<div style="padding:7px 12px;border-radius:999px;background:rgba(124,58,237,.1);font:700 10.5px Figtree,sans-serif;color:#5B21B6">You set the rules</div>
+</div>
+<div style="position:absolute;left:26px;right:26px;bottom:34px;height:56px;border-radius:28px;background:#7C3AED;display:flex;align-items:center;justify-content:center;gap:8px;font:700 16.5px Figtree,sans-serif;color:#fff;box-shadow:0 12px 26px rgba(124,58,237,.4)">I want this for my kid<span style="font-size:17px">→</span></div>
+</div>
+
+<div data-role="prog" style="position:absolute;left:24px;right:24px;top:24px;height:6px;border-radius:4px;background:rgba(36,28,59,.14);z-index:4">
+<div data-role="progfill" style="height:100%;width:0%;border-radius:4px;background:linear-gradient(90deg,#F9C13C,#FF9445)"></div>
+<div data-role="progdot" style="position:absolute;top:-8px;left:0;width:22px;height:22px;margin-left:-11px;border-radius:50%;background:#fff;box-shadow:0 4px 10px rgba(36,28,59,.3);display:flex;align-items:center;justify-content:center;font:800 11px Figtree,sans-serif;color:#F9A825">★</div>
+</div>
+<img data-role="bird" src="nupo/wave.png" alt="Nupo" style="position:absolute;left:0;top:0;width:112px;height:auto;pointer-events:none;filter:drop-shadow(0 10px 16px rgba(0,0,0,.3))">
+</div>
+<div style="height:6420px"></div>
+</div>
+</div>
+</div>
+</div>
+
+</div>
+<p class="dv-next">Try next: "make <a class="dv-oid" href="#1a">1a</a> the one, but keep the speech bubbles from <a class="dv-oid" href="#1b">1b</a>" · "hold on the phone zoom longer" · "carry the story into the name / age / goal forms"</p>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:&quot;960&quot;,&quot;height&quot;:&quot;1080&quot;}}">
+const PATHS = {
+  a: [
+    {t:0, x:50, y:30, s:1,   r:0,   f:'wave'},
+    {t:1, x:80, y:45, s:.48, r:-6,  f:'ohno'},
+    {t:2, x:50, y:24, s:.92, r:0,   f:'idea'},
+    {t:3, x:50, y:23, s:1,   r:0,   f:'cheer'},
+    {t:3.5, x:86, y:35, s:.42, r:5,  f:'idea'},
+    {t:4, x:86, y:35, s:.42, r:5,   f:'idea'},
+    {t:5, x:16, y:20, s:.55, r:-14, f:'fly'},
+    {t:5.6, x:50, y:44, s:.16, r:6, f:'fly'},
+    {t:6.1, x:50, y:48, s:.04, r:0, f:'fly'},
+    {t:7.0, x:50, y:48, s:.04, r:0, f:'fly'},
+    {t:8.4, x:50, y:24, s:1,   r:0,   f:'aplus'}
+  ],
+  b: [
+    {t:0, x:11, y:24, s:.5,  r:0,   f:'wave'},
+    {t:1, x:11, y:26, s:.46, r:0,   f:'tired'},
+    {t:2, x:11, y:40, s:.5,  r:0,   f:'idea'},
+    {t:3, x:11, y:26, s:.52, r:0,   f:'cheer'},
+    {t:4, x:11, y:34, s:.4,  r:-5,  f:'idea'},
+    {t:5, x:14, y:22, s:.5,  r:-16, f:'fly'},
+    {t:5.6, x:50, y:44, s:.16, r:6, f:'fly'},
+    {t:6.1, x:50, y:48, s:.04, r:0, f:'fly'},
+    {t:7.0, x:50, y:48, s:.04, r:0, f:'fly'},
+    {t:8.4, x:11, y:24, s:.56, r:0, f:'aplus'}
+  ]
+};
+const SKY = {
+  a: [[0,'#FFFCEF','#FFFCEF'],[0.05,'#FFFCEF','#FFFCEF'],[0.4,'#FFFDF4','#F1E9FF'],[1.05,'#FFFDF4','#F1E9FF'],[1.4,'#7C3AED','#7C3AED'],[2.05,'#7C3AED','#7C3AED'],[2.4,'#FFFCEF','#FFFCEF'],[3.05,'#FFFCEF','#FFFCEF'],[3.4,'#F2ECFD','#F2ECFD'],[3.75,'#F2ECFD','#F2ECFD'],[4.05,'#241C3B','#241C3B'],[7.2,'#241C3B','#241C3B'],[7.42,'#7C5AD6','#A78BFA'],[7.6,'#FFFCEF','#FFFCEF']],
+  b: [[0,'#1B1338','#3A2569'],[3,'#2B1D52','#5B31A8'],[5,'#120C26','#241C3B'],[7.2,'#120C26','#241C3B'],[7.42,'#7C5AD6','#A78BFA'],[7.62,'#F7ECD6','#EFE3FB'],[8,'#FFFCEF','#F2ECFD']]
+};
+const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
+const lerp = (a,b,p)=>a+(b-a)*p;
+
+function sample(keys,t){
+  if(t<=keys[0].t) return keys[0];
+  const last=keys[keys.length-1];
+  if(t>=last.t) return last;
+  for(let i=0;i<keys.length-1;i++){
+    const k=keys[i],n=keys[i+1];
+    if(t>=k.t&&t<=n.t){
+      const raw=(t-k.t)/(n.t-k.t);
+      const p=raw<.5?2*raw*raw:1-Math.pow(-2*raw+2,2)/2;
+      return {x:lerp(k.x,n.x,p),y:lerp(k.y,n.y,p),s:lerp(k.s,n.s,p),r:lerp(k.r,n.r,p),f:p<.5?k.f:n.f};
+    }
+  }
+  return last;
+}
+function hex(h){return [parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];}
+function mix(c1,c2,p){const a=hex(c1),b=hex(c2);return 'rgb('+a.map((v,i)=>Math.round(lerp(v,b[i],p))).join(',')+')';}
+function sampleSky(stops,t){
+  if(t<=stops[0][0]) return [stops[0][1],stops[0][2]];
+  const last=stops[stops.length-1];
+  if(t>=last[0]) return [last[1],last[2]];
+  for(let i=0;i<stops.length-1;i++){
+    const k=stops[i],n=stops[i+1];
+    if(t>=k[0]&&t<=n[0]){const p=(t-k[0])/(n[0]-k[0]);return [mix(k[1],n[1],p),mix(k[2],n[2],p)];}
+  }
+  return [last[1],last[2]];
+}
+
+class Component extends DCLogic {
+  constructor(props){
+    super(props);
+    const s = window.__nupoUI = window.__nupoUI || { a: {}, b: {} };
+    this.state = {
+      aPhase: s.a.started ? 'story' : (s.a.splashDone ? 'welcome' : 'splash'),
+      bPhase: s.b.started ? 'story' : (s.b.splashDone ? 'welcome' : 'splash')
+    };
+  }
+  setPhase(v, phase){
+    const s = window.__nupoUI[v];
+    if(phase === 'welcome' || phase === 'story') s.splashDone = true;
+    if(phase === 'story') s.started = true;
+    this.setState({ [v + 'Phase']: phase });
+  }
+  componentDidMount(){
+    this.rigs = [];
+    ['a','b'].forEach(v=>{
+      if(this.state[v+'Phase'] === 'splash') setTimeout(()=>this.setPhase(v,'welcome'), 2200);
+    });
+    // the runtime can swap the rendered DOM (or remount) after streaming, so keep re-binding
+    if(window.__nupoBoot) clearInterval(window.__nupoBoot);
+    this.boot = window.__nupoBoot = setInterval(()=>{ try { ['a','b'].forEach(v=>this.setup(v)); } catch(e){} }, 250);
+    requestAnimationFrame(()=>{ ['a','b'].forEach(v=>this.setup(v)); });
+  }
+  componentWillUnmount(){ clearInterval(this.boot); (this.rigs||[]).forEach(r=>r.scroller.removeEventListener('scroll',r.onScroll)); }
+
+  q(sel){ return document.querySelector(sel); }
+
+  setup(v){
+    const scroller = this.q('[data-scroller="'+v+'"]');
+    if(!scroller) return;
+    const stage = scroller.firstElementChild;
+    const prev = scroller.__nupoRig;
+    const shell = scroller.parentElement;
+    const curSplash = shell && shell.querySelector('[data-role="splash"]');
+    const curWelcome = shell && shell.querySelector('[data-role="welcome"]');
+    window.__nupoUI = window.__nupoUI || { a: {}, b: {} };
+    const st = window.__nupoUI[v];
+    // scroll lock follows the phase; overlay visibility is rendered, not written
+    scroller.style.overflowY = st.started ? 'scroll' : 'hidden';
+    if(st.started && st.scrollTop && scroller.scrollTop === 0) scroller.scrollTop = st.scrollTop;
+    // the runtime re-renders subtrees; rebind whenever the stage or an overlay is replaced
+    if(prev && prev.stage === stage && stage.isConnected
+       && prev.splash === curSplash && prev.welcome === curWelcome) return;
+    if(prev) scroller.removeEventListener('scroll', prev.onScroll);
+    scroller.__nupo = true;
+    const rig = {
+      v, scroller, stage,
+      layers: Array.from(stage.querySelectorAll('[data-i]')),
+      bird: stage.querySelector('[data-role="bird"]'),
+      device: stage.querySelector('[data-role="device"]'),
+      card: stage.querySelector('[data-role="nupocard"]'),
+      tap: stage.querySelector('[data-role="tapbanner"]'),
+      ok: stage.querySelector('[data-role="okbanner"]'),
+      unlock: stage.querySelector('[data-role="unlock"]'),
+      hint: stage.querySelector('[data-role="hint"]'),
+      sky: stage.querySelector('[data-role="sky"]'),
+      path: stage.querySelector('[data-role="path"]'),
+      rail: Array.from(stage.querySelectorAll('[data-role="rail"] > div')),
+      progTrack: stage.querySelector('[data-role="prog"]'),
+      progFill: stage.querySelector('[data-role="progfill"]'),
+      progDot: stage.querySelector('[data-role="progdot"]'),
+      room: stage.querySelector('[data-role="room"]'),
+      welcome: scroller.parentElement.querySelector('[data-role="welcome"]'),
+      splash: scroller.parentElement.querySelector('[data-role="splash"]'),
+      cloudtext: null, picked: false, gate: 3.02, gate2: 5.58,
+      answered: false, frame: 0, t: -1
+    };
+    const ui = st;
+    rig.cloudtext = stage.querySelector('[data-role="cloudtext"]');
+    rig.owlSaysGo = ()=>{
+      if(rig.cloudtext) rig.cloudtext.textContent = 'Great — that\u2019s all Nupo needed.';
+      const owl = rig.stage.querySelector('[data-role="pickowl"]');
+      if(owl) owl.src = 'nupo/phone.png';
+      const aside = rig.stage.querySelector('[data-role="pickaside"]');
+      if(aside) aside.textContent = 'Nupo will guard this one';
+      const cue = rig.stage.querySelector('[data-role="pickcue"]');
+      if(cue) cue.style.opacity = '1';
+      const nm = rig.stage.querySelector('[data-role="pickname"]');
+      if(nm && rig.ui && rig.ui.app) nm.textContent = rig.ui.app;
+      const picker = rig.stage.querySelector('[data-picker]');
+      if(picker && rig.ui && rig.ui.app){
+        Array.from(picker.children).forEach(row=>{
+          const on = row.getAttribute('data-app') === rig.ui.app;
+          row.style.opacity = on ? '1' : '.42';
+          row.style.borderColor = on ? (rig.v === 'b' ? '#F9C13C' : '#7C3AED') : (rig.v === 'b' ? 'transparent' : 'rgba(36,28,59,.09)');
+          row.style.boxShadow = on ? '0 12px 26px rgba(124,58,237,.22)' : 'none';
+          const dot = row.lastElementChild;
+          if(dot && dot.tagName === 'SPAN'){
+            dot.style.background = on ? '#7C3AED' : 'transparent';
+            dot.style.borderColor = on ? '#7C3AED' : 'rgba(36,28,59,.14)';
+            dot.style.color = '#fff';
+            dot.style.display = 'flex';
+            dot.style.alignItems = 'center';
+            dot.style.justifyContent = 'center';
+            dot.style.font = '800 12px Figtree,sans-serif';
+            dot.textContent = on ? '✓' : '';
+          }
+        });
+      }
+    };
+
+    const startBtn = rig.welcome && rig.welcome.querySelector('[data-role="start"]');
+    if(startBtn && !startBtn.__nupoBound){
+      startBtn.__nupoBound = true;
+      startBtn.addEventListener('click', ()=>{ this.setPhase(v, 'story'); scroller.style.overflowY = 'scroll'; });
+    }
+
+    rig.ui = ui;
+    if(ui.answered) rig.answered = true;
+    if(ui.unlocked) rig.unlocked = true;
+    if(ui.picked){
+      rig.picked = true;
+      rig.owlSaysGo();
+      if(rig.tap && ui.app) rig.tap.textContent = 'Ram just tapped ' + ui.app + '. Watch ↓';
+    }
+    rig.onScroll = ()=>{
+      const vhx = scroller.clientHeight || 844;
+      if(!rig.picked){
+        const cap = rig.gate * vhx;
+        if(scroller.scrollTop > cap) scroller.scrollTop = cap;
+      } else if(!rig.answered && !rig.autoAdvancing){
+        const cap2 = rig.gate2 * vhx;
+        if(scroller.scrollTop > cap2) scroller.scrollTop = cap2;
+      }
+      if(rig.ui) rig.ui.scrollTop = scroller.scrollTop;
+      try { this.paint(rig); } catch(e){} };
+    scroller.addEventListener('scroll', rig.onScroll, {passive:true});
+    scroller.__nupoRig = rig;
+    this.wire(rig);
+    this.rigs = (this.rigs || []).filter(r=>r.v !== v);
+    this.rigs.push(rig);
+    this.paint(rig);
+  }
+
+  wire(rig){
+    const picker = rig.stage.querySelector('[data-picker]');
+    const label = rig.stage.querySelector('[data-picklabel]');
+    if(picker){
+      Array.from(picker.children).forEach(row=>{
+        row.addEventListener('click', ()=>{
+          if(label) label.textContent = 'Use ' + row.getAttribute('data-app');
+          const b = rig.tap; if(b) b.textContent = 'Ram just tapped ' + row.getAttribute('data-app') + '. Watch ↓';
+          rig.picked = true;
+          if(rig.ui){ rig.ui.picked = true; rig.ui.app = row.getAttribute('data-app'); }
+          if(rig.owlSaysGo) rig.owlSaysGo();
+        });
+      });
+    }
+    const quiz = rig.stage.querySelector('[data-quiz]');
+    const hintEl = rig.stage.querySelector('[data-role="quizhint"]');
+    const askEl = rig.stage.querySelector('[data-role="quizask"]');
+    const owlEl = rig.stage.querySelector('[data-role="cardowl"]');
+    const askText = 'Quick one first!';
+    const hintText = 'Tap the answer — this is what your kid sees.';
+    if(quiz){
+      Array.from(quiz.children).forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          if(rig.answered) return;
+          const right = btn.getAttribute('data-correct');
+          btn.style.transition = 'transform .2s ease, background .2s ease, box-shadow .2s ease';
+          if(right){
+            rig.answered = true;
+            if(rig.ui) rig.ui.answered = true;
+            Array.from(quiz.children).forEach(b=>{ b.style.background='#fff'; b.style.opacity = b===btn ? '1' : '.45'; });
+            btn.style.background = '#F9C13C';
+            btn.style.transform = 'translateY(-4px) scale(1.04)';
+            btn.style.boxShadow = '0 10px 20px rgba(249,193,60,.45)';
+            if(owlEl) owlEl.src = 'nupo/idea.png';
+            if(askEl) askEl.textContent = 'Nailed it!';
+            if(hintEl){ hintEl.textContent = 'Unlocking YouTube…'; hintEl.style.color = '#F9C13C'; }
+            rig.autoAdvancing = true;
+            setTimeout(()=>{ if(this.showUnlock) this.showUnlock(rig); }, 760);
+          } else {
+            btn.style.background = '#FFD9D9';
+            btn.style.animation = 'shake .42s ease';
+            setTimeout(()=>{ btn.style.animation=''; btn.style.background='#fff'; }, 520);
+            rig.wrongs = (rig.wrongs || 0) + 1;
+            const moods = [
+              ['nupo/ohno.png', 'Not quite!', 'That one\u2019s wrong — try again.'],
+              ['nupo/shrug.png', 'Hmm, nope.', 'Close! Have another go.'],
+              ['nupo/tired.png', 'Still not it.', 'Take your time — try again.'],
+              ['nupo/sleep.png', 'Oh no…', 'Nupo\u2019s waiting. One more try.']
+            ];
+            const mood = moods[(rig.wrongs - 1) % moods.length];
+            if(owlEl) owlEl.src = mood[0];
+            if(askEl) askEl.textContent = mood[1];
+            if(hintEl){ hintEl.textContent = mood[2]; hintEl.style.color = '#FFC9C9'; }
+            clearTimeout(rig.wrongTimer);
+            rig.wrongTimer = setTimeout(()=>{
+              if(rig.answered) return;
+              if(owlEl) owlEl.src = rig.v === 'b' ? 'nupo/wave.png' : 'nupo/teacher.png';
+              if(askEl) askEl.textContent = askText;
+              if(hintEl){ hintEl.textContent = hintText; hintEl.style.color = 'rgba(255,255,255,.6)'; }
+            }, 1600);
+          }
+        });
+      });
+    }
+  }
+
+  showUnlock(rig){
+    const vh2 = rig.scroller.clientHeight || 844;
+    if(rig.ui) rig.ui.unlocked = true;
+    rig.unlocked = true;
+    rig.scroller.scrollTop = 6.14 * vh2;
+    this.paint(rig);
+    rig.autoAdvancing = false;
+  }
+
+  animateUnlock(){}
+
+  paint(rig){
+    const vh = rig.scroller.clientHeight || 844;
+    const t = clamp(rig.scroller.scrollTop / vh, 0, 7.6) + 1;
+    if(Math.abs(t - rig.t) < 0.0008) return;
+    rig.t = t;
+
+    rig.layers.forEach(el=>{
+      const i = parseFloat(el.getAttribute('data-i'));
+      const span = parseFloat(el.getAttribute('data-span') || '1');
+      const d = (t - i) / span;
+      const ad = Math.abs(d);
+      const hold = el.getAttribute('data-hold');
+      let op;
+      if(hold){
+        const hb = hold.split(',').map(parseFloat);
+        op = clamp((t - hb[0]) / 0.34, 0, 1) * (1 - clamp((t - hb[1]) / 0.26, 0, 1));
+      } else if(d < 0){
+        op = clamp((d + 0.68) / 0.5, 0, 1);
+      } else {
+        op = 1 - clamp((d - 0.02) / 0.28, 0, 1);
+      }
+      el.style.opacity = op;
+      el.style.pointerEvents = ad < 0.45 ? 'auto' : 'none';
+      const rise = hold ? 0 : (el.getAttribute('data-anim') === 'rise' ? 90 : 46);
+      el.style.transform = 'translate3d(0,' + (-d * rise).toFixed(2) + 'px,0) scale(' + (hold ? 1 : 1 - ad * 0.045).toFixed(4) + ')';
+      el.style.visibility = op < 0.01 ? 'hidden' : 'visible';
+    });
+
+    if(rig.hint) rig.hint.style.opacity = clamp(1 - (t - 1) * 4, 0, 1);
+
+    if(rig.room){
+      const p = clamp((t - 0.5) / 0.5, 0, 1);
+      rig.room.style.transform = 'translate3d(0,' + ((1 - p) * 60).toFixed(1) + 'px,0)';
+    }
+
+    if(rig.device){
+      const zoom = clamp((t - 4.35) / 0.85, 0, 1);
+      const out = clamp((t - 7.6) / 0.8, 0, 1);
+      const s = lerp(0.34, 1, zoom) * (1 - out * 0.12);
+      rig.device.style.transform = 'translate3d(0,' + lerp(90, 0, zoom).toFixed(1) + 'px,0) scale(' + s.toFixed(4) + ')';
+      rig.device.style.boxShadow = '0 ' + (30 * zoom).toFixed(0) + 'px ' + (70 * zoom).toFixed(0) + 'px rgba(0,0,0,' + (0.4 * zoom).toFixed(2) + ')';
+    }
+    if(rig.tap){
+      const show = clamp((t - 5.05) / 0.35, 0, 1) * (1 - clamp((t - 5.6) / 0.2, 0, 1));
+      rig.tap.style.opacity = show;
+      rig.tap.style.transform = 'translate3d(0,' + ((1 - show) * 20).toFixed(1) + 'px,0)';
+    }
+    if(rig.card){
+      const up = clamp((t - 5.75) / 0.55, 0, 1);
+      const down = clamp((t - 6.75) / 0.45, 0, 1);
+      const e = up < .5 ? 2 * up * up : 1 - Math.pow(-2 * up + 2, 2) / 2;
+      const d2 = down < .5 ? 2 * down * down : 1 - Math.pow(-2 * down + 2, 2) / 2;
+      rig.card.style.transform = 'translate3d(0,' + ((1 - e) * 104 + d2 * 104).toFixed(2) + '%,0)';
+      rig.card.style.opacity = up > 0.02 ? 1 : 0;
+      rig.card.style.visibility = (up > 0.02 && down < 0.99) ? 'visible' : 'hidden';
+    }
+    if(rig.unlock){
+      const on = (rig.unlocked || (rig.ui && rig.ui.unlocked)) && t >= 6.85 && t <= 7.55;
+      rig.unlock.style.opacity = on ? '1' : '0';
+      rig.unlock.style.visibility = on ? 'visible' : 'hidden';
+    }
+    if(rig.ok){
+      const show = clamp((t - 6.95) / 0.1, 0, 1) * (1 - clamp((t - 7.2) / 0.15, 0, 1));
+      rig.ok.style.opacity = show;
+      rig.ok.style.visibility = show > 0.01 ? 'visible' : 'hidden';
+      rig.ok.style.transform = 'translate3d(0,' + ((1 - show) * 26).toFixed(1) + 'px,0)';
+    }
+
+    if(rig.sky && SKY[rig.v]){
+      const [c1, c2] = sampleSky(SKY[rig.v], t);
+      rig.sky.style.background = 'linear-gradient(180deg,' + c1 + ',' + c2 + ')';
+    }
+    if(rig.path){
+      const dim = clamp(1 - Math.abs(t - 6) / 1.6, 0, 1);
+      rig.path.style.opacity = (1 - dim) * (t > 7.4 ? clamp(1 - (t - 7.4) / 0.6, 0, 1) : 1);
+      rig.path.style.backgroundPosition = '0 ' + (-t * 60).toFixed(0) + 'px';
+    }
+    if(rig.rail.length){
+      const idx = Math.round(clamp(t <= 4 ? t : t < 7.4 ? 5 : 6, 0, 6));
+      rig.rail.forEach((d, i) => {
+        d.style.background = i === idx ? 'rgba(36,28,59,.55)' : 'rgba(36,28,59,.16)';
+        d.style.height = i === idx ? '14px' : '5px';
+        d.style.transition = 'height .25s ease, background .25s ease';
+      });
+      const dark = (t >= 0.6 && t <= 2.4) || (t >= 4.6 && t <= 7.6);
+      rig.rail.forEach(d => { d.style.filter = dark ? 'invert(1) opacity(.75)' : 'none'; });
+    }
+
+    if(rig.progFill){
+      const p = clamp((t - 1) / 6.6, 0, 1);
+      rig.progFill.style.width = (p * 100).toFixed(2) + '%';
+      if(rig.progDot){
+        rig.progDot.style.left = (p * 100).toFixed(2) + '%';
+        rig.progDot.style.transform = 'rotate(' + (p * 360).toFixed(0) + 'deg)';
+      }
+      const onDark = (t >= 0.6 && t <= 2.4) || (t >= 4.6 && t <= 7.5);
+      if(rig.progTrack) rig.progTrack.style.background = onDark ? 'rgba(255,255,255,.2)' : 'rgba(36,28,59,.14)';
+      const fadeOut = clamp(1 - (t - 7.5) / 0.4, 0, 1);
+      if(rig.progTrack) rig.progTrack.style.opacity = fadeOut;
+    }
+
+    if(rig.bird){
+      const k = sample(PATHS[rig.v], t);
+      let src = k.f;
+      if(src === 'fly'){
+        const fi = Math.floor(t * 9) % 3 + 1;
+        src = 'fly' + fi;
+      }
+      if(rig.frame !== src){ rig.bird.src = 'nupo/' + src + '.png'; rig.frame = src; }
+      const w = rig.bird.offsetWidth || 120;
+      const h = rig.bird.offsetHeight || 100;
+      const stageW = rig.stage.clientWidth || 390;
+      const stageH = rig.stage.clientHeight || 844;
+      const x = stageW * k.x / 100 - w / 2;
+      const y = stageH * k.y / 100 - h / 2;
+      const dive = clamp((t - 5.95) / 0.25, 0, 1);
+      const back = clamp((t - 7.1) / 0.35, 0, 1);
+      const yieldToCloud = rig.v === 'a' ? clamp(1 - Math.abs(t - 4.05) / 0.8, 0, 1) : 0;
+      const yieldToScene = clamp(1 - Math.abs(t - 1.02) / 0.62, 0, 1);
+      rig.bird.style.opacity = ((1 - dive) + back) * (1 - yieldToCloud) * (1 - yieldToScene);
+      rig.bird.style.transform = 'translate3d(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px,0) scale(' + k.s.toFixed(3) + ') rotate(' + k.r.toFixed(1) + 'deg)';
+      rig.bird.style.transformOrigin = '50% 50%';
+    }
+  }
+
+  renderVals(){
+    const out = {};
+    ['a','b'].forEach(v=>{
+      const p = this.state[v + 'Phase'];
+      out[v + 'SplashOp'] = p === 'splash' ? 1 : 0;
+      out[v + 'SplashPe'] = p === 'splash' ? 'auto' : 'none';
+      out[v + 'SplashSc'] = p === 'splash' ? 1 : 1.12;
+      out[v + 'SplashVis'] = p === 'splash' ? 'visible' : 'hidden';
+      out[v + 'SplashDisp'] = p === 'splash' ? 'flex' : 'none';
+      out[v + 'WelOp'] = p === 'story' ? 0 : 1;
+      out[v + 'WelPe'] = p === 'story' ? 'none' : 'auto';
+      out[v + 'WelSc'] = p === 'story' ? 1.04 : 1;
+      out[v + 'WelVis'] = p === 'story' ? 'hidden' : 'visible';
+      out[v + 'WelDisp'] = p === 'story' ? 'none' : 'flex';
+    });
+    return out;
+  }
+}
+</script>
+</body>
+</html>

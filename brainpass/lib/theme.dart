@@ -8,32 +8,36 @@ import 'package:flutter/material.dart';
 
 class AppColors {
   // Brand
-  static const primary = Color(0xFF5A32E9);
-  static const primaryBright = Color(0xFF7A52FF); // gradient partner
-  static const primarySoft = Color(0xFFF1EDFF); // icon-badge / tint bg
+  static const primary = Color(0xFF7C3AED);
+  static const primaryBright = Color(0xFF8B5CF6); // gradient partner
+  static const primarySoft = Color(0xFFF6F1FF);
+  static const primaryDeep = Color(0xFF5B21B6); // text on lilac // icon-badge / tint bg
 
   // Sunny yellow from the logo — the second brand color. Used for warmth,
   // rewards and highlights (halo behind the owl, stars, earn chips).
-  static const accent = Color(0xFFFFC117);
-  static const accentSoft = Color(0xFFFFF4D2); // halo / tint bg
-  static const accentDeep = Color(0xFFB98600); // readable text on accentSoft
+  static const accent = Color(0xFFF9C13C);
+  static const accentSoft = Color(0xFFFFFCEF); // halo / tint bg
+  static const accentDeep = Color(0xFF8A6100); // readable text on accentSoft
 
   // Kid earn-card gradient
   static const kidTop = Color(0xFF6D8BFF);
   static const kidBottom = Color(0xFF8E6CFF);
 
   // Feedback
-  static const correct = Color(0xFF23B26A);
+  static const correct = Color(0xFF12B76A);
   static const correctSoft = Color(0xFFE7F8EF);
-  static const wrong = Color(0xFFFF6B6B);
+  static const wrong = Color(0xFFF04438);
+  /// Finished state (Setup Flow), distinct from `correct`.
+  static const done = Color(0xFF0E9384);
   static const wrongSoft = Color(0xFFFFF1F1);
 
   // Neutrals
-  static const bg = Color(0xFFF7F5FF);
+  static const bg = Color(0xFFF6F1FF);
   static const card = Colors.white;
+  static const cardBorder = Color(0xFFEADFFB);
   static const line = Color(0xFFECE9F8); // hairline borders
-  static const textDark = Color(0xFF241E3C); // deep ink with purple cast
-  static const textMuted = Color(0xFF74708A);
+  static const textDark = Color(0xFF241C3B); // deep ink with purple cast
+  static const textMuted = Color(0xFF7C7789);
 
   /// Full-screen background: soft purple wash fading to white.
   static BoxDecoration bgDecoration() {

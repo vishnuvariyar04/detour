@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;600;700;800;900&family=Baloo+2:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#EDE9E3}
+a{color:#7C3AED}a:hover{color:#5B21B6}
+@keyframes floaty{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-10px) rotate(-2deg)}}
+@keyframes floaty2{0%,100%{transform:translateY(0) rotate(1deg)}50%{transform:translateY(-6px) rotate(-2deg)}}
+@keyframes twinkle{0%,100%{opacity:.2;transform:scale(.7)}50%{opacity:1;transform:scale(1.15)}}
+@keyframes halo{0%,100%{transform:scale(1);opacity:.5}50%{transform:scale(1.08);opacity:.85}}
+@keyframes drift{0%,100%{transform:translate(0,0)}50%{transform:translate(14px,-18px)}}
+@keyframes shake{0%,100%{transform:translateX(0)}12%{transform:translateX(-9px)}28%{transform:translateX(8px)}44%{transform:translateX(-6px)}62%{transform:translateX(5px)}80%{transform:translateX(-3px)}}
+@keyframes confetti{0%{transform:translateY(-16px) rotate(0);opacity:0}12%{opacity:1}100%{transform:translateY(320px) rotate(430deg);opacity:0}}
+@keyframes popin{0%{transform:scale(.5);opacity:0}70%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}
+@keyframes rise{0%{transform:translateY(105%)}100%{transform:translateY(0)}}
+@keyframes tick{0%{stroke-dashoffset:60}100%{stroke-dashoffset:0}}
+@keyframes caret{0%,45%{opacity:1}55%,100%{opacity:.15}}
+@keyframes sqb{from{background-position:0 0}to{background-position:-1312px 0}}
+@keyframes sql{from{background-position:0 0}to{background-position:-1056px 0}}
+.fl{animation:floaty 4.6s ease-in-out infinite}
+.fl2{animation:floaty2 5.4s ease-in-out infinite}
+.tw{animation:twinkle 2.6s ease-in-out infinite}
+.tw2{animation:twinkle 3.4s .7s ease-in-out infinite}
+.tw3{animation:twinkle 2.1s 1.2s ease-in-out infinite}
+.hl{animation:halo 5s ease-in-out infinite}
+.dr{animation:drift 12s ease-in-out infinite}
+.dr2{animation:drift 16s 2s ease-in-out infinite reverse}
+.shk{animation:shake .5s ease-in-out}
+.pop{animation:popin .5s cubic-bezier(.34,1.5,.64,1) both}
+.rise{animation:rise .42s cubic-bezier(.25,1.15,.5,1) both}
+.tk{animation:tick .55s .15s ease-out forwards}
+.car{animation:caret 1s steps(1) infinite}
+.cf{animation:confetti 2.6s ease-in infinite}
+.cf:nth-child(2){animation-delay:.3s}.cf:nth-child(3){animation-delay:.6s}.cf:nth-child(4){animation-delay:.9s}
+.cf:nth-child(5){animation-delay:1.2s}.cf:nth-child(6){animation-delay:1.5s}.cf:nth-child(7){animation-delay:1.8s}
+.sqblink{width:132px;height:105px;background:url(nupo/seq-blink.png) 0 0/1056px 105px no-repeat;animation:sqb 3.4s steps(8) infinite}
+.sqlook{width:120px;height:96px;background:url(nupo/seq-look.png) 0 0/960px 96px no-repeat;animation:sql 4.2s steps(8) infinite}
+</style>
+</helmet>
+
+<section style="padding:44px 40px 60px;font-family:Figtree,sans-serif">
+<div style="display:flex;align-items:baseline;gap:12px">
+<div style="padding:5px 11px;border-radius:8px;background:#241C3B;font:800 12px Figtree,sans-serif;color:#fff">3a</div>
+<h2 style="margin:0;font:800 22px Figtree,sans-serif;color:#241C3B;letter-spacing:-.3px">Parent PIN, then the learning moment</h2>
+</div>
+<p style="margin:10px 0 26px;max-width:660px;font:400 13.5px/1.6 Figtree,sans-serif;color:rgba(36,28,59,.6)">Everything after <em>all set</em>. The PIN pad takes real digits and rejects a mismatch; the questions are playable — a wrong tap shakes and Nupo reacts, a right tap pops and fills a star.</p>
+
+<div style="width:390px;height:844px;border-radius:52px;border:10px solid #241C3B;background:#F6F1FF;position:relative;overflow:hidden;box-shadow:0 40px 90px rgba(36,28,59,.3)">
+
+<div style="position:absolute;inset:0;opacity:{{s0o}};pointer-events:{{s0p}};transition:opacity .4s ease;background:#F6F1FF">
+<div style="position:absolute;left:0;right:0;top:0;height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;font:800 14px Figtree,sans-serif;color:#241C3B">
+<div>10:14</div>
+<div style="display:flex;align-items:center;gap:5px"><div style="width:16px;height:10px;border-radius:2px;background:#241C3B"></div><div style="width:22px;height:11px;border-radius:3px;border:1.5px solid #241C3B"></div></div>
+</div>
+<div style="position:absolute;left:22px;right:22px;top:62px;display:flex;align-items:center;gap:14px">
+<div onClick="{{back}}" style="width:38px;height:38px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font:800 16px Figtree,sans-serif;color:#241C3B;cursor:pointer;flex:0 0 auto;box-shadow:0 4px 12px rgba(60,26,118,.1)">‹</div>
+<div style="flex:1;height:5px;border-radius:3px;background:rgba(124,58,237,.16);position:relative">
+<div style="position:absolute;left:0;top:0;bottom:0;border-radius:3px;background:#7C3AED;width:{{pinProg}};transition:width .45s cubic-bezier(.34,1.2,.64,1)"></div>
+</div>
+<div style="font:800 12px Figtree,sans-serif;color:rgba(36,28,59,.45)">Parents</div>
+</div>
+
+<div style="position:absolute;left:26px;right:26px;top:112px;display:flex;flex-direction:column;align-items:center">
+<div style="position:relative;width:300px;height:196px">
+<div class="hl" style="position:absolute;left:50%;top:14px;margin-left:-92px;width:184px;height:150px;border-radius:50%;background:radial-gradient(circle,#FFF3D2 0%,rgba(255,243,210,0) 72%)"></div>
+<div class="tw" style="position:absolute;right:30px;top:18px;font:800 13px Figtree,sans-serif;color:#F9C13C">★</div>
+<div class="tw3" style="position:absolute;left:26px;top:52px;font:800 10px Figtree,sans-serif;color:#F9C13C">★</div>
+<img src="nupo/bush1.png" alt="Nupo hiding the PIN in a bush" style="position:absolute;left:50%;bottom:0;margin-left:-101px;width:202px;height:auto;opacity:{{bf0}};transition:opacity .12s linear;filter:drop-shadow(0 12px 18px rgba(60,26,118,.16))">
+<img src="nupo/bush2.png" alt="Nupo hiding the PIN in a bush" style="position:absolute;left:50%;bottom:0;margin-left:-101px;width:202px;height:auto;opacity:{{bf1}};transition:opacity .12s linear;filter:drop-shadow(0 12px 18px rgba(60,26,118,.16))">
+<img src="nupo/bush3.png" alt="Nupo hiding the PIN in a bush" style="position:absolute;left:50%;bottom:0;margin-left:-101px;width:202px;height:auto;opacity:{{bf2}};transition:opacity .12s linear;filter:drop-shadow(0 12px 18px rgba(60,26,118,.16))">
+<img src="nupo/bush4.png" alt="Nupo hiding the PIN in a bush" style="position:absolute;left:50%;bottom:0;margin-left:-101px;width:202px;height:auto;opacity:{{bf3}};transition:opacity .12s linear;filter:drop-shadow(0 12px 18px rgba(60,26,118,.16))">
+<img src="nupo/bush5.png" alt="Nupo hiding the PIN in a bush" style="position:absolute;left:50%;bottom:0;margin-left:-101px;width:202px;height:auto;opacity:{{bf4}};transition:opacity .12s linear;filter:drop-shadow(0 12px 18px rgba(60,26,118,.16))">
+<img src="nupo/bush6.png" alt="Nupo hiding the PIN in a bush" style="position:absolute;left:50%;bottom:0;margin-left:-101px;width:202px;height:auto;opacity:{{bf5}};transition:opacity .12s linear;filter:drop-shadow(0 12px 18px rgba(60,26,118,.16))">
+<img src="nupo/bush7.png" alt="Nupo hiding the PIN in a bush" style="position:absolute;left:50%;bottom:0;margin-left:-101px;width:202px;height:auto;opacity:{{bf6}};transition:opacity .12s linear;filter:drop-shadow(0 12px 18px rgba(60,26,118,.16))">
+<img src="nupo/bush8.png" alt="Nupo hiding the PIN in a bush" style="position:absolute;left:50%;bottom:0;margin-left:-101px;width:202px;height:auto;opacity:{{bf7}};transition:opacity .12s linear;filter:drop-shadow(0 12px 18px rgba(60,26,118,.16))">
+<div style="position:absolute;right:14px;bottom:26px;width:44px;height:50px;border-radius:13px 13px 18px 18px;background:linear-gradient(160deg,#8B5CF6,#6D28D9);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 16px rgba(60,26,118,.28)">
+<svg width="20" height="22" viewBox="0 0 22 24" fill="none"><rect x="3" y="10" width="16" height="12" rx="3.5" fill="#FDE68A"></rect><path d="M7 10V7.5a4 4 0 0 1 8 0V10" stroke="#FDE68A" stroke-width="2.6" stroke-linecap="round"></path><circle cx="11" cy="16" r="2" fill="#8B5CF6"></circle></svg>
+</div>
+</div>
+<h1 style="margin:6px 0 0;text-align:center;font:800 27px/1.2 'Baloo 2',sans-serif;color:#241C3B">{{pinTitle}}</h1>
+<p style="margin:9px 0 0;text-align:center;font:400 14.5px/1.5 Figtree,sans-serif;color:rgba(36,28,59,.55);max-width:280px">{{pinCopy}}</p>
+
+<div class="{{pinShake}}" style="margin-top:22px;display:flex;gap:14px">
+<div style="width:60px;height:70px;border-radius:20px;background:#fff;border:2.5px solid {{k0c}};display:flex;align-items:center;justify-content:center;box-shadow:{{k0s}};transition:border-color .2s ease,box-shadow .2s ease">
+<div style="width:15px;height:15px;border-radius:50%;background:#241C3B;opacity:{{k0o}};transform:scale({{k0z}});transition:opacity .18s ease,transform .28s cubic-bezier(.34,1.6,.64,1)"></div></div>
+<div style="width:60px;height:70px;border-radius:20px;background:#fff;border:2.5px solid {{k1c}};display:flex;align-items:center;justify-content:center;box-shadow:{{k1s}};transition:border-color .2s ease,box-shadow .2s ease">
+<div style="width:15px;height:15px;border-radius:50%;background:#241C3B;opacity:{{k1o}};transform:scale({{k1z}});transition:opacity .18s ease,transform .28s cubic-bezier(.34,1.6,.64,1)"></div></div>
+<div style="width:60px;height:70px;border-radius:20px;background:#fff;border:2.5px solid {{k2c}};display:flex;align-items:center;justify-content:center;box-shadow:{{k2s}};transition:border-color .2s ease,box-shadow .2s ease">
+<div style="width:15px;height:15px;border-radius:50%;background:#241C3B;opacity:{{k2o}};transform:scale({{k2z}});transition:opacity .18s ease,transform .28s cubic-bezier(.34,1.6,.64,1)"></div></div>
+<div style="width:60px;height:70px;border-radius:20px;background:#fff;border:2.5px solid {{k3c}};display:flex;align-items:center;justify-content:center;box-shadow:{{k3s}};transition:border-color .2s ease,box-shadow .2s ease">
+<div style="width:15px;height:15px;border-radius:50%;background:#241C3B;opacity:{{k3o}};transform:scale({{k3z}});transition:opacity .18s ease,transform .28s cubic-bezier(.34,1.6,.64,1)"></div></div>
+</div>
+<div style="margin-top:12px;height:18px;font:800 13px Figtree,sans-serif;color:#E23D3D;opacity:{{errO}};transition:opacity .2s ease">{{pinErr}}</div>
+</div>
+
+<div style="position:absolute;left:26px;right:26px;bottom:34px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px">
+<sc-for list="{{pad}}" as="key" hint-placeholder-count="12">
+<div onClick="{{key.tap}}" style="height:62px;border-radius:20px;background:{{key.bg}};display:flex;align-items:center;justify-content:center;font:800 24px 'Baloo 2',sans-serif;color:{{key.fg}};cursor:pointer;box-shadow:0 4px 0 {{key.edge}},0 8px 16px rgba(60,26,118,.08);user-select:none" style-active="transform:translateY(4px);box-shadow:0 0 0 {{key.edge}}">{{key.label}}</div>
+</sc-for>
+</div>
+</div>
+
+<div style="position:absolute;inset:0;opacity:{{s1o}};pointer-events:{{s1p}};transition:opacity .4s ease;background:linear-gradient(180deg,#6D28D9 0%,#7C3AED 46%,#8B5CF6 100%);overflow:hidden">
+<div class="dr" style="position:absolute;left:-70px;top:80px;width:220px;height:220px;border-radius:50%;background:rgba(255,255,255,.07)"></div>
+<div class="dr2" style="position:absolute;right:-80px;top:300px;width:260px;height:260px;border-radius:50%;background:rgba(255,255,255,.06)"></div>
+<div class="tw" style="position:absolute;left:11%;bottom:118px;font:800 14px Figtree,sans-serif;color:#F9C13C">★</div>
+<div class="tw2" style="position:absolute;right:14%;bottom:156px;font:800 11px Figtree,sans-serif;color:#FDE68A">★</div>
+<div class="tw3" style="position:absolute;left:26%;bottom:74px;font:800 9px Figtree,sans-serif;color:#fff">★</div>
+
+<div style="position:absolute;left:0;right:0;top:0;height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;font:800 14px Figtree,sans-serif;color:#fff">
+<div>10:16</div>
+<div style="display:flex;align-items:center;gap:5px"><div style="width:16px;height:10px;border-radius:2px;background:#fff"></div><div style="width:22px;height:11px;border-radius:3px;border:1.5px solid #fff"></div></div>
+</div>
+
+<div style="position:absolute;left:20px;right:20px;top:62px;display:flex;align-items:center;gap:10px;padding:9px 12px 9px 9px;border-radius:22px;background:rgba(255,255,255,.14);border:1.5px solid rgba(255,255,255,.2)">
+<div style="width:38px;height:38px;border-radius:12px;background:linear-gradient(150deg,#FF5A5F,#E11D48);display:flex;align-items:center;justify-content:center;flex:0 0 auto;box-shadow:0 4px 10px rgba(0,0,0,.2)">
+<svg width="15" height="16" viewBox="0 0 15 16" fill="none"><path d="M3 2.4 13 8 3 13.6z" fill="#fff"></path></svg></div>
+<div style="flex:1;min-width:0">
+<div style="font:800 13.5px Figtree,sans-serif;color:#fff">{{waitingApp}} is waiting</div>
+<div style="margin-top:1px;font:600 11.5px Figtree,sans-serif;color:rgba(255,255,255,.66)">{{leftLabel}}</div>
+</div>
+<div style="display:flex;align-items:center;gap:6px">
+<div style="width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center">
+<svg width="11" height="13" viewBox="0 0 11 13" fill="none"><rect x="1" y="5" width="9" height="7" rx="2" fill="#fff"></rect><path d="M3 5V3.6a2.5 2.5 0 0 1 5 0V5" stroke="#fff" stroke-width="1.6" stroke-linecap="round"></path></svg></div>
+</div>
+</div>
+
+<div style="position:absolute;left:20px;right:86px;top:124px;display:flex;flex-direction:column;align-items:center">
+<div style="display:flex;align-items:center;justify-content:center;gap:16px">
+<div style="position:relative;width:42px;height:42px;display:flex;align-items:center;justify-content:center">
+<div style="position:absolute;inset:0;border-radius:50%;background:rgba(255,255,255,.12)"></div>
+<div style="position:relative;font:800 26px Figtree,sans-serif;color:{{st0c}};opacity:{{st0o}};transform:scale({{st0z}});transition:opacity .3s ease,transform .45s cubic-bezier(.34,1.7,.64,1);text-shadow:0 3px 8px rgba(0,0,0,.2)">★</div>
+</div>
+<div style="position:relative;width:42px;height:42px;display:flex;align-items:center;justify-content:center">
+<div style="position:absolute;inset:0;border-radius:50%;background:rgba(255,255,255,.12)"></div>
+<div style="position:relative;font:800 26px Figtree,sans-serif;color:{{st1c}};opacity:{{st1o}};transform:scale({{st1z}});transition:opacity .3s ease,transform .45s cubic-bezier(.34,1.7,.64,1);text-shadow:0 3px 8px rgba(0,0,0,.2)">★</div>
+</div>
+<div style="position:relative;width:42px;height:42px;display:flex;align-items:center;justify-content:center">
+<div style="position:absolute;inset:0;border-radius:50%;background:rgba(255,255,255,.12)"></div>
+<div style="position:relative;font:800 26px Figtree,sans-serif;color:{{st2c}};opacity:{{st2o}};transform:scale({{st2z}});transition:opacity .3s ease,transform .45s cubic-bezier(.34,1.7,.64,1);text-shadow:0 3px 8px rgba(0,0,0,.2)">★</div>
+</div>
+</div>
+<div style="margin-top:8px;padding:5px 14px;border-radius:999px;background:rgba(255,255,255,.16);font:800 11.5px Figtree,sans-serif;color:#fff;letter-spacing:.03em">{{qLabel}}</div>
+</div>
+
+<div class="{{cardShake}}" style="position:absolute;left:20px;right:20px;top:224px">
+<div class="fl2" style="position:absolute;right:-8px;top:-70px;width:118px;height:96px;z-index:2;filter:drop-shadow(0 12px 18px rgba(20,6,50,.3))">
+<img src="nupo/idea.png" alt="Nupo" style="position:absolute;left:50%;bottom:0;margin-left:-59px;width:118px;height:auto;opacity:{{bp0}};transition:opacity .3s ease">
+<img src="nupo/ohno.png" alt="Nupo" style="position:absolute;left:50%;bottom:0;margin-left:-59px;width:118px;height:auto;opacity:{{bp1}};transition:opacity .3s ease">
+<img src="nupo/tired.png" alt="Nupo" style="position:absolute;left:50%;bottom:0;margin-left:-59px;width:118px;height:auto;opacity:{{bp2}};transition:opacity .3s ease">
+<img src="nupo/shrug.png" alt="Nupo" style="position:absolute;left:50%;bottom:0;margin-left:-59px;width:118px;height:auto;opacity:{{bp3}};transition:opacity .3s ease">
+<img src="nupo/sleep.png" alt="Nupo" style="position:absolute;left:50%;bottom:0;margin-left:-59px;width:118px;height:auto;opacity:{{bp4}};transition:opacity .3s ease">
+<img src="nupo/medal.png" alt="Nupo" style="position:absolute;left:50%;bottom:0;margin-left:-59px;width:118px;height:auto;opacity:{{bp5}};transition:opacity .3s ease">
+<img src="nupo/aplus2.png" alt="Nupo" style="position:absolute;left:50%;bottom:0;margin-left:-59px;width:118px;height:auto;opacity:{{bp6}};transition:opacity .3s ease">
+<img src="nupo/cool.png" alt="Nupo" style="position:absolute;left:50%;bottom:0;margin-left:-59px;width:118px;height:auto;opacity:{{bp7}};transition:opacity .3s ease">
+<img src="nupo/star-student.png" alt="Nupo" style="position:absolute;left:50%;bottom:0;margin-left:-59px;width:118px;height:auto;opacity:{{bp8}};transition:opacity .3s ease">
+</div>
+<div style="position:relative;border-radius:32px;background:#fff;padding:26px 20px 22px;box-shadow:0 22px 44px rgba(20,6,50,.28)">
+<div style="position:absolute;left:22px;top:-11px;padding:4px 12px;border-radius:999px;background:#F9C13C;font:800 11px Figtree,sans-serif;color:#4A2E00">{{topicLabel}}</div>
+<h2 style="margin:4px 0 0;text-align:center;font:800 25px/1.24 'Baloo 2',sans-serif;color:#241C3B;text-wrap:pretty">{{question}}</h2>
+
+<sc-if value="{{isMcq}}" hint-placeholder-val="{{true}}">
+<div style="margin-top:18px;display:flex;flex-direction:column;gap:12px">
+<sc-for list="{{options}}" as="opt" hint-placeholder-count="3">
+<div onClick="{{opt.tap}}" style="position:relative;height:60px;border-radius:20px;background:{{opt.bg}};border:2.5px solid {{opt.bd}};display:flex;align-items:center;gap:14px;padding:0 16px;cursor:pointer;box-shadow:0 4px 0 {{opt.edge}};transition:background .25s ease,border-color .25s ease,box-shadow .25s ease,transform .25s cubic-bezier(.34,1.4,.64,1);transform:scale({{opt.z}})" style-active="transform:translateY(4px);box-shadow:0 0 0 {{opt.edge}}">
+<div style="width:32px;height:32px;border-radius:11px;background:{{opt.chipBg}};display:flex;align-items:center;justify-content:center;font:800 14px 'Baloo 2',sans-serif;color:{{opt.chipFg}};flex:0 0 auto;transition:background .25s ease">{{opt.key}}</div>
+<div style="flex:1;font:800 17px Figtree,sans-serif;color:{{opt.fg}};transition:color .25s ease">{{opt.label}}</div>
+<div style="font:800 17px Figtree,sans-serif;color:{{opt.markC}};opacity:{{opt.markO}};transition:opacity .25s ease">{{opt.mark}}</div>
+</div>
+</sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{isNum}}" hint-placeholder-val="{{false}}">
+<div style="margin-top:16px;display:flex;flex-direction:column;align-items:center">
+<div style="width:132px;height:62px;border-radius:20px;background:{{entryBg}};border:2.5px solid {{entryBd}};display:flex;align-items:center;justify-content:center;gap:2px;transition:background .25s ease,border-color .25s ease">
+<div style="font:800 30px 'Baloo 2',sans-serif;color:{{entryFg}}">{{entry}}</div>
+<div class="car" style="width:3px;height:28px;border-radius:2px;background:#7C3AED;opacity:{{caretO}}"></div>
+</div>
+<div style="margin-top:14px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%">
+<sc-for list="{{numPad}}" as="key" hint-placeholder-count="12">
+<div onClick="{{key.tap}}" style="height:52px;border-radius:16px;background:{{key.bg}};display:flex;align-items:center;justify-content:center;font:800 21px 'Baloo 2',sans-serif;color:{{key.fg}};cursor:pointer;box-shadow:0 4px 0 {{key.edge}};user-select:none" style-active="transform:translateY(4px);box-shadow:0 0 0 {{key.edge}}">{{key.label}}</div>
+</sc-for>
+</div>
+</div>
+</sc-if>
+</div>
+</div>
+
+<div style="position:absolute;left:0;right:0;bottom:0;opacity:{{sheetO}};transform:translateY({{sheetY}});transition:opacity .3s ease,transform .42s cubic-bezier(.25,1.15,.5,1);pointer-events:{{sheetP}}">
+<div style="border-radius:34px 34px 0 0;background:{{sheetBg}};padding:22px 24px 30px;box-shadow:0 -14px 40px rgba(20,6,50,.34)">
+<div style="display:flex;align-items:center;gap:14px">
+<div style="width:52px;height:52px;border-radius:18px;background:{{sheetChip}};display:flex;align-items:center;justify-content:center;flex:0 0 auto;font:800 22px Figtree,sans-serif;color:#fff">{{sheetIcon}}</div>
+<div style="flex:1">
+<div style="font:800 20px 'Baloo 2',sans-serif;color:{{sheetInk}}">{{sheetTitle}}</div>
+<div style="margin-top:2px;font:600 13px/1.4 Figtree,sans-serif;color:{{sheetSub}}">{{sheetLine}}</div>
+</div>
+</div>
+<div onClick="{{sheetTap}}" style="margin-top:16px;height:56px;border-radius:28px;background:{{sheetBtnBg}};display:flex;align-items:center;justify-content:center;gap:8px;font:800 17px Figtree,sans-serif;color:{{sheetBtnFg}};cursor:pointer;box-shadow:0 6px 0 {{sheetBtnEdge}}" style-active="transform:translateY(4px);box-shadow:0 2px 0 {{sheetBtnEdge}}">{{sheetBtn}}</div>
+</div>
+</div>
+</div>
+
+<div style="position:absolute;inset:0;opacity:{{s2o}};pointer-events:{{s2p}};transition:opacity .45s ease;background:linear-gradient(180deg,#0E9384 0%,#0B7A6D 100%);overflow:hidden;display:flex;flex-direction:column;align-items:center;padding:0 30px;box-sizing:border-box">
+<div style="position:absolute;inset:0;pointer-events:none;overflow:hidden">
+<div class="cf" style="position:absolute;left:12%;top:0;width:9px;height:13px;border-radius:2px;background:#F9C13C"></div>
+<div class="cf" style="position:absolute;left:28%;top:0;width:8px;height:8px;border-radius:50%;background:#fff"></div>
+<div class="cf" style="position:absolute;left:44%;top:0;width:9px;height:13px;border-radius:2px;background:#BFF3EA"></div>
+<div class="cf" style="position:absolute;left:60%;top:0;width:8px;height:8px;border-radius:50%;background:#F9C13C"></div>
+<div class="cf" style="position:absolute;left:76%;top:0;width:9px;height:13px;border-radius:2px;background:#fff"></div>
+<div class="cf" style="position:absolute;left:88%;top:0;width:8px;height:8px;border-radius:50%;background:#BFF3EA"></div>
+</div>
+<div style="margin-top:74px;display:flex;gap:12px">
+<div style="font:800 34px Figtree,sans-serif;color:#F9C13C;text-shadow:0 4px 10px rgba(0,0,0,.22)">★</div>
+<div style="font:800 34px Figtree,sans-serif;color:#F9C13C;text-shadow:0 4px 10px rgba(0,0,0,.22)">★</div>
+<div style="font:800 34px Figtree,sans-serif;color:#F9C13C;text-shadow:0 4px 10px rgba(0,0,0,.22)">★</div>
+</div>
+<h1 style="margin:10px 0 0;text-align:center;font:800 32px/1.16 'Baloo 2',sans-serif;color:#fff">All three, {{kidName}}!</h1>
+<p style="margin:8px 0 0;text-align:center;font:400 14.5px/1.5 Figtree,sans-serif;color:rgba(255,255,255,.78)">{{partyLine}}</p>
+<div class="fl" style="position:relative;margin-top:14px;width:100%;height:190px;flex:0 0 auto;filter:drop-shadow(0 20px 30px rgba(4,40,36,.45))">
+<img src="nupo/medal.png" alt="Nupo celebrating" style="position:absolute;left:50%;bottom:0;transform:translateX(-50%);height:100%;width:auto;max-width:100%;opacity:{{pt0}}">
+<img src="nupo/drums.png" alt="Nupo celebrating" style="position:absolute;left:50%;bottom:0;transform:translateX(-50%);height:100%;width:auto;max-width:100%;opacity:{{pt1}}">
+<img src="nupo/phone2.png" alt="Nupo celebrating" style="position:absolute;left:50%;bottom:0;transform:translateX(-50%);height:100%;width:auto;max-width:100%;opacity:{{pt2}}">
+<img src="nupo/gamer.png" alt="Nupo celebrating" style="position:absolute;left:50%;bottom:0;transform:translateX(-50%);height:100%;width:auto;max-width:100%;opacity:{{pt3}}">
+<img src="nupo/confetti.png" alt="Nupo celebrating" style="position:absolute;left:50%;bottom:0;transform:translateX(-50%);height:100%;width:auto;max-width:100%;opacity:{{pt4}}">
+<img src="nupo/popcorn.png" alt="Nupo celebrating" style="position:absolute;left:50%;bottom:0;transform:translateX(-50%);height:100%;width:auto;max-width:100%;opacity:{{pt5}}">
+</div>
+<div style="width:100%;display:flex;gap:10px">
+<div style="flex:1;border-radius:22px;background:rgba(255,255,255,.14);border:1.5px solid rgba(255,255,255,.18);padding:14px 12px;text-align:center">
+<div style="font:800 24px 'Baloo 2',sans-serif;color:#F9C13C">+30</div>
+<div style="margin-top:2px;font:700 11.5px Figtree,sans-serif;color:rgba(255,255,255,.72)">sparks earned</div>
+</div>
+<div style="flex:1;border-radius:22px;background:rgba(255,255,255,.14);border:1.5px solid rgba(255,255,255,.18);padding:14px 12px;text-align:center">
+<div style="font:800 24px 'Baloo 2',sans-serif;color:#fff">6</div>
+<div style="margin-top:2px;font:700 11.5px Figtree,sans-serif;color:rgba(255,255,255,.72)">day streak</div>
+</div>
+</div>
+<div onClick="{{openApp}}" style="margin-top:16px;width:100%;height:60px;border-radius:30px;background:#fff;display:flex;align-items:center;justify-content:center;gap:10px;font:800 17px Figtree,sans-serif;color:#0B7A6D;cursor:pointer;box-shadow:0 8px 0 rgba(4,40,36,.24)" style-active="transform:translateY(4px);box-shadow:0 4px 0 rgba(4,40,36,.24)">Open {{waitingApp}} <span>→</span></div>
+<div onClick="{{restart}}" style="margin-top:12px;font:700 13px Figtree,sans-serif;color:rgba(255,255,255,.66);cursor:pointer">Run it again</div>
+</div>
+
+</div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:520,&quot;height&quot;:1000},&quot;kidName&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Ram&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;waitingApp&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Videos&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+const QS = [
+  { topic: 'Animals', q: 'Which animal gives us milk?', opts: ['Cow', 'Snake', 'Lion'], a: 0,
+    win: 'Cows make milk every single day.', miss: 'That one would not enjoy a bucket.' },
+  { topic: 'Spelling', q: 'Which one is spelled right?', opts: ['Becuase', 'Because', 'Becase'], a: 1,
+    win: 'Be-cause. Two clean halves.', miss: 'Say it slowly: be \u00b7 cause.' },
+  { topic: 'Patterns', q: '5, 7, 9, 11, ?', num: true, a: '13',
+    win: 'Two steps each time. 13 it is.', miss: 'Count the jump between each one.' }
+];
+
+const PARTY = [
+  'Medal earned. Two minutes of thinking.',
+  'Drum roll — three out of three.',
+  'Screen time, unlocked the honest way.',
+  'Controller’s yours now.',
+  'Confetti for a clean sweep.',
+  'Popcorn mode. Enjoy it.'
+];
+const WIN_WORDS = ['Nice one!', 'Yes!', 'Sharp.', 'Got it.'];
+const MISS_WORDS = ['Oof.', 'Not quite.', 'Hmm, no.', 'Close, but no.'];
+
+class Component extends DCLogic {
+  state = { screen: 0, pin: '', pin1: null, err: '', shake: 0, q: 0, stars: 0, phase: 'ask', picked: -1, entry: '', pose: 0, misses: 0, wins: 0, frame: 0, party: 0 };
+
+  // pose stack: 0 idle, 1-4 unhappy, 5-8 happy
+  reactSad(){
+    const n = this.state.misses;
+    this.setState({ pose: 1 + (n % 4), misses: n + 1 });
+  }
+
+  reactGlad(){
+    const pool = [5, 6, 7, 8].filter(p => p !== this.lastGlad);
+    const pick = pool[Math.floor(Math.random() * pool.length)];
+    this.lastGlad = pick;
+    this.setState({ pose: pick, wins: this.state.wins + 1 });
+  }
+
+  componentWillUnmount(){ clearTimeout(this.t); clearInterval(this.fa); }
+
+  // steps one frame at a time so the walk-into-bush reads as motion
+  toFrame(target, ms){
+    clearInterval(this.fa);
+    const step = ()=>{
+      const cur = this.state.frame;
+      if(cur === target){ clearInterval(this.fa); return; }
+      this.setState({ frame: cur + (target > cur ? 1 : -1) });
+    };
+    this.fa = setInterval(step, ms || 78);
+    step();
+  }
+
+  buzz(){
+    const n = this.state.shake + 1;
+    this.setState({ shake: n });
+    clearTimeout(this.t);
+    this.t = setTimeout(()=> this.setState({ shake: 0 }), 520);
+  }
+
+  tapPin(d){
+    const s = this.state;
+    if(s.pin.length >= 4) return;
+    const pin = s.pin + d;
+    this.setState({ pin, err: '' });
+    this.toFrame([0, 2, 3, 5, 7][pin.length]);
+    if(pin.length < 4) return;
+    setTimeout(()=>{
+      if(s.pin1 === null) this.setState({ pin1: pin, pin: '' });
+      else if(s.pin1 === pin) this.setState({ screen: 1, pin: '', pin1: null });
+      else {
+        this.setState({ pin: '', err: 'PINs didn\u2019t match \u2014 try again' });
+        this.buzz();
+        this.toFrame(0, 58);
+      }
+    }, 260);
+  }
+
+  delPin(){
+    const pin = this.state.pin.slice(0, -1);
+    this.setState({ pin, err: '' });
+    this.toFrame([0, 2, 3, 5, 7][pin.length]);
+  }
+
+  answer(k){
+    const s = this.state;
+    if(s.phase !== 'ask') return;
+    const right = k === QS[s.q].a;
+    this.setState({ picked: k, phase: right ? 'right' : 'wrong' });
+    if(right){ this.setState({ stars: s.stars + 1 }); this.reactGlad(); }
+    else { this.reactSad(); this.buzz(); }
+  }
+
+  tapNum(d){
+    const s = this.state;
+    if(s.phase !== 'ask' || s.entry.length >= 2) return;
+    this.setState({ entry: s.entry + d });
+  }
+
+  submitNum(){
+    const s = this.state;
+    if(s.phase !== 'ask' || !s.entry) return;
+    const right = s.entry === QS[s.q].a;
+    this.setState({ phase: right ? 'right' : 'wrong' });
+    if(right){ this.setState({ stars: s.stars + 1 }); this.reactGlad(); }
+    else { this.reactSad(); this.buzz(); }
+  }
+
+  advance(){
+    const s = this.state;
+    if(s.phase === 'wrong'){
+      this.setState({ phase: 'ask', picked: -1, entry: '', pose: 0 });
+      return;
+    }
+    if(s.q >= QS.length - 1) this.setState({ screen: 2, party: Math.floor(Math.random() * 6) });
+    else this.setState({ q: s.q + 1, phase: 'ask', picked: -1, entry: '', pose: 0 });
+  }
+
+  reset(){
+    this.lastGlad = null;
+    clearInterval(this.fa);
+    this.setState({ screen: 0, pin: '', pin1: null, err: '', q: 0, stars: 0, phase: 'ask', picked: -1, entry: '', pose: 0, misses: 0, wins: 0, frame: 0 });
+  }
+
+  renderVals(){
+    const s = this.state;
+    const item = QS[s.q];
+    const kid = this.props.kidName ?? 'Ram';
+    const app = this.props.waitingApp ?? 'Videos';
+    const out = {
+      kidName: kid,
+      waitingApp: app,
+      pinTitle: s.pin1 === null ? 'Create your parent PIN' : 'Type it once more',
+      pinCopy: s.pin1 === null
+        ? '4 digits only you know. It opens the parent settings \u2014 the child side never asks for it.'
+        : 'Same four digits, so we know it stuck.',
+      pinProg: s.pin1 === null ? '48%' : '78%',
+      pinErr: s.err,
+      errO: s.err ? 1 : 0,
+      pinShake: s.shake && s.screen === 0 ? 'shk' : '',
+      cardShake: s.shake && s.screen === 1 ? 'shk' : '',
+      topicLabel: item.topic,
+      question: item.q,
+      qLabel: 'Question ' + (s.q + 1) + ' of ' + QS.length,
+      leftLabel: (QS.length - s.q) + ' left \u00b7 about 20 seconds',
+      isMcq: !item.num,
+      isNum: !!item.num,
+      entry: s.entry,
+      caretO: s.entry.length < 2 && s.phase === 'ask' ? 1 : 0,
+      entryBg: s.phase === 'right' ? '#EAFBF3' : s.phase === 'wrong' ? '#FFF1F0' : '#F7F4FE',
+      entryBd: s.phase === 'right' ? '#12B76A' : s.phase === 'wrong' ? '#F04438' : 'rgba(124,58,237,.2)',
+      entryFg: s.phase === 'right' ? '#067647' : s.phase === 'wrong' ? '#B42318' : '#241C3B',
+      sheetO: s.phase === 'ask' ? 0 : 1,
+      sheetY: s.phase === 'ask' ? '104%' : '0%',
+      sheetP: s.phase === 'ask' ? 'none' : 'auto',
+      sheetBg: s.phase === 'right' ? '#EAFBF3' : '#FFF1F0',
+      sheetChip: s.phase === 'right' ? '#12B76A' : '#F04438',
+      sheetIcon: s.phase === 'right' ? '\u2713' : '!',
+      sheetInk: s.phase === 'right' ? '#05603A' : '#912018',
+      sheetSub: s.phase === 'right' ? 'rgba(5,96,58,.7)' : 'rgba(145,32,24,.7)',
+      sheetTitle: s.phase === 'right' ? WIN_WORDS[(s.wins + 3) % WIN_WORDS.length] : MISS_WORDS[(s.misses + 3) % MISS_WORDS.length],
+      sheetLine: s.phase === 'right' ? item.win : item.miss,
+      sheetBtn: s.phase === 'right' ? (s.q >= QS.length - 1 ? 'Finish' : 'Next question') : 'Try again',
+      sheetBtnBg: s.phase === 'right' ? '#12B76A' : '#F04438',
+      sheetBtnFg: '#fff',
+      sheetBtnEdge: s.phase === 'right' ? '#067647' : '#B42318',
+      sheetTap: ()=> this.advance(),
+      back: ()=> this.reset(),
+      restart: ()=> this.reset(),
+      openApp: ()=> this.reset()
+    };
+
+    for(let n = 0; n < 9; n++) out['bp' + n] = s.pose === n ? 1 : 0;
+    for(let n = 0; n < 8; n++) out['bf' + n] = s.frame === n ? 1 : 0;
+    for(let n = 0; n < 6; n++) out['pt' + n] = s.party === n ? 1 : 0;
+    out.partyLine = PARTY[s.party];
+
+    for(let n = 0; n < 4; n++){
+      const filled = s.pin.length > n;
+      out['k' + n + 'c'] = s.err ? '#F04438' : s.pin.length === n ? '#7C3AED' : filled ? 'rgba(124,58,237,.4)' : 'rgba(36,28,59,.12)';
+      out['k' + n + 's'] = s.pin.length === n ? '0 8px 20px rgba(124,58,237,.24)' : '0 4px 10px rgba(60,26,118,.06)';
+      out['k' + n + 'o'] = filled ? 1 : 0;
+      out['k' + n + 'z'] = filled ? 1 : .4;
+    }
+
+    for(let n = 0; n < 3; n++){
+      out['s' + n + 'o'] = s.screen === n ? 1 : 0;
+      out['s' + n + 'p'] = s.screen === n ? 'auto' : 'none';
+      const on = s.stars > n;
+      out['st' + n + 'c'] = on ? '#F9C13C' : 'rgba(255,255,255,.3)';
+      out['st' + n + 'o'] = on ? 1 : .55;
+      out['st' + n + 'z'] = on ? 1 : .78;
+    }
+
+    out.options = (item.opts || []).map((label, k)=>{
+      const chosen = s.picked === k;
+      const right = chosen && s.phase === 'right';
+      const wrong = chosen && s.phase === 'wrong';
+      return {
+        label, key: String.fromCharCode(65 + k),
+        tap: ()=> this.answer(k),
+        bg: right ? '#EAFBF3' : wrong ? '#FFF1F0' : '#F7F4FE',
+        bd: right ? '#12B76A' : wrong ? '#F04438' : 'rgba(124,58,237,.14)',
+        edge: right ? '#12B76A' : wrong ? '#F04438' : 'rgba(124,58,237,.16)',
+        fg: right ? '#05603A' : wrong ? '#912018' : '#241C3B',
+        chipBg: right ? '#12B76A' : wrong ? '#F04438' : 'rgba(124,58,237,.14)',
+        chipFg: chosen ? '#fff' : '#7C3AED',
+        z: right ? 1.03 : 1,
+        mark: right ? '\u2713' : '\u2715',
+        markC: right ? '#12B76A' : '#F04438',
+        markO: chosen ? 1 : 0
+      };
+    });
+
+    const padKey = (label, tap, kind)=> ({
+      label, tap,
+      bg: kind === 'go' ? '#12B76A' : '#fff',
+      fg: kind === 'go' ? '#fff' : '#241C3B',
+      edge: kind === 'go' ? '#067647' : 'rgba(60,26,118,.14)'
+    });
+    out.pad = ['1','2','3','4','5','6','7','8','9'].map(d=> padKey(d, ()=> this.tapPin(d)))
+      .concat([ padKey('', ()=>{}), padKey('0', ()=> this.tapPin('0')), padKey('\u232B', ()=> this.delPin()) ]);
+    out.numPad = ['1','2','3','4','5','6','7','8','9'].map(d=> padKey(d, ()=> this.tapNum(d)))
+      .concat([
+        padKey('\u232B', ()=> this.setState({ entry: s.entry.slice(0, -1) })),
+        padKey('0', ()=> this.tapNum('0')),
+        padKey('\u2713', ()=> this.submitNum(), 'go')
+      ]);
+
+    return out;
+  }
+}
+</script>
+</body>
+</html>
