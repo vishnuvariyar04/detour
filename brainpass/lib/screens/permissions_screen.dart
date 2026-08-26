@@ -65,7 +65,7 @@ class _PermissionsScreenState extends State<PermissionsScreen>
   Widget build(BuildContext context) {
     return StepScaffold(
       title: 'Permissions',
-      subtitle: 'Green means working. Tap Open to fix anything that\'s off.',
+      subtitle: 'Green means working. Tap Open to fix anything that is off.',
       buttonLabel: 'Done',
       onButton: widget.onNext,
       child: Column(
@@ -75,7 +75,7 @@ class _PermissionsScreenState extends State<PermissionsScreen>
             color: AppColors.primary,
             background: AppColors.primarySoft,
             title: 'Display over other apps',
-            body: 'Lets the lesson appear before a game opens.',
+            body: _overlay ? 'Working' : 'Needs attention',
             granted: _overlay,
             onOpen: () async {
               Engine.watchReturn('overlay'); // auto-return once granted
@@ -88,7 +88,7 @@ class _PermissionsScreenState extends State<PermissionsScreen>
             color: AppColors.correct,
             background: AppColors.correctSoft,
             title: 'Usage access',
-            body: 'Tells Nupo when a chosen app opens.',
+            body: _usage ? 'Working' : 'Needs attention',
             granted: _usage,
             onOpen: () async {
               Engine.watchReturn('usage'); // auto-return once granted
@@ -101,7 +101,7 @@ class _PermissionsScreenState extends State<PermissionsScreen>
             color: AppColors.accentDeep,
             background: AppColors.accentSoft,
             title: 'Background battery',
-            body: 'Choose “No restrictions” so Nupo isn\'t put to sleep.',
+            body: _battery ? 'Working' : 'Recommended',
             granted: _battery,
             onOpen: () async {
               await Engine.requestIgnoreBattery();
@@ -113,15 +113,15 @@ class _PermissionsScreenState extends State<PermissionsScreen>
               icon: Symbols.rocket_launch_rounded,
               color: const Color(0xFF6D8BFF),
               background: const Color(0xFFEAF0FF),
-              title: 'Auto-restart',
-              body: 'Find Nupo in the list and switch Autostart on.',
+              title: 'Restart automatically',
+              body: 'Open settings',
               granted: null, // can't be read on Xiaomi/etc.
               onOpen: () => Engine.openAutostartSettings(),
             ),
           const SizedBox(height: 8),
           InfoPill(
             icon: Symbols.push_pin_rounded,
-            text: 'In recent apps, lock Nupo so it isn\'t swiped away.',
+            text: 'Nupo only watches the apps you picked.',
           ),
         ],
       ),
@@ -182,8 +182,7 @@ class _PermRow extends StatelessWidget {
           const SizedBox(width: 10),
           if (isOn)
             Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
                 color: AppColors.correctSoft,
                 borderRadius: BorderRadius.circular(20),
@@ -191,14 +190,16 @@ class _PermRow extends StatelessWidget {
               child: const Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.check_rounded,
-                      color: AppColors.correct, size: 16),
+                  Icon(Icons.check_rounded, color: AppColors.correct, size: 16),
                   SizedBox(width: 4),
-                  Text('On',
-                      style: TextStyle(
-                          color: AppColors.correct,
-                          fontWeight: FontWeight.w900,
-                          fontSize: 12.5)),
+                  Text(
+                    'Working',
+                    style: TextStyle(
+                      color: AppColors.correct,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 12.5,
+                    ),
+                  ),
                 ],
               ),
             )
@@ -214,8 +215,10 @@ class _PermRow extends StatelessWidget {
                     borderRadius: BorderRadius.circular(19),
                   ),
                 ),
-                child: const Text('Open',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800)),
+                child: const Text(
+                  'Open',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+                ),
               ),
             ),
         ],

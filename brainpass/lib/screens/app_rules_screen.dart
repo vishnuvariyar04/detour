@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 import '../engine.dart';
+import '../profile_service.dart';
 import '../safe_apps.dart';
 import '../storage.dart';
 import '../theme.dart';
@@ -48,6 +49,9 @@ class _AppRulesScreenState extends State<AppRulesScreen> {
     await Engine.setRules(Storage.rulesForEngine());
     // Wipe any leftover earned time so the new minutes/cap apply right away.
     if (!widget.isOnboarding) await Engine.clearBudgets();
+    // Keep the account's saved setup current, so a reinstall or a second
+    // phone restores THESE rules rather than the ones from setup day.
+    ProfileService.sync();
     widget.onNext();
   }
 
@@ -67,7 +71,7 @@ class _AppRulesScreenState extends State<AppRulesScreen> {
                   const Text('No apps picked yet',
                       textAlign: TextAlign.center, style: AppText.title),
                   const SizedBox(height: 8),
-                  const Text('Go back and pick at least one app first.',
+                  const Text('Go back and pick at least one app.',
                       textAlign: TextAlign.center, style: AppText.body),
                   const SizedBox(height: 24),
                   PrimaryButton(label: 'Back', onPressed: widget.onNext),
@@ -101,7 +105,7 @@ class _AppRulesScreenState extends State<AppRulesScreen> {
                       const SizedBox(height: 8),
                       Text(
                         'For each app: how many questions ${Storage.childNameOr()} '
-                        'answers, and how many minutes of play that earns.',
+                        'answers, and how many minutes that earns.',
                         style: AppText.body,
                       ),
                       const SizedBox(height: 20),
@@ -131,7 +135,7 @@ class _AppRulesScreenState extends State<AppRulesScreen> {
                     const SizedBox(height: 12),
                     InfoPill(
                       icon: Symbols.tune_rounded,
-                      text: 'You can change these any time',
+                      text: 'Change these any time.',
                     ),
                   ],
                 ),
@@ -224,7 +228,7 @@ class _AppRuleCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           IntStepper(
-            label: 'Minutes of play',
+            label: 'Minutes earned',
             value: rule.minutes,
             min: 1,
             max: 60,
@@ -263,7 +267,7 @@ class _AppRuleCard extends StatelessWidget {
                 if (capOn) ...[
                   const Divider(height: 8),
                   IntStepper(
-                    label: 'Max per day',
+                    label: 'Most per day',
                     value: rule.cap,
                     min: 15,
                     max: 180,

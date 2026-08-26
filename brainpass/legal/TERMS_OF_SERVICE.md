@@ -1,6 +1,6 @@
 # Terms of Service
 
-**Effective date:** 7 August 2026
+**Effective date:** 25 August 2026
 
 **Apps:** Nupo for iOS (bundle `com.app.nupo`) and Nupo for Android (package `app.nupo.kid`)
 
@@ -18,7 +18,7 @@ You must be at least 18 years old and the parent or legal guardian of any child 
 
 ## 3. Your account
 
-- **On Android**, you sign in with your phone number. **On iOS**, you sign in with Apple or with Google. Keep your sign-in method current and keep the device secure.
+- **On Android**, you sign in with Google or with an email address and password. **On iOS**, you sign in with Apple or with Google. Keep your sign-in method current and keep the device secure.
 - The parent PIN protects Nupo's settings. Choose a PIN your child cannot guess, and don't share it. **Anyone with your PIN can change or turn off Nupo.**
 - You are responsible for activity under your account.
 

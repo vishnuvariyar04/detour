@@ -99,12 +99,12 @@ class _AppPickerScreenState extends State<AppPickerScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Where should learning pop up?',
+                      Text('Where should lessons appear?',
                           style: AppText.title),
                       const SizedBox(height: 8),
                       Text(
-                        'A short lesson appears before each of these opens '
-                        'for ${Storage.childNameOr()}.',
+                        'A short lesson runs before each of these opens for '
+                        'your kid.',
                         style: AppText.body,
                       ),
                       const SizedBox(height: 20),
@@ -225,7 +225,7 @@ class _AppPickerScreenState extends State<AppPickerScreen> {
                     const SizedBox(height: 12),
                     InfoPill(
                       icon: Symbols.call_rounded,
-                      text: 'Phone, messages & clock always stay open',
+                      text: 'Phone, messages and clock always stay open.',
                     ),
                   ],
                 ),

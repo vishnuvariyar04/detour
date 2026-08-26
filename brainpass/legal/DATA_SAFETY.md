@@ -19,15 +19,32 @@ App: `app.nupo.kid` · Target audience: **includes children (5–11)**
 
 ## Data types — declare EXACTLY these
 
-### Personal info → Phone number
+### Personal info → Email address
 - Collected: **Yes** · Shared: **No**
 - Processed ephemerally: **No**
 - Required or optional: **Required** (login is mandatory)
 - Purposes: **Account management**, **App functionality**
-- Collected from children? This is the **parent's** number, entered by the
-  parent. If the form forces a yes/no on "collected from children," answer per
-  your legal review — the number is a parent's, not a child's. (Not auto-read
-  from the device; the parent types it.)
+- Note: phone/OTP login was REMOVED on 2026-08-25 and replaced with Google
+  Sign-In, so **Phone number is no longer collected** — untick it if the
+  previous submission declared it. The email is the signing-in PARENT's.
+
+### Personal info → Name
+- Collected: **Yes** · Shared: **No**
+- Required or optional: **Required** (part of setup)
+- Purposes: **App functionality** (restore the parent's saved setup on a new
+  device or after a reinstall)
+- Collected from children? **Yes** — treat as such. This is the CHILD's first
+  name and the nickname given to the owl, typed by the parent during setup and
+  saved to the parent's account so it can be restored. It is readable only by
+  that account and is deleted with it.
+- The parent's own display name from their Google account is also stored.
+
+### App activity → Other user-generated content
+- Collected: **Yes** · Shared: **No**
+- Purposes: **App functionality**
+- Covers the parent's chosen apps and their per-app rules, saved to the
+  account so a reinstall restores them. Child ANSWERS remain on-device and are
+  never collected.
 
 ### App activity → App interactions  → **only if you add analytics later**
 - **You currently have NO analytics SDK.** If that stays true, **do NOT tick
@@ -56,7 +73,9 @@ App: `app.nupo.kid` · Target audience: **includes children (5–11)**
 ## Explicitly NOT collected (do not tick these)
 
 - Location (any) — **No**
-- Name, email, address, race, religion, political views — **No**
+- Address, race, religion, political views — **No**
+- Name and email — **now collected**; see the Personal info sections above
+  (changed 2026-08-25 with Google Sign-In and saved-setup restore)
 - Contacts, Calendar, SMS/Call logs — **No**
 - Photos / videos / audio / files — **No**
 - **Child's learning data** (questions shown, answers, accuracy, streaks) —

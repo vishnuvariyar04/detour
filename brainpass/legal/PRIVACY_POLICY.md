@@ -1,6 +1,6 @@
 # Privacy Policy
 
-**Effective date:** 7 August 2026
+**Effective date:** 25 August 2026
 
 **Apps:** Nupo for iOS (bundle `com.app.nupo`) and Nupo for Android (package `app.nupo.kid`)
 
@@ -12,7 +12,7 @@ Nupo is a daily learning app for children aged 5–12, set up and controlled ent
 
 ## The short version
 
-- The **parent** creates the account. On Android that means a **phone number**; on iOS it means **Sign in with Apple or Sign in with Google**, which gives us an email address. That is the only personal identifier we collect.
+- The **parent** creates the account. On Android that means **Sign in with Google** or an **email address and password**; on iOS it means **Sign in with Apple or Sign in with Google**. Either way we get an email address for the parent.
 - **Children never create accounts, enter personal information, or see ads.**
 - Almost everything Nupo does — knowing which app was opened, showing lessons, counting minutes — happens **entirely on the device** and is never uploaded.
 - We show no ads, use no advertising, analytics, or marketing SDKs, and **never sell or share data** with anyone except the infrastructure providers listed below.
@@ -23,7 +23,8 @@ When a parent signs in and uses Nupo, we store the following in our cloud databa
 
 | Data | Platform | Purpose |
 |---|---|---|
-| Parent's phone number | Android | Account sign-in (one-time SMS code) and, occasionally, to contact you about Nupo |
+| Parent's email address | Android and iOS | Account sign-in and, occasionally, to contact you about Nupo |
+| Your saved setup: your child's first name, the owl's nickname, their age range, chosen subject, the apps you picked for lessons and each app's rules | Android and iOS | So that signing in on a new phone, or after reinstalling, restores what you already set up |
 | Parent's email address | iOS | Account sign-in and, occasionally, to contact you about Nupo |
 | Parent's name, if the sign-in provider supplies one | iOS | Addressing you correctly in the app |
 | Which sign-in method was used (Apple or Google) | iOS | Signing you back into the right account |
@@ -38,17 +39,19 @@ When a parent signs in and uses Nupo, we store the following in our cloud databa
 
 **Subscriptions (iOS).** Nupo for iOS is a paid app. Purchases are processed by **Apple**, and we use **RevenueCat** to confirm whether a subscription is active. Neither we nor RevenueCat ever see your payment card, billing address, or Apple Account password — Apple handles all of that. RevenueCat holds only your purchase history and an account identifier so that your subscription follows you across devices and reinstalls. We have deliberately **disabled RevenueCat's optional device-identifier and advertising-attribution collection**.
 
-We do **not** collect: your child's name, birth date, photos, contacts, messages, location, browsing history, the apps installed on the device, which apps you chose for lessons, or your child's answers to questions.
+**Your saved setup.** So that signing in on a new phone (or after a reinstall) restores what you already configured, we store your setup against your account: your child's first name, the name you gave the Nupo owl, their age range and chosen subject, the apps you selected for lessons, and each app's rules. This is readable only by your own signed-in account, is never sold or shared, and is deleted with your account.
+
+We do **not** collect: your child's birth date, photos, contacts, messages, location, browsing history, the full list of apps installed on the device, or your child's answers to questions.
 
 ## Information that stays on the device
 
 The following is stored **only on the device** and is never transmitted to us or anyone else:
 
 - The parent PIN (stored as a salted cryptographic hash — we cannot read it)
-- Your child's first name and the name they gave the Nupo owl, if you entered them
-- The list of apps you chose to attach lessons to, and each app's rules
 - Daily usage and earned-time counters
 - Everything about the child's learning session (questions shown, answers given, progress, streaks)
+
+Your child's first name, the owl's name, and your chosen apps and rules are also kept on the device, and additionally saved to your account so they can be restored — see **Your saved setup** above.
 
 ## The permissions Nupo asks for, and why
 
@@ -69,7 +72,7 @@ On **neither** platform does Nupo request SMS, contacts, camera, microphone, or 
 
 Nupo is used by children under parental control, and we take that seriously:
 
-- We collect **no personal information from children**. The account, phone number or email, and all settings belong to the parent.
+- The account and all settings belong to the **parent**. The one piece of information about a child that reaches our servers is the **first name (or nickname) the parent types during setup**, together with the owl's nickname, stored so the setup can be restored. We ask for nothing else about the child: no birth date, no exact age, no photo, no contact details, and never their answers.
 - The child-facing screens contain **no ads, no external links, no purchases, and no data entry** beyond answering learning questions, which are processed on-device and never stored on our servers or transmitted.
 - The only child-related data we hold is the coarse age band the **parent** selected, which cannot identify a child.
 
@@ -79,7 +82,7 @@ If you believe we have inadvertently collected personal information from a child
 
 | Processor | What they handle |
 |---|---|
-| **Google LLC** (Firebase Authentication and Cloud Firestore) | The parent account record described above. On Android, SMS sign-in codes are delivered through Google's SMS infrastructure and carrier networks. On iOS, Google also handles Sign in with Google. |
+| **Google LLC** (Firebase Authentication and Cloud Firestore) | The parent account record and saved setup described above. Google also handles Sign in with Google on both platforms, and email/password sign-in on Android. |
 | **Apple Inc.** (iOS only) | Sign in with Apple, and all payment processing for subscriptions. |
 | **RevenueCat, Inc.** (iOS only) | Confirming whether a subscription is active. Purchase history and an account identifier only. |
 

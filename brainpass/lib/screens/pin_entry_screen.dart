@@ -46,7 +46,7 @@ class _PinEntryScreenState extends State<PinEntryScreen> {
     } else {
       HapticFeedback.heavyImpact();
       setState(() {
-        _error = 'Wrong PIN — try again';
+        _error = 'Wrong PIN. Try again.';
         _pin = '';
       });
     }
@@ -77,14 +77,19 @@ class _PinEntryScreenState extends State<PinEntryScreen> {
                           border: Border.all(color: AppColors.line, width: 1.5),
                           boxShadow: AppColors.softShadow,
                         ),
-                        child: Icon(Symbols.lock_rounded,
-                            color: AppColors.primary, size: 38),
+                        child: Icon(
+                          Symbols.lock_rounded,
+                          color: AppColors.primary,
+                          size: 38,
+                        ),
                       ),
                       const SizedBox(height: 20),
                       const Text('Enter your parent PIN', style: AppText.title),
                       const SizedBox(height: 6),
-                      const Text('The 4 digits you chose during setup.',
-                          style: AppText.body),
+                      const Text(
+                        'The four digits you chose during setup.',
+                        style: AppText.body,
+                      ),
                       const SizedBox(height: 24),
                       PinBoxes(filled: _pin.length),
                       SizedBox(
@@ -127,12 +132,15 @@ class _PinEntryScreenState extends State<PinEntryScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         title: const Text(
           'Forgot your PIN?',
-          style: TextStyle(fontWeight: FontWeight.w900, color: AppColors.textDark),
+          style: TextStyle(
+            fontWeight: FontWeight.w900,
+            color: AppColors.textDark,
+          ),
         ),
         content: const Text(
-          'For safety, your PIN can\'t be recovered.\n\n'
-          'To reset: Android Settings → Apps → Nupo → Storage → Clear data, '
-          'then set Nupo up again.',
+          'For safety, your PIN cannot be recovered.\n\n'
+          'To reset: Android Settings, then Apps, then Nupo, then Storage, '
+          'then Clear data. You will set Nupo up again.',
           style: AppText.body,
         ),
         actions: [

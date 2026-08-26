@@ -36,9 +36,9 @@ const kStoryCorrect = 56;
 /// What Nupo says when the parent taps a wrong answer — the same "never
 /// punish, just try again" rule the real quiz engine uses (`CLAUDE.md` §5).
 const kWrongMoods = <(String, String, String)>[
-  (Nupo.ohno, 'Not quite!', "That one's wrong — try again."),
+  (Nupo.ohno, 'Not quite.', 'Try again.'),
   (Nupo.shrug, 'Hmm, nope.', 'Close! Have another go.'),
-  (Nupo.tired, 'Still not it.', 'Take your time — try again.'),
+  (Nupo.tired, 'Still not it.', 'Take your time. Try again.'),
   (Nupo.sleep, 'Oh no…', "Nupo's waiting. One more try."),
 ];
 
@@ -155,22 +155,21 @@ class PhoneBeat extends StatelessWidget {
                         top: 10,
                         bottom: 10,
                         child: FractionalTranslation(
-                          translation:
-                              Offset(0, (1 - up) * 1.04 + down * 1.04),
+                          translation: Offset(0, (1 - up) * 1.04 + down * 1.04),
                           child: AnimatedSwitcher(
                             duration: const Duration(milliseconds: 320),
                             switchInCurve: Curves.easeOutCubic,
                             transitionBuilder: (child, animation) =>
                                 FadeTransition(
-                              opacity: animation,
-                              child: SlideTransition(
-                                position: Tween(
-                                  begin: const Offset(0, 0.06),
-                                  end: Offset.zero,
-                                ).animate(animation),
-                                child: child,
-                              ),
-                            ),
+                                  opacity: animation,
+                                  child: SlideTransition(
+                                    position: Tween(
+                                      begin: const Offset(0, 0.06),
+                                      end: Offset.zero,
+                                    ).animate(animation),
+                                    child: child,
+                                  ),
+                                ),
                             child: shieldTapped
                                 ? _QuizCard(
                                     key: const ValueKey('quiz'),
@@ -201,13 +200,15 @@ class PhoneBeat extends StatelessWidget {
                             child: _Banner(
                               color: AppColors.correct,
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 12, vertical: 14),
+                                horizontal: 12,
+                                vertical: 14,
+                              ),
                               radius: 20,
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Text(
-                                    "Nice! $appName's open — 15 mins.",
+                                    '$appName is open for 15 minutes.',
                                     textAlign: TextAlign.center,
                                     style: const TextStyle(
                                       fontSize: 15,
@@ -220,8 +221,9 @@ class PhoneBeat extends StatelessWidget {
                                     'Then Nupo asks again.',
                                     style: TextStyle(
                                       fontSize: 12,
-                                      color:
-                                          Colors.white.withValues(alpha: 0.75),
+                                      color: Colors.white.withValues(
+                                        alpha: 0.75,
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -369,14 +371,14 @@ class _Banner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-        padding: padding,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(radius),
-        ),
-        child: child,
-      );
+    padding: padding,
+    alignment: Alignment.center,
+    decoration: BoxDecoration(
+      color: color,
+      borderRadius: BorderRadius.circular(radius),
+    ),
+    child: child,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -435,11 +437,11 @@ class _ShieldCard extends StatelessWidget {
           const SizedBox(height: 24),
           SizedBox(
             width: double.infinity,
-            child: PrimaryButton(label: 'Earn time', onPressed: onEarnTime),
+            child: PrimaryButton(label: 'Start', onPressed: onEarnTime),
           ),
           const SizedBox(height: 14),
           const Text(
-            'This is the screen they meet, drawn by Nupo.',
+            'This is what your kid sees.',
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 11.5, color: AppColors.textMuted),
           ),
@@ -478,23 +480,23 @@ class _QuizCard extends StatelessWidget {
     final owl = answered
         ? Nupo.idea
         : mood != null
-            ? mood.$1
-            : Nupo.teacher;
+        ? mood.$1
+        : Nupo.teacher;
     final ask = answered
         ? 'Nailed it!'
         : mood != null
-            ? mood.$2
-            : 'Quick one first!';
+        ? mood.$2
+        : 'Quick one first!';
     final hint = answered
         ? 'Unlocking $appName…'
         : mood != null
-            ? mood.$3
-            : 'Tap the answer — this is what they see.';
+        ? mood.$3
+        : 'Tap the answer.';
     final hintColor = answered
         ? AppColors.accent
         : mood != null
-            ? Colors.white
-            : Colors.white.withValues(alpha: 0.6);
+        ? Colors.white
+        : Colors.white.withValues(alpha: 0.6);
 
     return Container(
       decoration: BoxDecoration(
@@ -620,8 +622,8 @@ class _AnswerButton extends StatelessWidget {
           color: correct
               ? AppColors.accent
               : wrong
-                  ? Color.lerp(Colors.white, AppColors.wrong, 0.28)
-                  : Colors.white,
+              ? Color.lerp(Colors.white, AppColors.wrong, 0.28)
+              : Colors.white,
           borderRadius: BorderRadius.circular(16),
           boxShadow: correct
               ? [
@@ -718,135 +720,140 @@ class _UnlockOverlayState extends State<_UnlockOverlay>
       duration: const Duration(milliseconds: 220),
       opacity: widget.visible ? 1 : 0,
       child: DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                deepen(AppColors.correct, 0.15),
-                deepen(AppColors.correct, 0.42),
-              ],
-            ),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              deepen(AppColors.correct, 0.15),
+              deepen(AppColors.correct, 0.42),
+            ],
           ),
-          child: AnimatedBuilder(
-            animation: _enter,
-            builder: (context, _) {
-              final ring = _at(0, 0.55);
-              final owl = _at(0.5, 0.5);
-              final text = _at(0.66, 0.5);
-              final chip = _at(0.92, 0.55);
-              final hint = _at(1.25, 0.5);
+        ),
+        child: AnimatedBuilder(
+          animation: _enter,
+          builder: (context, _) {
+            final ring = _at(0, 0.55);
+            final owl = _at(0.5, 0.5);
+            final text = _at(0.66, 0.5);
+            final chip = _at(0.92, 0.55);
+            final hint = _at(1.25, 0.5);
 
-              return Stack(
-                children: [
-                  Positioned.fill(
-                    child: _Confetti(progress: _fall),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 26),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Transform.scale(
-                          scale: lerpD(0.3, 1, Curves.easeOutBack
-                              .transform(ring.clamp(0.0, 1.0))),
-                          child: _TickRing(progress: _at(0.35, 0.45)),
+            return Stack(
+              children: [
+                Positioned.fill(child: _Confetti(progress: _fall)),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 26),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Transform.scale(
+                        scale: lerpD(
+                          0.3,
+                          1,
+                          Curves.easeOutBack.transform(ring.clamp(0.0, 1.0)),
                         ),
-                        const SizedBox(height: 18),
-                        _rise(
-                          owl,
-                          Image.asset(Nupo.cheer,
-                              width: 96, semanticLabel: 'Nupo'),
+                        child: _TickRing(progress: _at(0.35, 0.45)),
+                      ),
+                      const SizedBox(height: 18),
+                      _rise(
+                        owl,
+                        Image.asset(
+                          Nupo.cheer,
+                          width: 96,
+                          semanticLabel: 'Nupo',
                         ),
-                        const SizedBox(height: 12),
-                        _rise(
-                          text,
-                          Column(
-                            children: [
-                              Text(
-                                "Nice! ${widget.appName}'s open — 15 mins.",
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  fontSize: 25,
-                                  height: 1.2,
-                                  fontWeight: FontWeight.w800,
-                                  color: Colors.white,
-                                ),
+                      ),
+                      const SizedBox(height: 12),
+                      _rise(
+                        text,
+                        Column(
+                          children: [
+                            Text(
+                              '${widget.appName} is open for 15 minutes.',
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                fontSize: 25,
+                                height: 1.2,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.white,
                               ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'Then Nupo asks again.',
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  color:
-                                      Colors.white.withValues(alpha: 0.78),
-                                ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Then Nupo asks again.',
+                              style: TextStyle(
+                                fontSize: 15,
+                                color: Colors.white.withValues(alpha: 0.78),
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 16),
-                        Transform.scale(
-                          scale: lerpD(0.25, 1, Curves.easeOutBack
-                              .transform(chip.clamp(0.0, 1.0))),
-                          child: Opacity(
-                            opacity: chip,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 9),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.18),
-                                border: Border.all(
-                                  color: Colors.white.withValues(alpha: 0.22),
-                                ),
-                                borderRadius: BorderRadius.circular(999),
+                      ),
+                      const SizedBox(height: 16),
+                      Transform.scale(
+                        scale: lerpD(
+                          0.25,
+                          1,
+                          Curves.easeOutBack.transform(chip.clamp(0.0, 1.0)),
+                        ),
+                        child: Opacity(
+                          opacity: chip,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 9,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.18),
+                              border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.22),
                               ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Icon(Icons.star_rounded,
-                                      size: 17, color: AppColors.accent),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    star,
-                                    style: const TextStyle(
-                                      fontSize: 13.5,
-                                      fontWeight: FontWeight.w800,
-                                      color: Colors.white,
-                                    ),
+                              borderRadius: BorderRadius.circular(999),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.star_rounded,
+                                  size: 17,
+                                  color: AppColors.accent,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  star,
+                                  style: const TextStyle(
+                                    fontSize: 13.5,
+                                    fontWeight: FontWeight.w800,
+                                    color: Colors.white,
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                  Positioned(
-                    left: 0,
-                    right: 0,
-                    bottom: 30,
-                    child: Opacity(
-                      opacity: hint,
-                      child: const _ScrollOnHint(),
-                    ),
-                  ),
-                ],
-              );
-            },
-          ),
+                ),
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 30,
+                  child: Opacity(opacity: hint, child: const _ScrollOnHint()),
+                ),
+              ],
+            );
+          },
         ),
+      ),
     );
   }
 
   Widget _rise(double p, Widget child) => Opacity(
-        opacity: p,
-        child: Transform.translate(
-          offset: Offset(0, (1 - p) * 18),
-          child: child,
-        ),
-      );
+    opacity: p,
+    child: Transform.translate(offset: Offset(0, (1 - p) * 18), child: child),
+  );
 }
 
 class _ScrollOnHint extends StatelessWidget {
@@ -854,15 +861,15 @@ class _ScrollOnHint extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Text(
-        'KEEP SCROLLING ↓',
-        textAlign: TextAlign.center,
-        style: TextStyle(
-          fontSize: 10.5,
-          fontWeight: FontWeight.w600,
-          letterSpacing: 1.5,
-          color: Colors.white.withValues(alpha: 0.55),
-        ),
-      );
+    'KEEP SCROLLING ↓',
+    textAlign: TextAlign.center,
+    style: TextStyle(
+      fontSize: 10.5,
+      fontWeight: FontWeight.w600,
+      letterSpacing: 1.5,
+      color: Colors.white.withValues(alpha: 0.55),
+    ),
+  );
 }
 
 /// The ring with the tick drawing itself inside it.
@@ -872,27 +879,27 @@ class _TickRing extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-        width: 120,
-        height: 120,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: Colors.white.withValues(alpha: 0.14),
-        ),
-        child: Container(
-          width: 88,
-          height: 88,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: Colors.white.withValues(alpha: 0.2),
-          ),
-          child: CustomPaint(
-            size: const Size(46, 46),
-            painter: _TickPainter(progress),
-          ),
-        ),
-      );
+    width: 120,
+    height: 120,
+    alignment: Alignment.center,
+    decoration: BoxDecoration(
+      shape: BoxShape.circle,
+      color: Colors.white.withValues(alpha: 0.14),
+    ),
+    child: Container(
+      width: 88,
+      height: 88,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: Colors.white.withValues(alpha: 0.2),
+      ),
+      child: CustomPaint(
+        size: const Size(46, 46),
+        painter: _TickPainter(progress),
+      ),
+    ),
+  );
 }
 
 class _TickPainter extends CustomPainter {
@@ -945,11 +952,7 @@ class _Confetti extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colours = [
-      AppColors.accent,
-      Colors.white,
-      AppColors.primarySoft,
-    ];
+    final colours = [AppColors.accent, Colors.white, AppColors.primarySoft];
 
     return LayoutBuilder(
       builder: (context, c) => AnimatedBuilder(
@@ -964,8 +967,16 @@ class _Confetti extends StatelessWidget {
     );
   }
 
-  Widget _piece(BoxConstraints c, Color colour, double x, double top,
-      double w, double h, bool round, double delay) {
+  Widget _piece(
+    BoxConstraints c,
+    Color colour,
+    double x,
+    double top,
+    double w,
+    double h,
+    bool round,
+    double delay,
+  ) {
     // Each piece runs the same 2.4s fall, offset by its own delay.
     final p = ((progress.value + 1 - delay / 2.4) % 1.0);
     final opacity = p < 0.2 ? p / 0.2 : 1 - c01((p - 0.2) / 0.8);

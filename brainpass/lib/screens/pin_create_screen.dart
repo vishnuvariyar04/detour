@@ -75,7 +75,7 @@ class _PinCreateScreenState extends State<PinCreateScreen> {
       widget.onNext();
     } else {
       setState(() {
-        _error = "PINs didn't match — try again";
+        _error = 'Those did not match. Try again.';
         _first = '';
         _second = '';
         _confirming = false;
@@ -98,9 +98,9 @@ class _PinCreateScreenState extends State<PinCreateScreen> {
                 total: widget.total,
                 onBack: _confirming
                     ? () => setState(() {
-                          _confirming = false;
-                          _second = '';
-                        })
+                        _confirming = false;
+                        _second = '';
+                      })
                     : null,
               ),
               Expanded(
@@ -123,8 +123,8 @@ class _PinCreateScreenState extends State<PinCreateScreen> {
                       const SizedBox(height: 8),
                       Text(
                         _confirming
-                            ? 'Just to make sure — the same 4 digits.'
-                            : '4 digits only you know. It opens the parent settings.',
+                            ? 'Same four digits.'
+                            : 'Four digits only you know. It opens parent settings.',
                         textAlign: TextAlign.center,
                         style: AppText.body,
                       ),

@@ -8,6 +8,7 @@
 //  16 — "Why this actually works": the honest mechanism (Premack principle).
 //       Deliberately NO invented statistics (CLAUDE.md §2 bans them).
 
+
 import 'package:flutter/material.dart';
 
 import '../../theme.dart';
@@ -20,7 +21,10 @@ import 'story_beats.dart' show Nupo;
 
 /// Four weeks of topics, chosen by (subject, age band). Kept as plain data so
 /// it stays swappable when the real question banks land.
-List<List<String>> monthPlanFor({required String subject, required String band}) {
+List<List<String>> monthPlanFor({
+  required String subject,
+  required String band,
+}) {
   final young = band == 'a' || band == '5-7';
   switch (subject) {
     case 'maths':
@@ -117,20 +121,31 @@ class MonthPlanScreen extends StatelessWidget {
       eyebrow: 'The plan',
       spot: MascotSpot.right,
       mascot: Nupo.starStudent,
-      line: 'Four weeks. I have it planned already.',
+      line: 'Four weeks, already planned.',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const SizedBox(height: 12),
+          const SizedBox(height: 6),
           Text(
             "$childName's first month",
             textAlign: TextAlign.center,
             style: const TextStyle(
-                fontSize: 27,
-                fontWeight: FontWeight.w900,
-                color: AppColors.textDark),
+              fontSize: 27,
+              fontWeight: FontWeight.w900,
+              color: AppColors.textDark,
+            ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 6),
+          const Text(
+            'One small win every week',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textMuted,
+            ),
+          ),
+          const SizedBox(height: 16),
           for (int i = 0; i < weeks.length; i++) ...[
             _WeekRow(index: i + 1, topics: weeks[i]),
             const SizedBox(height: 10),
@@ -148,40 +163,80 @@ class _WeekRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const colors = [
+      AppColors.primary,
+      AppColors.done,
+      AppColors.accentDeep,
+      AppColors.wrong,
+    ];
+    const labels = [
+      'Build the base',
+      'Add a challenge',
+      'Make it stick',
+      'Use it with confidence',
+    ];
+    final color = colors[index - 1];
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.fromLTRB(12, 11, 14, 11),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.cardBorder, width: 1.5),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withValues(alpha: 0.18), width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: color.withValues(alpha: 0.08),
+            blurRadius: 16,
+            offset: const Offset(0, 7),
+          ),
+        ],
       ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+            width: 46,
+            height: 46,
+            alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: AppColors.primarySoft,
-              borderRadius: BorderRadius.circular(999),
+              color: color.withValues(alpha: 0.11),
+              borderRadius: BorderRadius.circular(15),
             ),
-            child: Text('WEEK $index',
-                style: const TextStyle(
-                    fontSize: 10.5,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 0.4,
-                    color: AppColors.primary)),
+            child: Text(
+              '$index',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w900,
+                color: color,
+              ),
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
-            child: Text(
-              topics.join(' · '),
-              style: const TextStyle(
-                  fontSize: 14.5,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textDark,
-                  height: 1.35),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  labels[index - 1],
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.textDark,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  topics.join('  ·  '),
+                  maxLines: 2,
+                  style: const TextStyle(
+                    fontSize: 12.5,
+                    height: 1.2,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textMuted,
+                  ),
+                ),
+              ],
             ),
           ),
+          Icon(Icons.check_circle_rounded, color: color, size: 20),
         ],
       ),
     );
@@ -239,18 +294,20 @@ class PlanProjectionScreen extends StatelessWidget {
           const Text(
             'questions answered',
             style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w800,
-                color: Colors.white),
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
+              color: Colors.white,
+            ),
           ),
           const SizedBox(height: 20),
           Text(
-            "In 30 days — and you won't have\nnagged once.",
+            'In thirty days, and you will not have asked once.',
             textAlign: TextAlign.center,
             style: TextStyle(
-                fontSize: 17,
-                height: 1.5,
-                color: Colors.white.withValues(alpha: 0.78)),
+              fontSize: 17,
+              height: 1.5,
+              color: Colors.white.withValues(alpha: 0.78),
+            ),
           ),
         ],
       ),
@@ -314,8 +371,8 @@ class WhyItWorksScreen extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            "It's the oldest trick there is: the good stuff comes right "
-            'before the fun stuff.',
+            'The lesson sits in front of something they already want. '
+            'That is why it gets done.',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 16,
@@ -324,54 +381,25 @@ class WhyItWorksScreen extends StatelessWidget {
               color: Colors.white.withValues(alpha: 0.85),
             ),
           ),
-          const SizedBox(height: 26),
+          const SizedBox(height: 30),
 
-          // The mechanism, which is the whole point of the screen and which
-          // the reference build reduced to another paragraph. Old loop faded,
-          // new loop solid, so the change reads at a glance.
-          const _LoopRow(
-            left: 'Bored, again',
-            right: 'Phone comes out',
-            solid: false,
-          ),
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 10),
-            child: Icon(Icons.arrow_downward_rounded,
-                size: 22, color: Colors.white),
-          ),
-          const _LoopRow(
-            left: 'Two questions',
-            right: 'Then the app opens',
-            solid: true,
-          ),
+          // The trade itself. A mascot decorated the screen but argued
+          // nothing; this answers the parent's actual question — how much am
+          // I asking of them? The short amber bar fills first, then the long
+          // one, so order and ratio land in one image.
+          const _EffortRewardBar(),
 
-          const SizedBox(height: 26),
-          Container(
-            padding: const EdgeInsets.fromLTRB(14, 12, 16, 12),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.14),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Row(
-              children: [
-                Image.asset(Nupo.meditate, height: 52),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    // "they", not "he": onboarding never asks the child's
-                    // gender, so a pronoun here is a guess the app has no
-                    // basis for — and it sits right under their name.
-                    "Veggies before dessert. $childName won't fight it the "
-                    'way they fight a workbook.',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      height: 1.4,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ],
+          const SizedBox(height: 30),
+          Text(
+            // "they", not "he": onboarding never asks the child's gender, so
+            // a pronoun here is a guess the app has no basis for.
+            'Veggies before dessert — and $childName barely notices.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 15,
+              height: 1.45,
+              fontWeight: FontWeight.w700,
+              color: Colors.white.withValues(alpha: 0.9),
             ),
           ),
         ],
@@ -380,57 +408,181 @@ class WhyItWorksScreen extends StatelessWidget {
   }
 }
 
-/// One rung of the before/after loop on the closing step.
-class _LoopRow extends StatelessWidget {
-  final String left;
-  final String right;
+/// The ask, next to what it buys — animated so the order reads as well as the
+/// ratio: a sliver of learning fills, then the long stretch of play it earns.
+///
+/// The bar is schematic, not a chart: the real ratio (30s to 15min) would make
+/// the amber segment three pixels wide. It is drawn generously and the labels
+/// carry the honest numbers, so it overstates the cost rather than the reward.
+class _EffortRewardBar extends StatefulWidget {
+  const _EffortRewardBar();
 
-  /// The "after" rung is solid white so it reads as the thing that changed.
-  final bool solid;
+  @override
+  State<_EffortRewardBar> createState() => _EffortRewardBarState();
+}
 
-  const _LoopRow({
-    required this.left,
-    required this.right,
-    required this.solid,
+class _EffortRewardBarState extends State<_EffortRewardBar>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _c = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 3400),
+  )..repeat();
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  /// Eased 0..1 for a window of the loop.
+  double _phase(double t, double from, double to) =>
+      Curves.easeOutCubic.transform(((t - from) / (to - from)).clamp(0.0, 1.0));
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _c,
+      builder: (context, _) {
+        final t = _c.value;
+        final learn = _phase(t, 0.06, 0.30);
+        final play = _phase(t, 0.36, 0.72);
+        return Column(
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Expanded(
+                  flex: 26,
+                  child: _Segment(
+                    fill: learn,
+                    color: AppColors.accent,
+                    height: 58,
+                    icon: Icons.school_rounded,
+                    iconColor: AppColors.textDark,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  flex: 74,
+                  child: _Segment(
+                    fill: play,
+                    color: Colors.white,
+                    height: 58,
+                    icon: Icons.play_arrow_rounded,
+                    iconColor: AppColors.done,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  flex: 26,
+                  child: _BarLabel(
+                    'About 30 seconds',
+                    opacity: learn,
+                    bold: true,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  flex: 74,
+                  child: _BarLabel('Then the app they wanted', opacity: play),
+                ),
+              ],
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _Segment extends StatelessWidget {
+  final double fill;
+  final Color color;
+  final double height;
+  final IconData icon;
+  final Color iconColor;
+
+  const _Segment({
+    required this.fill,
+    required this.color,
+    required this.height,
+    required this.icon,
+    required this.iconColor,
   });
 
   @override
-  Widget build(BuildContext context) => Row(
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: height,
+      child: Stack(
         children: [
-          Expanded(child: _cell(left)),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: Icon(Icons.arrow_forward_rounded,
-                size: 18,
-                color: Colors.white.withValues(alpha: solid ? 1 : 0.6)),
+          // The empty track, so the shape is legible before it fills.
+          Positioned.fill(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.14),
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.22),
+                ),
+              ),
+            ),
           ),
-          Expanded(child: _cell(right)),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(18),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              widthFactor: fill.clamp(0.001, 1.0),
+              child: Container(
+                height: height,
+                constraints: const BoxConstraints(minWidth: 8),
+                decoration: BoxDecoration(
+                  color: color,
+                  borderRadius: BorderRadius.circular(18),
+                ),
+              ),
+            ),
+          ),
+          if (fill > 0.85)
+            Positioned.fill(
+              child: Center(
+                child: Opacity(
+                  opacity: ((fill - 0.85) / 0.15).clamp(0.0, 1.0),
+                  child: Icon(icon, size: 24, color: iconColor),
+                ),
+              ),
+            ),
         ],
-      );
+      ),
+    );
+  }
+}
 
-  Widget _cell(String text) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: solid ? Colors.white : Colors.white.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(16),
-          border: solid
-              ? null
-              : Border.all(color: Colors.white.withValues(alpha: 0.28)),
-        ),
+class _BarLabel extends StatelessWidget {
+  final String text;
+  final double opacity;
+  final bool bold;
+  const _BarLabel(this.text, {required this.opacity, this.bold = false});
+
+  @override
+  Widget build(BuildContext context) => Opacity(
+        opacity: opacity.clamp(0.0, 1.0),
         child: Text(
           text,
           textAlign: TextAlign.center,
           style: TextStyle(
-            fontSize: 13.5,
-            height: 1.3,
-            fontWeight: FontWeight.w800,
-            color: solid ? AppColors.done : Colors.white.withValues(alpha: 0.9),
+            fontSize: 11.5,
+            height: 1.25,
+            fontWeight: bold ? FontWeight.w900 : FontWeight.w700,
+            color: Colors.white.withValues(alpha: bold ? 1 : 0.85),
           ),
         ),
       );
 }
-
 
 /// The projection number, counting up from zero.
 ///

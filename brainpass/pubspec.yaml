@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.1.0+3
+version: 1.2.0+4
 
 environment:
   sdk: ^3.12.2
@@ -48,6 +48,9 @@ dependencies:
   installed_apps: ^2.1.1
   firebase_core: ^4.11.0
   firebase_auth: ^6.5.4
+  # Native Google account sheet. Needs the app's SHA-1/SHA-256 registered in
+  # Firebase, or authenticate() returns no ID token — see auth_service.dart.
+  google_sign_in: ^7.2.0
   cloud_firestore: ^6.6.0
   purchases_flutter: ^10.4.0
   purchases_ui_flutter: ^10.4.0

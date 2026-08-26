@@ -27,7 +27,7 @@ import 'package:flutter/material.dart';
 
 import '../../theme.dart';
 import '../../widgets.dart';
-import 'story_beats.dart' show Nupo, c01;
+import 'story_beats.dart' show Nupo;
 
 /// The headline style for every tapped step, matching the scrolled story's beat
 /// headlines rather than Material's defaults — same size, weight and tracking,
@@ -61,11 +61,11 @@ enum StepTone {
   /// `#7C3AED`, `#0E9384` — not gradients. Keeping them flat is what makes a
   /// step read as one stage rather than a wash.
   Color get fill => switch (this) {
-        StepTone.lilac => AppColors.primarySoft,
-        StepTone.cream => AppColors.accentSoft,
-        StepTone.brand => AppColors.primary,
-        StepTone.done => AppColors.done,
-      };
+    StepTone.lilac => AppColors.primarySoft,
+    StepTone.cream => AppColors.accentSoft,
+    StepTone.brand => AppColors.primary,
+    StepTone.done => AppColors.done,
+  };
 
   Color get ink => isDark ? Colors.white : AppColors.textDark;
 }
@@ -183,8 +183,10 @@ class _OnbScaffoldState extends State<OnbScaffold>
   @override
   Widget build(BuildContext context) {
     final tone = widget.tone;
-    final fraction =
-        widget.total <= 0 ? 0.0 : (widget.step / widget.total).clamp(0.0, 1.0);
+    final keyboardOpen = MediaQuery.viewInsetsOf(context).bottom > 0;
+    final fraction = widget.total <= 0
+        ? 0.0
+        : (widget.step / widget.total).clamp(0.0, 1.0);
 
     return Scaffold(
       // Tone changes are animated: the design transitions the background over
@@ -193,77 +195,89 @@ class _OnbScaffoldState extends State<OnbScaffold>
         duration: const Duration(milliseconds: 450),
         curve: Curves.easeOut,
         color: tone.fill,
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(24, 14, 24, 20),
-            child: Column(
-              children: [
-                _Chrome(
-                  progress: fraction,
-                  label: widget.stepLabel ??
-                      '${widget.step}/${widget.total}',
-                  onBack: widget.onBack,
-                  tone: tone,
-                ),
-                if (widget.mascot != null &&
-                    widget.spot != MascotSpot.none) ...[
-                  const SizedBox(height: 10),
-                  _MascotLine(
-                    pose: widget.mascot!,
-                    line: widget.line,
-                    tone: tone,
-                    spot: widget.spot,
-                  ),
-                ],
-                if (widget.eyebrow != null) ...[
-                  const SizedBox(height: 14),
-                  Text(
-                    widget.eyebrow!.toUpperCase(),
-                    textAlign: widget.spot == MascotSpot.hero
-                        ? TextAlign.center
-                        : TextAlign.start,
-                    style: TextStyle(
-                      fontSize: 10.5,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 2,
-                      color: tone.isDark
-                          ? Colors.white.withValues(alpha: 0.7)
-                          : AppColors.primary,
+        child: Stack(
+          children: [
+            SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(24, 14, 24, 20),
+                child: Column(
+                  children: [
+                    _Chrome(
+                      progress: fraction,
+                      label:
+                          widget.stepLabel ?? '${widget.step}/${widget.total}',
+                      onBack: widget.onBack,
+                      tone: tone,
                     ),
-                  ),
-                ],
-                SizedBox(height: widget.eyebrow != null ? 10 : 18),
-                Expanded(
-                  child: FadeTransition(
-                    opacity: _fade,
-                    child: SlideTransition(
-                      position: Tween(
-                        begin: const Offset(0, 0.035),
-                        end: Offset.zero,
-                      ).animate(_fade),
-                      child: LayoutBuilder(
-                        builder: (context, c) => SingleChildScrollView(
-                          child: widget.centerContent
-                              ? ConstrainedBox(
-                                  constraints:
-                                      BoxConstraints(minHeight: c.maxHeight),
-                                  child: IntrinsicHeight(child: widget.child),
-                                )
-                              : widget.child,
+                    if (!keyboardOpen &&
+                        widget.mascot != null &&
+                        widget.spot != MascotSpot.none) ...[
+                      const SizedBox(height: 10),
+                      _MascotLine(
+                        pose: widget.mascot!,
+                        line: widget.line,
+                        tone: tone,
+                        spot: widget.spot,
+                      ),
+                    ],
+                    if (widget.eyebrow != null) ...[
+                      SizedBox(height: keyboardOpen ? 4 : 14),
+                      Text(
+                        widget.eyebrow!.toUpperCase(),
+                        textAlign: widget.spot == MascotSpot.hero
+                            ? TextAlign.center
+                            : TextAlign.start,
+                        style: TextStyle(
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 2,
+                          color: tone.isDark
+                              ? Colors.white.withValues(alpha: 0.7)
+                              : AppColors.primary,
+                        ),
+                      ),
+                    ],
+                    SizedBox(
+                      height: keyboardOpen
+                          ? 6
+                          : (widget.eyebrow != null ? 10 : 18),
+                    ),
+                    Expanded(
+                      child: FadeTransition(
+                        opacity: _fade,
+                        child: SlideTransition(
+                          position: Tween(
+                            begin: const Offset(0, 0.035),
+                            end: Offset.zero,
+                          ).animate(_fade),
+                          child: LayoutBuilder(
+                            builder: (context, c) => SingleChildScrollView(
+                              child: widget.centerContent
+                                  ? ConstrainedBox(
+                                      constraints: BoxConstraints(
+                                        minHeight: c.maxHeight,
+                                      ),
+                                      child: IntrinsicHeight(
+                                        child: widget.child,
+                                      ),
+                                    )
+                                  : widget.child,
+                            ),
+                          ),
                         ),
                       ),
                     ),
-                  ),
+                    const SizedBox(height: 16),
+                    NupoButton(
+                      label: widget.buttonLabel,
+                      onPressed: widget.onButton,
+                      buttonTone: widget.buttonTone,
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 16),
-                _ShimmerButton(
-                  label: widget.buttonLabel,
-                  onPressed: widget.onButton,
-                  buttonTone: widget.buttonTone,
-                ),
-              ],
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );
@@ -303,8 +317,11 @@ class _Chrome extends StatelessWidget {
                   child: InkWell(
                     customBorder: const CircleBorder(),
                     onTap: onBack,
-                    child: Icon(Icons.chevron_left_rounded,
-                        size: 20, color: tone.ink),
+                    child: Icon(
+                      Icons.chevron_left_rounded,
+                      size: 20,
+                      color: tone.ink,
+                    ),
                   ),
                 ),
         ),
@@ -428,9 +445,15 @@ class _MascotLineState extends State<_MascotLine>
           alignment: Alignment.center,
           children: [
             const Positioned(
-                left: 40, top: 34, child: _Sparkle(size: 18, amber: true)),
+              left: 40,
+              top: 34,
+              child: _Sparkle(size: 18, amber: true),
+            ),
             const Positioned(
-                right: 46, top: 62, child: _Sparkle(size: 12, amber: false)),
+              right: 46,
+              top: 62,
+              child: _Sparkle(size: 12, amber: false),
+            ),
             owl,
           ],
         ),
@@ -520,29 +543,34 @@ class _Sparkle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Icon(
-        Icons.auto_awesome,
-        size: size,
-        color: amber ? AppColors.accent : AppColors.primaryBright,
-      );
+    Icons.auto_awesome,
+    size: size,
+    color: amber ? AppColors.accent : AppColors.primaryBright,
+  );
 }
 
 /// The primary button, with the design's shimmer sweep.
-class _ShimmerButton extends StatefulWidget {
+/// The onboarding CTA: flat tone fill, a soft drop, a press dip and a slow
+/// shimmer sweep. Public because the scrolled story uses it too — before this,
+/// the story's CTAs were the plain gradient `PrimaryButton` and the handover
+/// into the tapped steps visibly changed button styles mid-flow.
+class NupoButton extends StatefulWidget {
   final String label;
   final VoidCallback? onPressed;
   final ButtonTone buttonTone;
 
-  const _ShimmerButton({
+  const NupoButton({
+    super.key,
     required this.label,
     required this.onPressed,
     required this.buttonTone,
   });
 
   @override
-  State<_ShimmerButton> createState() => _ShimmerButtonState();
+  State<NupoButton> createState() => _NupoButtonState();
 }
 
-class _ShimmerButtonState extends State<_ShimmerButton>
+class _NupoButtonState extends State<NupoButton>
     with SingleTickerProviderStateMixin {
   // Built in initState, NOT as a `late final`. The controller is only read in
   // build() when the button is enabled, so a disabled button (nothing picked
@@ -550,14 +578,24 @@ class _ShimmerButtonState extends State<_ShimmerButton>
   // Ticker against a deactivated element throws "Looking up a deactivated
   // widget's ancestor is unsafe".
   late final AnimationController _sweep;
+  bool _pressed = false;
 
   @override
   void initState() {
     super.initState();
     _sweep = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 3600),
-    )..repeat();
+      duration: const Duration(milliseconds: 900),
+    );
+    if (widget.onPressed != null) _sweep.forward();
+  }
+
+  @override
+  void didUpdateWidget(covariant NupoButton oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.onPressed == null && widget.onPressed != null) {
+      _sweep.forward(from: 0);
+    }
   }
 
   @override
@@ -578,76 +616,104 @@ class _ShimmerButtonState extends State<_ShimmerButton>
       ButtonTone.brand => (AppColors.primary, Colors.white),
     };
 
-    return SizedBox(
-      width: double.infinity,
-      height: 62,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(31),
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: ColoredBox(
-                color: enabled
-                    ? bg
-                    : AppColors.textDark.withValues(alpha: 0.12),
-              ),
+    return AnimatedScale(
+      duration: const Duration(milliseconds: 110),
+      curve: Curves.easeOut,
+      scale: _pressed ? 0.985 : 1,
+      child: AnimatedSlide(
+        duration: const Duration(milliseconds: 110),
+        curve: Curves.easeOut,
+        offset: _pressed ? const Offset(0, 0.055) : Offset.zero,
+        child: SizedBox(
+          width: double.infinity,
+          height: 66,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(23),
+              boxShadow: enabled && !_pressed
+                  ? [
+                      BoxShadow(
+                        color: bg.withValues(alpha: 0.34),
+                        offset: const Offset(0, 6),
+                      ),
+                    ]
+                  : null,
             ),
-            if (enabled)
-              AnimatedBuilder(
-                animation: _sweep,
-                builder: (context, _) {
-                  final p = c01(_sweep.value / 0.55);
-                  return Positioned(
-                    left: -100 + p * 560,
-                    top: 0,
-                    bottom: 0,
-                    width: 74,
-                    child: IgnorePointer(
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              Colors.white.withValues(alpha: 0),
-                              Colors.white.withValues(alpha: 0.3),
-                              Colors.white.withValues(alpha: 0),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(23),
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: ColoredBox(
+                      color: enabled
+                          ? bg
+                          : AppColors.textDark.withValues(alpha: 0.12),
+                    ),
+                  ),
+                  if (enabled)
+                    AnimatedBuilder(
+                      animation: _sweep,
+                      builder: (context, _) {
+                        final p = Curves.easeInOutCubic.transform(_sweep.value);
+                        return Positioned(
+                          left: -110 + p * 600,
+                          top: 0,
+                          bottom: 0,
+                          width: 74,
+                          child: IgnorePointer(
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    Colors.white.withValues(alpha: 0),
+                                    Colors.white.withValues(alpha: 0.3),
+                                    Colors.white.withValues(alpha: 0),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  Positioned.fill(
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onHighlightChanged: enabled
+                            ? (value) => setState(() => _pressed = value)
+                            : null,
+                        onTap: widget.onPressed,
+                        child: Center(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  widget.label,
+                                  style: TextStyle(
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.w800,
+                                    color: enabled ? fg : AppColors.textMuted,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 9),
+                              Icon(
+                                Icons.arrow_forward_rounded,
+                                size: 20,
+                                color: enabled ? fg : AppColors.textMuted,
+                              ),
                             ],
                           ),
                         ),
                       ),
                     ),
-                  );
-                },
-              ),
-            Positioned.fill(
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: widget.onPressed,
-                  child: Center(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Flexible(
-                          child: Text(
-                            widget.label,
-                            style: TextStyle(
-                              fontSize: 17,
-                              fontWeight: FontWeight.w800,
-                              color: enabled ? fg : AppColors.textMuted,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 9),
-                        Icon(Icons.arrow_forward_rounded,
-                            size: 20,
-                            color: enabled ? fg : AppColors.textMuted),
-                      ],
-                    ),
                   ),
-                ),
+                ],
               ),
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -689,7 +755,10 @@ class StatementScreen extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const SizedBox(height: 24),
-          if (showMascot) ...[const HaloMascot(Nupo.wave, size: 130), const SizedBox(height: 24)],
+          if (showMascot) ...[
+            const HaloMascot(Nupo.wave, size: 130),
+            const SizedBox(height: 24),
+          ],
           Text(
             headline,
             textAlign: TextAlign.center,
@@ -698,7 +767,15 @@ class StatementScreen extends StatelessWidget {
                 : kStepTitle,
           ),
           const SizedBox(height: 14),
-          Text(body, textAlign: TextAlign.center, style: const TextStyle(color: AppColors.textMuted, fontSize: 16, height: 1.5)),
+          Text(
+            body,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: AppColors.textMuted,
+              fontSize: 16,
+              height: 1.5,
+            ),
+          ),
         ],
       ),
     );
@@ -777,7 +854,8 @@ class SingleChoiceScreen extends StatefulWidget {
 }
 
 class _SingleChoiceScreenState extends State<SingleChoiceScreen> {
-  late String? _selected = widget.options.any((o) => o.id == widget.initiallySelected)
+  late String? _selected =
+      widget.options.any((o) => o.id == widget.initiallySelected)
       ? widget.initiallySelected
       : null;
 
@@ -807,7 +885,7 @@ class _SingleChoiceScreenState extends State<SingleChoiceScreen> {
               physics: const NeverScrollableScrollPhysics(),
               mainAxisSpacing: 13,
               crossAxisSpacing: 13,
-              childAspectRatio: 1.02,
+              childAspectRatio: 0.94,
               children: [
                 for (final o in widget.options)
                   ChoiceTile(
@@ -856,7 +934,10 @@ class ChoiceCard extends StatelessWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeOut,
-        padding: EdgeInsets.symmetric(horizontal: 18, vertical: hasDetail ? 14 : 18),
+        padding: EdgeInsets.symmetric(
+          horizontal: 18,
+          vertical: hasDetail ? 14 : 18,
+        ),
         decoration: BoxDecoration(
           // The design's selected fill.
           color: selected ? const Color(0xFFF8F2FF) : Colors.white,
@@ -954,7 +1035,11 @@ class ChoiceCard extends StatelessWidget {
                 ),
               ),
               child: selected
-                  ? const Icon(Icons.check_rounded, size: 15, color: Colors.white)
+                  ? const Icon(
+                      Icons.check_rounded,
+                      size: 15,
+                      color: Colors.white,
+                    )
                   : null,
             ),
           ],
@@ -998,7 +1083,9 @@ class _MultiChoiceScreenState extends State<MultiChoiceScreen> {
       step: widget.step,
       total: widget.total,
       buttonLabel: 'Continue',
-      onButton: (_selected.isEmpty && !widget.allowEmpty) ? null : () => widget.onNext(_selected.toList()),
+      onButton: (_selected.isEmpty && !widget.allowEmpty)
+          ? null
+          : () => widget.onNext(_selected.toList()),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1011,7 +1098,9 @@ class _MultiChoiceScreenState extends State<MultiChoiceScreen> {
                 option: o,
                 selected: _selected.contains(o.id),
                 onTap: () => setState(() {
-                  _selected.contains(o.id) ? _selected.remove(o.id) : _selected.add(o.id);
+                  _selected.contains(o.id)
+                      ? _selected.remove(o.id)
+                      : _selected.add(o.id);
                 }),
               ),
             ),
@@ -1136,12 +1225,16 @@ class _NameInputScreenState extends State<NameInputScreen> {
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(22),
                   borderSide: const BorderSide(
-                      color: AppColors.cardBorder, width: 2),
+                    color: AppColors.cardBorder,
+                    width: 2,
+                  ),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(22),
-                  borderSide:
-                      const BorderSide(color: AppColors.primary, width: 2.5),
+                  borderSide: const BorderSide(
+                    color: AppColors.primary,
+                    width: 2.5,
+                  ),
                 ),
               ),
               onSubmitted: (v) => widget.onNext(v.trim()),
@@ -1154,8 +1247,7 @@ class _NameInputScreenState extends State<NameInputScreen> {
             duration: const Duration(milliseconds: 250),
             child: Container(
               key: ValueKey(greeting),
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               decoration: BoxDecoration(
                 color: AppColors.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(999),
@@ -1176,7 +1268,6 @@ class _NameInputScreenState extends State<NameInputScreen> {
     );
   }
 }
-
 
 /// A step title. The frames render the child's name inside the question in
 /// brand purple — "How old is **Ram**?" — which is what makes the question feel
@@ -1239,7 +1330,9 @@ class ChoiceTile extends StatelessWidget {
           ),
           boxShadow: [
             BoxShadow(
-              color: AppColors.textDark.withValues(alpha: selected ? 0.14 : 0.05),
+              color: AppColors.textDark.withValues(
+                alpha: selected ? 0.14 : 0.05,
+              ),
               blurRadius: selected ? 26 : 14,
               offset: Offset(0, selected ? 12 : 6),
             ),
@@ -1253,8 +1346,9 @@ class ChoiceTile extends StatelessWidget {
               height: 42,
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: (option.chipColor ?? AppColors.primary)
-                    .withValues(alpha: 0.14),
+                color: (option.chipColor ?? AppColors.primary).withValues(
+                  alpha: 0.14,
+                ),
                 borderRadius: BorderRadius.circular(13),
               ),
               child: option.chip == null
@@ -1271,6 +1365,8 @@ class ChoiceTile extends StatelessWidget {
             const Spacer(),
             Text(
               option.label,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
               style: const TextStyle(
                 fontSize: 15.5,
                 height: 1.2,
@@ -1278,6 +1374,20 @@ class ChoiceTile extends StatelessWidget {
                 color: AppColors.textDark,
               ),
             ),
+            if (option.description != null) ...[
+              const SizedBox(height: 5),
+              Text(
+                option.description!,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 11.5,
+                  height: 1.25,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textMuted,
+                ),
+              ),
+            ],
           ],
         ),
       ),

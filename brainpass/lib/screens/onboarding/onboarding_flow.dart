@@ -21,6 +21,8 @@
 // language, and the four permission steps are UNCHANGED from the previous
 // flow.
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
@@ -49,6 +51,8 @@ class OnboardingFlow extends StatefulWidget {
 class _OnboardingFlowState extends State<OnboardingFlow> {
   int _step = 0;
   bool _autostartRelevant = false;
+  bool _transitioning = false;
+  Timer? _transitionTimer;
 
   /// The questions carry the progress bar; the Android setup block that
   /// follows keeps counting so the parent can see the end.
@@ -62,8 +66,27 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
     });
   }
 
-  void _next() => setState(() => _step++);
-  void _back() => setState(() => _step = (_step - 1).clamp(0, 99));
+  void _move(int delta) {
+    // A second tap during the route animation used to advance another screen,
+    // which looked like a random jump on fast phones. One gesture now always
+    // equals one story beat.
+    if (_transitioning) return;
+    _transitioning = true;
+    setState(() => _step = (_step + delta).clamp(0, 99));
+    _transitionTimer?.cancel();
+    _transitionTimer = Timer(const Duration(milliseconds: 460), () {
+      _transitioning = false;
+    });
+  }
+
+  void _next() => _move(1);
+  void _back() => _move(-1);
+
+  @override
+  void dispose() {
+    _transitionTimer?.cancel();
+    super.dispose();
+  }
 
   String get _child => Storage.childNameOr();
 
@@ -88,14 +111,14 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
         mascot: 'assets/mascot_pin.png',
         title: 'Let lessons appear',
         subtitle:
-            'Turn on “Display over other apps”. This lets Nupo show a quick '
+            'Turn on “Display over other apps”. This is what lets Nupo show a '
             'question before a game or video opens.',
         buttonLabel: 'Turn it on',
         check: Engine.canDrawOverlays,
         request: Engine.requestOverlay,
         videoKey: 'perm_overlay',
         returnKind: 'overlay',
-        footnote: "You'll be brought right back here.",
+        footnote: 'You will come straight back here.',
         step: n++,
         total: total,
         onNext: _next,
@@ -105,17 +128,17 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
         icon: Symbols.visibility_rounded,
         heroColor: AppColors.primary,
         heroBackground: AppColors.primarySoft,
-        title: 'Let Nupo see app opens',
+        title: 'Let Nupo notice app opens',
         subtitle:
             'Find Nupo in the list and switch it on. This is how Nupo knows '
-            "it's lesson time.",
+            'it is lesson time.',
         buttonLabel: 'Turn it on',
         check: Engine.hasUsageAccess,
         request: Engine.openUsageAccessSettings,
         showFindCard: true,
         videoKey: 'perm_usage',
         returnKind: 'usage',
-        footnote: "You'll be brought right back here.",
+        footnote: 'You will come straight back here.',
         step: n++,
         total: total,
         onNext: _next,
@@ -127,7 +150,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
         heroBackground: AppColors.accentSoft,
         title: 'Keep Nupo awake',
         subtitle:
-            "Tap Allow on the popup, so your phone doesn't put Nupo to sleep.",
+            'Tap Allow on the popup so your phone does not put Nupo to sleep.',
         buttonLabel: 'Allow',
         check: Engine.isIgnoringBattery,
         request: Engine.requestIgnoreBattery,
@@ -172,12 +195,13 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
       NameInputScreen(
         step: 1,
         total: _total,
-        title: "First — what's their name?",
+        title: "First, what is your kid's name?",
         hint: 'Their name',
         initialValue: Storage.childName,
         eyebrow: 'Step 1 of 5',
         stepLabel: '1/5',
-        greeting: (v) => 'Nice to meet you, $v!',
+        greeting: (v) => 'Nice to meet you, $v.',
+        emptyGreeting: 'Type a name and I will remember it.',
         onNext: (v) async {
           await Storage.setChildName(v);
           _next();
@@ -192,21 +216,37 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
         // (5–6 / 7–8 / 9–10 / 11+), so what the parent picks IS what the
         // native engine uses.
         options: const [
-          ChoiceOption('a', '5–6 years old',
-              chip: '5–6', description: 'Counting, first words'),
-          ChoiceOption('b', '7–8 years old',
-              chip: '7–8', description: 'Mental maths, nature and the world'),
-          ChoiceOption('c', '9–10 years old',
-              chip: '9–10', description: 'Times tables, fractions'),
-          ChoiceOption('d', '11–12 years old',
-              chip: '11–12', description: 'Word problems, logic'),
+          ChoiceOption(
+            'a',
+            '5 and 6',
+            chip: '5 · 6',
+            description: 'Counting, first words',
+          ),
+          ChoiceOption(
+            'b',
+            '7 and 8',
+            chip: '7 · 8',
+            description: 'Mental maths, nature and the world',
+          ),
+          ChoiceOption(
+            'c',
+            '9 and 10',
+            chip: '9 · 10',
+            description: 'Times tables, fractions',
+          ),
+          ChoiceOption(
+            'd',
+            '11 and 12',
+            chip: '11 · 12',
+            description: 'Word problems, logic',
+          ),
         ],
         mascotFor: Nupo.teacher,
         lineFor: (band) => const {
-          'a': 'Little ones get pictures and counting.',
+          'a': 'Pictures and counting to start.',
           'b': 'Mental maths and the world around them.',
-          'c': 'Tables and fractions land best here.',
-          'd': 'I’ll push into word problems and logic.',
+          'c': 'Tables and fractions land well here.',
+          'd': 'Word problems and logic it is.',
         }[band],
         onBack: _back,
         initiallySelected: Storage.bandFromAge(Storage.childAge),
@@ -224,26 +264,47 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
         stepLabel: '3/5',
         grid: true,
         options: const [
-          ChoiceOption('maths', 'Maths',
-              chip: '7×8', chipColor: AppColors.primary),
-          ChoiceOption('reading', 'Reading',
-              chip: 'Aa', chipColor: AppColors.done),
-          ChoiceOption('gk', 'General knowledge',
-              chip: '?', chipColor: AppColors.accentDeep),
-          ChoiceOption('mix', 'A bit of everything',
-              icon: Icons.star_rounded, chipColor: AppColors.wrong),
+          ChoiceOption(
+            'maths',
+            'Maths',
+            chip: '7×8',
+            chipColor: AppColors.primary,
+            description: 'Confidence with numbers',
+          ),
+          ChoiceOption(
+            'reading',
+            'Reading',
+            chip: 'Aa',
+            chipColor: AppColors.done,
+            description: 'Stronger words and stories',
+          ),
+          ChoiceOption(
+            'gk',
+            'General knowledge',
+            chip: '?',
+            chipColor: AppColors.accentDeep,
+            description: 'A wider view of the world',
+          ),
+          ChoiceOption(
+            'mix',
+            'A bit of everything',
+            icon: Icons.star_rounded,
+            chipColor: AppColors.wrong,
+            description: 'A balanced daily mix',
+          ),
         ],
         spot: MascotSpot.right,
         mascotFor: Nupo.idea,
         lineFor: (goal) => const {
-          'maths': 'Numbers first. I’ll sneak the rest in.',
+          'maths': 'Numbers first. I will slip the rest in.',
           'reading': 'Words and stories it is.',
-          'gk': 'Capitals, planets, odd facts.',
-          'mix': 'A bit of each, every day.',
+          'gk': 'Capitals, planets and odd facts.',
+          'mix': 'A little of each, every day.',
         }[goal],
         onBack: _back,
-        initiallySelected:
-            Storage.onbSubject.isEmpty ? 'mix' : Storage.onbSubject,
+        initiallySelected: Storage.onbSubject.isEmpty
+            ? 'mix'
+            : Storage.onbSubject,
         onNext: (id) async {
           await Storage.setOnbSubject(id);
           _next();
@@ -260,8 +321,8 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
         tone: StepTone.cream,
         buttonTone: ButtonTone.amber,
         stepLabel: '4/5',
-        greeting: (v) => '$v it is. I like it.',
-        emptyGreeting: 'Nupo works too — that’s me.',
+        greeting: (v) => '$v it is. Good name.',
+        emptyGreeting: 'Nupo works too. That is me.',
         mascotTyped: Nupo.cool,
         mascotEmpty: Nupo.shrug,
         onNext: (v) async {
@@ -300,20 +361,23 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
 
       // ---- ANDROID ONLY · the real setup the iOS build does via Screen Time --
       AppPickerScreen(
-          key: const ValueKey('picker'),
-          step: ++n,
-          total: grandTotal,
-          onNext: _next),
+        key: const ValueKey('picker'),
+        step: ++n,
+        total: grandTotal,
+        onNext: _next,
+      ),
       AppRulesScreen(
-          key: const ValueKey('rules'),
-          step: ++n,
-          total: grandTotal,
-          onNext: _next),
+        key: const ValueKey('rules'),
+        step: ++n,
+        total: grandTotal,
+        onNext: _next,
+      ),
       PinCreateScreen(
-          key: const ValueKey('pin'),
-          step: ++n,
-          total: grandTotal,
-          onNext: _next),
+        key: const ValueKey('pin'),
+        step: ++n,
+        total: grandTotal,
+        onNext: _next,
+      ),
       PermissionsIntroScreen(
         key: const ValueKey('perm-intro'),
         step: ++n,

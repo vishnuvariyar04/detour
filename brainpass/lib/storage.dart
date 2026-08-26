@@ -60,6 +60,12 @@ class Storage {
     return p;
   }
 
+  /// Wipe every local setting. Used when the parent deletes their account:
+  /// the Firestore doc goes, but without this the child's name, the PIN, the
+  /// gated apps and their rules all stayed on the phone, and whoever signed in
+  /// next inherited them.
+  static Future<void> clearLocal() => _p.clear();
+
   // ---- PIN ----
   static String? get pinHash => _p.getString(kPinHash);
   static String? get pinSalt => _p.getString(kPinSalt);

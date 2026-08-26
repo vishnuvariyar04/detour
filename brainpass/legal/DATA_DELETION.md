@@ -10,7 +10,7 @@ You can delete your Nupo account and all data we hold about you at any time, usi
 
 1. Open **Nupo** and tap **Parent settings** (enter your PIN).
 2. Scroll to **Account** → tap **Delete account**.
-3. Confirm. For security you may be asked to verify your phone number with a one-time code.
+3. Confirm. For security you will be asked to sign in again first — with Google, or with your password if you use an email account.
 4. Your account is deleted immediately.
 
 ## Method 2 — By email
@@ -18,13 +18,14 @@ You can delete your Nupo account and all data we hold about you at any time, usi
 Email **vishnu@internspirit.com** from any address with:
 
 - the subject line **"Delete my Nupo account"**, and
-- the phone number you used to sign in (so we can find the account).
+- the email address you used to sign in (so we can find the account).
 
 We will verify the request and complete the deletion within **30 days**, then confirm by reply.
 
 ## What gets deleted
 
-- Your account (phone number and sign-in identity)
+- Your account (email address and sign-in identity)
+- Your saved setup: your child's first name, the owl's nickname, age range, chosen subject, the apps you picked and their rules
 - Your profile record: account timestamps, app version, device model/manufacturer, Android version, child age band, gated-app count
 
 After deletion, **no data about you remains on our servers**.

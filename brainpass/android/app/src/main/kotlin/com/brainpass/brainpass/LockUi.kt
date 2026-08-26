@@ -214,7 +214,7 @@ class LockUi(
         // Boss badge above the card
         if (q.boss) {
             col.addView(TextView(ctx).apply {
-                text = "⭐ BOSS QUESTION ⭐"
+                text = "BOSS STAR"
                 setTextColor(accent); textSize = 14f; brandFont(black = true)
                 gravity = Gravity.CENTER
                 setPadding(0, dp(4), 0, dp(6))
@@ -233,7 +233,7 @@ class LockUi(
             setPadding(dp(22), dp(18), dp(22), dp(20))
         }
         card.addView(TextView(ctx).apply {
-            text = "Question ${index + 1} of $target"
+            text = "$solved of $target"
             setTextColor(0xFFB98600.toInt()); textSize = 12.5f; brandFont()
             background = rounded(0xFFFFF2CC.toInt(), dp(20))
             setPadding(dp(14), dp(5), dp(14), dp(5))
@@ -528,7 +528,7 @@ class LockUi(
             val got = placed.map { items[it!!] }
             if (got == answerSeq) { onCorrect() } else {
                 playSound(tryAgainSoundId)
-                feedback("Almost! Try a different order", wrong)
+                feedback("Almost! Try a different order.", wrong)
                 cardView?.let { shake(it) }
                 handler.postDelayed({
                     // return all tiles for another go
@@ -654,7 +654,7 @@ class LockUi(
         playSound(if (q.boss && bossSoundId != 0) bossSoundId else successSoundId)
         val line = if (streak >= 2) "${affirmations.random()}  •  $streak in a row!"
             else affirmations.random()
-        feedback(if (q.boss) "BOSS CLEARED!  $line" else line, correct)
+        feedback(if (q.boss) "Boss cleared! $line" else line, correct)
         if (solved >= target) {
             handler.postDelayed({ onEarned() }, if (q.boss) 1500L else 1200L)
         } else {
@@ -674,8 +674,8 @@ class LockUi(
         playSound(tryAgainSoundId)
         tappedView?.let { shake(it) } ?: cardView?.let { shake(it) }
         val reveal = when (q.kind) {
-            QKind.ODD_ONE_OUT, QKind.MEMORY -> "Oops! Not $answerText — look again"
-            else -> "Oops! It was $answerText"
+            QKind.ODD_ONE_OUT, QKind.MEMORY -> "Not $answerText. Look again."
+            else -> "Oops! It was $answerText."
         }
         feedback(reveal, wrong)
         handler.postDelayed({
@@ -772,13 +772,13 @@ class LockUi(
                 LinearLayout.LayoutParams(dp(130), dp(130)).apply { bottomMargin = dp(4) })
         }
         col.addView(TextView(ctx).apply {
-            text = "You're a star today! 🌟"
+            text = "You are a star today!"
             setTextColor(Color.WHITE); textSize = 27f; brandFont(black = true)
             gravity = Gravity.CENTER
             setPadding(0, dp(8), 0, dp(8))
         })
         col.addView(TextView(ctx).apply {
-            text = "Great learning today.\nSee you tomorrow! 👋"
+            text = "Great learning. See you tomorrow."
             setTextColor(0xE6FFFFFF.toInt()); textSize = 17f; brandFont()
             gravity = Gravity.CENTER
         })
@@ -843,7 +843,7 @@ class LockUi(
         }
         overlay.addView(grid, LinearLayout.LayoutParams(match, wrap).apply { topMargin = dp(16) })
         overlay.addView(TextView(ctx).apply {
-            text = "← Back"
+            text = "Back"
             setTextColor(0xCCFFFFFF.toInt()); textSize = 15f; brandFont()
             gravity = Gravity.CENTER
             setPadding(0, dp(20), 0, 0)

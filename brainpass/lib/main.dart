@@ -7,6 +7,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
@@ -20,14 +21,29 @@ import 'screens/login/login_flow.dart';
 import 'screens/onboarding/onboarding_flow.dart';
 import 'screens/onboarding/story_screen.dart';
 import 'screens/splash_screen.dart';
+import 'screens/pin_create_screen.dart';
 import 'screens/pin_entry_screen.dart';
 import 'screens/parent_home_screen.dart';
 import 'storage.dart';
 import 'theme.dart';
 import 'widgets.dart';
 
+/// Lets design-QA builds open onboarding without clearing saved family data.
+/// Enable with `--dart-define=NUPO_PREVIEW_ONBOARDING=true`.
+const _previewOnboarding = bool.fromEnvironment(
+  'NUPO_PREVIEW_ONBOARDING',
+  defaultValue: false,
+);
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // The scroll story derives its position from the viewport HEIGHT
+  // (t = 1 + offset / vh), so a rotation mid-story rescales t past the last
+  // beat and the screen goes blank. The whole parent UI is designed portrait;
+  // lock it here as well as in the manifest.
+  await SystemChrome.setPreferredOrientations(
+    [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown],
+  );
   await Storage.init();
   // Firebase powers optional parent login. It must never block the offline
   // app, so a failure here is swallowed — the app runs exactly as before.
@@ -78,6 +94,13 @@ class RootRouter extends StatefulWidget {
 class _RootRouterState extends State<RootRouter> {
   late bool _loggedIn = AuthService.isLoggedIn;
   late bool _storySeen = Storage.storySeen;
+
+  /// True while a saved setup is being pulled down after sign-in. Without
+  /// this the router paints OnboardingFlow for a frame or two and a returning
+  /// parent sees the questions flash past before landing home.
+  bool _restoring = false;
+  bool _previewStoryDone = false;
+  bool _previewFlowDone = false;
   StreamSubscription<Object?>? _sub;
 
   @override
@@ -85,9 +108,8 @@ class _RootRouterState extends State<RootRouter> {
     super.initState();
     _sub = AuthService.authState().listen((user) {
       if (user != null) {
-        // Fires on app start and on every sign-in.
-        ProfileService.sync();
         SubscriptionService.logIn(user.uid); // purchases follow the account
+        _afterSignIn();
       } else {
         SubscriptionService.logOut();
       }
@@ -95,6 +117,29 @@ class _RootRouterState extends State<RootRouter> {
     });
     SubscriptionService.hasPro.addListener(_onGateChanged);
     RemoteConfigService.paywallEnabled.addListener(_onGateChanged);
+  }
+
+  /// Fires on app start and on every sign-in. A returning parent's setup
+  /// lives on their account, so pull it back before deciding whether to show
+  /// onboarding — otherwise signing in restores the account but re-asks every
+  /// question, which is no account at all.
+  Future<void> _afterSignIn() async {
+    if (!Storage.onboardingComplete) {
+      if (mounted) setState(() => _restoring = true);
+      final restored = await ProfileService.restore();
+      if (restored) {
+        // Push the restored rules down so gating works on this device now,
+        // not at next launch.
+        await syncToEngine();
+      }
+      if (mounted) {
+        setState(() {
+          _restoring = false;
+          _storySeen = Storage.storySeen;
+        });
+      }
+    }
+    await ProfileService.sync();
   }
 
   void _onGateChanged() {
@@ -111,6 +156,20 @@ class _RootRouterState extends State<RootRouter> {
 
   @override
   Widget build(BuildContext context) {
+    if (_previewOnboarding && !_previewStoryDone) {
+      return OnboardingStory(
+        onFinished: () => setState(() => _previewStoryDone = true),
+        onLogIn: () => setState(() => _previewStoryDone = true),
+        onAppPicked: (_) {},
+      );
+    }
+    if (_previewOnboarding && !_previewFlowDone) {
+      return OnboardingFlow(
+        onComplete: () => setState(() => _previewFlowDone = true),
+      );
+    }
+    // Signed in, and their saved setup is on its way down.
+    if (_restoring) return const _RestoringScreen();
     // The scroll story runs before anything else for a brand-new install —
     // a returning parent who taps "I already have an account" skips it too.
     if (!_storySeen && !_loggedIn) {
@@ -131,6 +190,20 @@ class _RootRouterState extends State<RootRouter> {
     if (!Storage.onboardingComplete) {
       return OnboardingFlow(onComplete: () => setState(() {}));
     }
+    // A restored setup arrives WITHOUT a PIN: the PIN is a salted hash that
+    // deliberately never leaves the device, so a parent signing in on a new
+    // phone (or after clearing data) had completed setup and no PIN to match.
+    // Parent settings then rejected every PIN they tried, with no way to set
+    // one. Setup-complete-but-no-PIN is not a valid state; heal it here.
+    if (!Storage.hasPin) {
+      return PinCreateScreen(
+        key: const ValueKey('pin-after-restore'),
+        onNext: () async {
+          await syncToEngine(); // push the new PIN down to the native lock
+          if (mounted) setState(() {});
+        },
+      );
+    }
     // Remote kill-switch: lets us disable the paywall for everyone instantly
     // (e.g. while a payment processor is still being verified) without a new
     // Play Store release. See remote_config_service.dart.
@@ -139,6 +212,48 @@ class _RootRouterState extends State<RootRouter> {
       return const PaywallGateScreen();
     }
     return const ActiveLanding();
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Shown for the moment between signing in and the saved setup landing.
+// ---------------------------------------------------------------------------
+class _RestoringScreen extends StatelessWidget {
+  const _RestoringScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        decoration: AppColors.bgDecoration(),
+        height: double.infinity,
+        child: SafeArea(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const HaloMascot('assets/nupo/wave.png', size: 150),
+              const SizedBox(height: 26),
+              const Text('Welcome back', style: AppText.title),
+              const SizedBox(height: 10),
+              const Text(
+                'Getting your saved setup...',
+                style: AppText.body,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 26),
+              SizedBox(
+                width: 26,
+                height: 26,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.6,
+                  color: AppColors.primary.withValues(alpha: 0.7),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 
@@ -181,13 +296,13 @@ class _ActiveLandingState extends State<ActiveLanding>
   }
 
   Future<void> _openSettings(BuildContext context) async {
-    final ok = await Navigator.of(context).push<bool>(
-      MaterialPageRoute(builder: (_) => const PinEntryScreen()),
-    );
+    final ok = await Navigator.of(
+      context,
+    ).push<bool>(MaterialPageRoute(builder: (_) => const PinEntryScreen()));
     if (ok == true && context.mounted) {
-      await Navigator.of(context).push(
-        MaterialPageRoute(builder: (_) => const ParentHomeScreen()),
-      );
+      await Navigator.of(
+        context,
+      ).push(MaterialPageRoute(builder: (_) => const ParentHomeScreen()));
     }
     _refresh(); // reflect any pause/resume change made in settings
   }
@@ -205,16 +320,23 @@ class _ActiveLandingState extends State<ActiveLanding>
               const Spacer(),
 
               // Mascot on its sunny halo, with celebration stars when active
-              HaloMascot('assets/mascot_opening.png',
-                  size: 200, sparkles: _enabled),
+              HaloMascot(
+                'assets/mascot_opening.png',
+                size: 200,
+                sparkles: _enabled,
+              ),
               const SizedBox(height: 12),
 
               // Status pill
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
-                  color: _enabled ? AppColors.correctSoft : const Color(0xFFEFEDF6),
+                  color: _enabled
+                      ? AppColors.correctSoft
+                      : const Color(0xFFEFEDF6),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Row(
@@ -223,8 +345,10 @@ class _ActiveLandingState extends State<ActiveLanding>
                     Container(
                       width: 9,
                       height: 9,
-                      decoration:
-                          BoxDecoration(color: color, shape: BoxShape.circle),
+                      decoration: BoxDecoration(
+                        color: color,
+                        shape: BoxShape.circle,
+                      ),
                     ),
                     const SizedBox(width: 8),
                     Text(
@@ -241,7 +365,7 @@ class _ActiveLandingState extends State<ActiveLanding>
               const SizedBox(height: 16),
 
               Text(
-                _enabled ? 'All set!' : 'Nupo is paused',
+                _enabled ? 'All set.' : 'Nupo is paused',
                 style: AppText.display,
               ),
               const SizedBox(height: 8),
@@ -249,8 +373,8 @@ class _ActiveLandingState extends State<ActiveLanding>
                 padding: const EdgeInsets.symmetric(horizontal: 44),
                 child: Text(
                   _enabled
-                      ? 'When your child opens a chosen app, Nupo asks a few quick questions first — then they play.'
-                      : 'Apps open freely right now. Turn Nupo back on in Parent settings.',
+                      ? 'When your kid opens one of the apps you picked, Nupo asks a few questions first. Then it opens.'
+                      : 'Apps open freely right now. Turn Nupo back on in parent settings.',
                   textAlign: TextAlign.center,
                   style: AppText.body,
                 ),
@@ -264,7 +388,7 @@ class _ActiveLandingState extends State<ActiveLanding>
                   children: [
                     _MiniStep(
                       icon: Symbols.touch_app_rounded,
-                      label: 'Open app',
+                      label: 'Tap the app',
                       color: AppColors.primary,
                       background: AppColors.primarySoft,
                     ),
@@ -278,7 +402,7 @@ class _ActiveLandingState extends State<ActiveLanding>
                     const _StepArrow(),
                     _MiniStep(
                       icon: Symbols.play_arrow_rounded,
-                      label: 'Play',
+                      label: 'It opens',
                       color: AppColors.correct,
                       background: AppColors.correctSoft,
                     ),
@@ -358,8 +482,11 @@ class _StepArrow extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Padding(
       padding: EdgeInsets.only(left: 14, right: 14, bottom: 20),
-      child: Icon(Icons.arrow_forward_rounded,
-          color: Color(0xFFC9C2E8), size: 18),
+      child: Icon(
+        Icons.arrow_forward_rounded,
+        color: Color(0xFFC9C2E8),
+        size: 18,
+      ),
     );
   }
 }

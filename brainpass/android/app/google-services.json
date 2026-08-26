@@ -12,7 +12,28 @@
           "package_name": "app.nupo.kid"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "1070595284454-08sf9jr7iu3fn1d7ikamuorfcbnsbgb8.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "app.nupo.kid",
+            "certificate_hash": "49b4c6b16dd3b55cbae52e71f5f7a4fad7ca967a"
+          }
+        },
+        {
+          "client_id": "1070595284454-88qqe5ae0b9ajvnkc2sc97qrivfmrpsi.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "app.nupo.kid",
+            "certificate_hash": "5e1824dd71939d5ebd71b41ab4bfb72de009d36c"
+          }
+        },
+        {
+          "client_id": "1070595284454-m5vk28f4lluckdhgdbkk4mg95v250t5g.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDca6K4ZquBNruICuo3j4gWUagdTS-Vpfs"
@@ -20,7 +41,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1070595284454-m5vk28f4lluckdhgdbkk4mg95v250t5g.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1070595284454-q234nfk9scsbkfcq4a7j2gl1tio9j89g.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.app.nupo"
+              }
+            }
+          ]
         }
       }
     }

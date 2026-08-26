@@ -219,7 +219,7 @@ object Questions {
     // ---------------------------------------------------------------------
     fun generateCompare(band: Band): Q {
         fun q(l: String, rr: String, leftWins: Boolean) = Q(
-            QKind.COMPARE, "Tap the BIGGER one!",
+            QKind.COMPARE, "Tap the bigger one!",
             answer = if (leftWins) "0" else "1",
             options = listOf(l, rr),
         )
@@ -364,7 +364,7 @@ object Questions {
         var shuffled = sorted.shuffled()
         while (shuffled == sorted) shuffled = sorted.shuffled()
         return Q(
-            QKind.ORDER, "Put them in order — smallest first!",
+            QKind.ORDER, "Smallest first!",
             answer = sorted.joinToString(","),
             orderItems = shuffled.map { "$it" },
         )

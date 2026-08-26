@@ -1,17 +1,9 @@
-// screens/login/reauth_delete_screen.dart
-//
-// Deleting a Firebase account is a sensitive op: it needs a RECENT login. So we
-// send a fresh OTP to the signed-in number, re-authenticate, then delete.
-// Pops `true` once the account is gone (RootRouter then drops to login).
-
-import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import '../../auth_service.dart';
 import '../../theme.dart';
 import '../../widgets.dart';
+import '../onboarding/onb_widgets.dart';
 
 class ReauthDeleteScreen extends StatefulWidget {
   const ReauthDeleteScreen({super.key});
@@ -21,153 +13,48 @@ class ReauthDeleteScreen extends StatefulWidget {
 }
 
 class _ReauthDeleteScreenState extends State<ReauthDeleteScreen> {
-  final String _phone = AuthService.phoneNumber ?? '';
-  String? _verificationId;
-  int? _resendToken;
-  bool _busy = true; // start by sending the code
+  final _password = TextEditingController();
+  bool _busy = false;
   String? _error;
-  String _code = '';
-  int _resendSeconds = 0;
-  Timer? _cooldown;
 
-  @override
-  void initState() {
-    super.initState();
-    _sendCode();
-  }
+  /// An email/password account cannot be re-verified silently — Firebase needs
+  /// the password again, so this screen has to collect it.
+  bool get _needsPassword => AuthService.providerId == 'password';
 
   @override
   void dispose() {
-    _cooldown?.cancel();
+    _password.dispose();
     super.dispose();
   }
 
-  void _startCooldown() {
-    _resendSeconds = 60;
-    _cooldown?.cancel();
-    _cooldown = Timer.periodic(const Duration(seconds: 1), (t) {
-      if (!mounted) return t.cancel();
-      setState(() {
-        if (_resendSeconds > 0) {
-          _resendSeconds--;
-        } else {
-          t.cancel();
-        }
+  Future<void> _confirmWithPassword() => _confirm(() async {
+        final email = AuthService.email;
+        if (email == null) throw const AuthFailure('Not signed in.');
+        // Re-signing in refreshes the login age, which is what delete() wants.
+        await AuthService.signInWithEmail(email, _password.text);
       });
-    });
-  }
 
-  Future<void> _sendCode({bool resend = false}) async {
-    setState(() {
-      _busy = true;
-      _error = null;
-      _code = '';
-    });
-    try {
-      await AuthService.sendVerification(
-        phoneE164: _phone,
-        resendToken: resend ? _resendToken : null,
-        onAutoVerified: (cred) async {
-          try {
-            await AuthService.reauthWithCredential(cred);
-            await _finishDelete();
-          } catch (e) {
-            if (mounted) {
-              setState(() {
-                _busy = false;
-                _error = AuthService.errorMessage(e);
-              });
-            }
-          }
-        },
-        onFailed: (e) {
-          if (mounted) {
-            setState(() {
-              _busy = false;
-              _error = AuthService.errorMessage(e);
-            });
-          }
-        },
-        onCodeSent: (verificationId, token) {
-          if (!mounted) return;
-          setState(() {
-            _verificationId = verificationId;
-            _resendToken = token;
-            _busy = false;
-          });
-          _startCooldown();
-        },
-      );
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _busy = false;
-          _error = AuthService.errorMessage(e);
-        });
-      }
-    }
-  }
-
-  Future<void> _verify(String code) async {
-    if (_verificationId == null) return;
+  Future<void> _confirm(Future<void> Function() reauthenticate) async {
+    if (_busy) return;
     setState(() {
       _busy = true;
       _error = null;
     });
     try {
-      await AuthService.reauthWithSmsCode(
-        verificationId: _verificationId!,
-        smsCode: code,
-      );
-      await _finishDelete();
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _busy = false;
-          _error = AuthService.errorMessage(e);
-          _code = '';
-        });
-      }
-    }
-  }
-
-  Future<void> _finishDelete() async {
-    try {
+      await reauthenticate();
       await AuthService.deleteAccount();
       if (mounted) Navigator.of(context).pop(true);
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _busy = false;
-          _error = AuthService.errorMessage(e);
-        });
-      }
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _busy = false;
+        _error = AuthService.errorMessage(error);
+      });
     }
-  }
-
-  void _onDigit(String d) {
-    if (_busy || _code.length >= 6) return;
-    setState(() => _code += d);
-    if (_code.length == 6) _verify(_code);
-  }
-
-  void _onDelete() {
-    if (_code.isEmpty) return;
-    setState(() => _code = _code.substring(0, _code.length - 1));
-  }
-
-  Future<void> _paste() async {
-    if (_busy) return;
-    final data = await Clipboard.getData(Clipboard.kTextPlain);
-    final digits = (data?.text ?? '').replaceAll(RegExp(r'\D'), '');
-    if (digits.isEmpty) return;
-    setState(() => _code = digits.substring(0, digits.length.clamp(0, 6)));
-    if (_code.length == 6) _verify(_code);
   }
 
   @override
   Widget build(BuildContext context) {
-    final canResend = _resendSeconds == 0 && !_busy;
     return Scaffold(
       body: Container(
         decoration: AppColors.bgDecoration(),
@@ -181,57 +68,77 @@ class _ReauthDeleteScreenState extends State<ReauthDeleteScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 28),
                   child: Column(
                     children: [
+                      const SizedBox(height: 18),
+                      const HaloMascot('assets/mascot_pin.png', size: 130),
+                      const SizedBox(height: 20),
+                      const Text('Confirm it is you', style: AppText.title),
                       const SizedBox(height: 8),
-                      const Text("Confirm it's you", style: AppText.title),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Enter the code sent to $_phone to permanently delete your account.',
+                      const Text(
+                        'Sign in again to permanently delete your account.',
                         textAlign: TextAlign.center,
                         style: AppText.body,
                       ),
-                      const SizedBox(height: 26),
-                      GestureDetector(
-                        onLongPress: _paste,
-                        child: PinBoxes(filled: _code.length, count: 6),
-                      ),
-                      SizedBox(
-                        height: 34,
-                        child: Center(
-                          child: _busy
-                              ? const SizedBox(
-                                  width: 18,
-                                  height: 18,
-                                  child:
-                                      CircularProgressIndicator(strokeWidth: 2),
-                                )
-                              : _error == null
-                                  ? null
-                                  : Text(_error!,
-                                      textAlign: TextAlign.center,
-                                      style: const TextStyle(
-                                          color: AppColors.wrong,
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w800)),
-                        ),
-                      ),
-                      PinPad(onDigit: _onDigit, onDelete: _onDelete),
-                      const SizedBox(height: 8),
-                      TextButton(
-                        onPressed:
-                            canResend ? () => _sendCode(resend: true) : null,
-                        child: Text(
-                          _resendSeconds > 0
-                              ? 'Resend code in ${_resendSeconds}s'
-                              : 'Resend code',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w800,
-                            color: canResend
-                                ? AppColors.primary
-                                : AppColors.textMuted,
+                      const SizedBox(height: 24),
+                      if (_needsPassword) ...[
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                                color: AppColors.cardBorder, width: 1.5),
+                          ),
+                          child: TextField(
+                            controller: _password,
+                            obscureText: true,
+                            autocorrect: false,
+                            onChanged: (_) => setState(() {}),
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.textDark,
+                            ),
+                            decoration: const InputDecoration(
+                              hintText: 'Your password',
+                              border: InputBorder.none,
+                              contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 18, vertical: 17),
+                            ),
                           ),
                         ),
+                        const SizedBox(height: 14),
+                        NupoButton(
+                          label: 'Delete my account',
+                          buttonTone: ButtonTone.brand,
+                          onPressed: _busy || _password.text.length < 6
+                              ? null
+                              : _confirmWithPassword,
+                        ),
+                      ] else
+                      // One button: re-authentication has to use whichever
+                      // provider the account was made with, so offering a
+                      // choice only invites picking the wrong one.
+                      _DeleteProviderButton(
+                        label: 'Continue with ${AuthService.providerLabel}',
+                        icon: AuthService.providerId == 'apple.com'
+                            ? Icons.apple_rounded
+                            : Icons.g_mobiledata_rounded,
+                        filled: true,
+                        busy: _busy,
+                        onPressed: () =>
+                            _confirm(AuthService.reauthenticate),
                       ),
-                      const SizedBox(height: 12),
+                      if (_error != null) ...[
+                        const SizedBox(height: 18),
+                        Text(
+                          _error!,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: AppColors.wrong,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -242,4 +149,52 @@ class _ReauthDeleteScreenState extends State<ReauthDeleteScreen> {
       ),
     );
   }
+}
+
+class _DeleteProviderButton extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final bool filled;
+  final bool busy;
+  final VoidCallback onPressed;
+
+  const _DeleteProviderButton({
+    required this.label,
+    required this.icon,
+    required this.busy,
+    required this.onPressed,
+    this.filled = false,
+  });
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+        width: double.infinity,
+        height: 58,
+        child: OutlinedButton.icon(
+          onPressed: busy ? null : onPressed,
+          icon: busy
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : Icon(icon, size: 25),
+          label: Text(label),
+          style: OutlinedButton.styleFrom(
+            backgroundColor: filled ? AppColors.textDark : Colors.white,
+            foregroundColor: filled ? Colors.white : AppColors.textDark,
+            side: BorderSide(
+              color: filled ? AppColors.textDark : AppColors.line,
+              width: 1.5,
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(29),
+            ),
+            textStyle: const TextStyle(
+              fontSize: 15.5,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ),
+      );
 }

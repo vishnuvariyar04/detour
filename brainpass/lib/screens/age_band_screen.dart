@@ -69,10 +69,10 @@ class _AgeBandScreenState extends State<AgeBandScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('How old is your child?', style: AppText.title),
+                      const Text('How old is your kid?', style: AppText.title),
                       const SizedBox(height: 8),
                       const Text(
-                        'Questions will match their age. You can change this any time.',
+                        'Questions match the age you pick. Change it any time.',
                         style: AppText.body,
                       ),
                       const SizedBox(height: 20),
@@ -103,7 +103,7 @@ class _AgeBandScreenState extends State<AgeBandScreen> {
               ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
-                child: PrimaryButton(label: 'Continue', onPressed: _save),
+                child: PrimaryButton(label: 'Save', onPressed: _save),
               ),
             ],
           ),
@@ -209,13 +209,13 @@ class _AgeBandScreenState extends State<AgeBandScreen> {
   String _bandDescription(Band b) {
     switch (b) {
       case Band.a:
-        return 'Counting & simple sums';
+        return 'Counting and simple sums';
       case Band.b:
-        return 'Mental math & nature';
+        return 'Mental maths and nature';
       case Band.c:
-        return 'Times tables & trivia';
+        return 'Times tables and trivia';
       case Band.d:
-        return 'Advanced logic & math';
+        return 'Advanced logic and maths';
     }
   }
 }
@@ -236,7 +236,7 @@ class _AgePicker extends StatelessWidget {
               spacing: 12,
               runSpacing: 12,
               children: [
-                for (var age = 5; age <= 11; age++)
+                for (var age = 5; age <= 12; age++)
                   ElevatedButton(
                     onPressed: () => Navigator.of(context).pop(age),
                     style: ElevatedButton.styleFrom(

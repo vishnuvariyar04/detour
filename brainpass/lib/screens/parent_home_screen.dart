@@ -44,8 +44,10 @@ class _ParentHomeScreenState extends State<ParentHomeScreen>
     WidgetsBinding.instance.addObserver(this);
     _refresh();
     // Live-update per-app usage while the dashboard is open.
-    _liveTimer =
-        Timer.periodic(const Duration(seconds: 2), (_) => _refreshStatuses());
+    _liveTimer = Timer.periodic(
+      const Duration(seconds: 2),
+      (_) => _refreshStatuses(),
+    );
   }
 
   @override
@@ -123,9 +125,11 @@ class _ParentHomeScreenState extends State<ParentHomeScreen>
                       _alertBanner(
                         icon: Symbols.warning_rounded,
                         title: 'A permission is off',
-                        body: 'Nupo can\'t bring lessons right now. Tap to fix.',
-                        onTap: () =>
-                            _edit((onNext) => PermissionsScreen(onNext: onNext)),
+                        body:
+                            'Nupo cannot bring lessons right now. Tap to fix.',
+                        onTap: () => _edit(
+                          (onNext) => PermissionsScreen(onNext: onNext),
+                        ),
                       ),
                       const SizedBox(height: 14),
                     ],
@@ -133,7 +137,9 @@ class _ParentHomeScreenState extends State<ParentHomeScreen>
                     // Protection master switch
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 18, vertical: 14),
+                        horizontal: 18,
+                        vertical: 14,
+                      ),
                       decoration: AppColors.cardDecoration(),
                       child: Row(
                         children: [
@@ -166,7 +172,7 @@ class _ParentHomeScreenState extends State<ParentHomeScreen>
                                 const SizedBox(height: 1),
                                 Text(
                                   _enabled
-                                      ? 'A quick lesson before play'
+                                      ? 'A quick lesson first'
                                       : 'Apps open freely',
                                   style: const TextStyle(
                                     fontSize: 12.5,
@@ -195,27 +201,34 @@ class _ParentHomeScreenState extends State<ParentHomeScreen>
                       children: [
                         const Expanded(child: SectionLabel('Learning apps')),
                         TextButton.icon(
-                          onPressed: () =>
-                              _edit((onNext) => AppPickerScreen(onNext: onNext)),
-                          icon: Icon(
-                              Symbols.edit_rounded,
-                              size: 15),
-                          label: const Text('Edit',
-                              style: TextStyle(
-                                  fontSize: 13, fontWeight: FontWeight.w800)),
+                          onPressed: () => _edit(
+                            (onNext) => AppPickerScreen(onNext: onNext),
+                          ),
+                          icon: Icon(Symbols.edit_rounded, size: 15),
+                          label: const Text(
+                            'Edit',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
                         ),
                       ],
                     ),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 6),
+                        horizontal: 16,
+                        vertical: 6,
+                      ),
                       decoration: AppColors.cardDecoration(),
                       child: gated.isEmpty
                           ? const Padding(
                               padding: EdgeInsets.symmetric(vertical: 24),
                               child: Center(
-                                child: Text('No apps picked yet.',
-                                    style: AppText.body),
+                                child: Text(
+                                  'No apps picked yet.',
+                                  style: AppText.body,
+                                ),
                               ),
                             )
                           : Column(
@@ -227,10 +240,12 @@ class _ParentHomeScreenState extends State<ParentHomeScreen>
                                     package: gated[i],
                                     rule: rules[gated[i]] ?? const AppRule(),
                                     status: _status[gated[i]],
-                                    onTap: () => _edit((onNext) =>
-                                        AppRulesScreen(
-                                            onNext: onNext,
-                                            isOnboarding: false)),
+                                    onTap: () => _edit(
+                                      (onNext) => AppRulesScreen(
+                                        onNext: onNext,
+                                        isOnboarding: false,
+                                      ),
+                                    ),
                                   ),
                                 ],
                               ],
@@ -250,18 +265,21 @@ class _ParentHomeScreenState extends State<ParentHomeScreen>
                             background: AppColors.accentSoft,
                             title: 'Child age',
                             value: bandLabel(band),
-                            onTap: () =>
-                                _edit((onNext) => AgeBandScreen(onNext: onNext)),
+                            onTap: () => _edit(
+                              (onNext) => AgeBandScreen(onNext: onNext),
+                            ),
                           ),
                           const Divider(height: 1, indent: 62),
                           _EditRowItem(
                             icon: Symbols.tune_rounded,
                             title: 'Permissions',
-                            value: _permissionsOk ? 'All granted' : 'Needs attention',
-                            valueColor:
-                                _permissionsOk ? null : AppColors.wrong,
+                            value: _permissionsOk
+                                ? 'All on'
+                                : 'Needs attention',
+                            valueColor: _permissionsOk ? null : AppColors.wrong,
                             onTap: () => _edit(
-                                (onNext) => PermissionsScreen(onNext: onNext)),
+                              (onNext) => PermissionsScreen(onNext: onNext),
+                            ),
                           ),
                           const Divider(height: 1, indent: 62),
                           _EditRowItem(
@@ -269,7 +287,8 @@ class _ParentHomeScreenState extends State<ParentHomeScreen>
                             title: 'Change PIN',
                             value: '••••',
                             onTap: () => _edit(
-                                (onNext) => PinCreateScreen(onNext: onNext)),
+                              (onNext) => PinCreateScreen(onNext: onNext),
+                            ),
                           ),
                         ],
                       ),
@@ -287,7 +306,7 @@ class _ParentHomeScreenState extends State<ParentHomeScreen>
                             color: AppColors.correct,
                             background: AppColors.correctSoft,
                             title: 'Signed in',
-                            value: AuthService.phoneNumber ?? '—',
+                            value: AuthService.email ?? 'Not available',
                             onTap: () {},
                           ),
                           const Divider(height: 1, indent: 62),
@@ -298,7 +317,7 @@ class _ParentHomeScreenState extends State<ParentHomeScreen>
                             title: 'Subscription',
                             value: SubscriptionService.hasPro.value
                                 ? 'Nupo Pro'
-                                : 'Inactive',
+                                : 'Not active',
                             onTap: SubscriptionService.presentCustomerCenter,
                           ),
                           const Divider(height: 1, indent: 62),
@@ -342,9 +361,13 @@ class _ParentHomeScreenState extends State<ParentHomeScreen>
       builder: (_) => AlertDialog(
         backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: Text(title,
-            style: const TextStyle(
-                fontWeight: FontWeight.w900, color: AppColors.textDark)),
+        title: Text(
+          title,
+          style: const TextStyle(
+            fontWeight: FontWeight.w900,
+            color: AppColors.textDark,
+          ),
+        ),
         content: Text(body, style: AppText.body),
         actions: [
           TextButton(
@@ -353,10 +376,13 @@ class _ParentHomeScreenState extends State<ParentHomeScreen>
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: Text(confirmLabel,
-                style: TextStyle(
-                    fontWeight: FontWeight.w900,
-                    color: danger ? AppColors.wrong : AppColors.primary)),
+            child: Text(
+              confirmLabel,
+              style: TextStyle(
+                fontWeight: FontWeight.w900,
+                color: danger ? AppColors.wrong : AppColors.primary,
+              ),
+            ),
           ),
         ],
       ),
@@ -367,7 +393,7 @@ class _ParentHomeScreenState extends State<ParentHomeScreen>
   Future<void> _signOut() async {
     final ok = await _confirm(
       'Sign out?',
-      "You'll need to sign in again with your phone number to use Nupo.",
+      'You will need to sign in again to use Nupo.',
       'Sign out',
     );
     if (!ok) return;
@@ -378,7 +404,7 @@ class _ParentHomeScreenState extends State<ParentHomeScreen>
   Future<void> _deleteAccount() async {
     final ok = await _confirm(
       'Delete account?',
-      'This permanently deletes your Nupo account. This cannot be undone.',
+      'This permanently deletes your Nupo account and cannot be undone.',
       'Delete',
       danger: true,
     );
@@ -396,9 +422,9 @@ class _ParentHomeScreenState extends State<ParentHomeScreen>
       // Stale session — re-verify the number, then delete.
     }
     if (!mounted) return;
-    final deleted = await Navigator.of(context).push<bool>(
-      MaterialPageRoute(builder: (_) => const ReauthDeleteScreen()),
-    );
+    final deleted = await Navigator.of(
+      context,
+    ).push<bool>(MaterialPageRoute(builder: (_) => const ReauthDeleteScreen()));
     if (deleted == true && mounted) {
       Navigator.of(context).popUntil((r) => r.isFirst);
     }
@@ -410,9 +436,13 @@ class _ParentHomeScreenState extends State<ParentHomeScreen>
       builder: (_) => AlertDialog(
         backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: const Text("Couldn't delete",
-            style: TextStyle(
-                fontWeight: FontWeight.w900, color: AppColors.textDark)),
+        title: const Text(
+          'Could not delete',
+          style: TextStyle(
+            fontWeight: FontWeight.w900,
+            color: AppColors.textDark,
+          ),
+        ),
         content: Text(message, style: AppText.body),
         actions: [
           TextButton(
@@ -443,8 +473,11 @@ class _ParentHomeScreenState extends State<ParentHomeScreen>
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           child: Row(
             children: [
-              IconBadge(icon,
-                  color: AppColors.wrong, background: const Color(0xFFFFE1E1)),
+              IconBadge(
+                icon,
+                color: AppColors.wrong,
+                background: const Color(0xFFFFE1E1),
+              ),
               const SizedBox(width: 14),
               Expanded(
                 child: Column(
@@ -459,16 +492,22 @@ class _ParentHomeScreenState extends State<ParentHomeScreen>
                       ),
                     ),
                     const SizedBox(height: 2),
-                    Text(body,
-                        style: const TextStyle(
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.textMuted)),
+                    Text(
+                      body,
+                      style: const TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textMuted,
+                      ),
+                    ),
                   ],
                 ),
               ),
-              const Icon(Icons.chevron_right_rounded,
-                  color: AppColors.wrong, size: 22),
+              const Icon(
+                Icons.chevron_right_rounded,
+                color: AppColors.wrong,
+                size: 22,
+              ),
             ],
           ),
         ),
@@ -523,7 +562,9 @@ class _AppStatusRow extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        hasCap ? '$usedMin / ${rule.cap}m' : '${usedMin}m today',
+                        hasCap
+                            ? '$usedMin / ${rule.cap}m'
+                            : '${usedMin}m today',
                         style: const TextStyle(
                           fontSize: 12.5,
                           fontWeight: FontWeight.w800,
@@ -548,7 +589,9 @@ class _AppStatusRow extends StatelessWidget {
                       if (remMin > 0)
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 2),
+                            horizontal: 8,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
                             color: AppColors.accentSoft,
                             borderRadius: BorderRadius.circular(9),
@@ -556,8 +599,11 @@ class _AppStatusRow extends StatelessWidget {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(Icons.star_rounded,
-                                  color: AppColors.accent, size: 13),
+                              const Icon(
+                                Icons.star_rounded,
+                                color: AppColors.accent,
+                                size: 13,
+                              ),
                               const SizedBox(width: 3),
                               Text(
                                 '$remMin min left',
@@ -590,8 +636,11 @@ class _AppStatusRow extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            const Icon(Icons.chevron_right_rounded,
-                color: Color(0xFFC5C0DA), size: 20),
+            const Icon(
+              Icons.chevron_right_rounded,
+              color: Color(0xFFC5C0DA),
+              size: 20,
+            ),
           ],
         ),
       ),
@@ -648,8 +697,11 @@ class _EditRowItem extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 4),
-              const Icon(Icons.chevron_right_rounded,
-                  color: Color(0xFFC5C0DA), size: 20),
+              const Icon(
+                Icons.chevron_right_rounded,
+                color: Color(0xFFC5C0DA),
+                size: 20,
+              ),
             ],
           ),
         ),

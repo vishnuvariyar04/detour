@@ -324,7 +324,12 @@ class _OnboardingStoryState extends State<OnboardingStory> {
 
     return Positioned.fill(
       child: IgnorePointer(
-        ignoring: ad >= 0.45,
+        // A `hold` beat sets its own visibility window, so hit-testing has to
+        // follow THAT and not the distance from `at`. The close beat holds
+        // from t 7.57 but sits at 8.4, so its CTA painted fully opaque while
+        // silently swallowing taps for most of a screen of scroll — it looked
+        // like the button was simply broken.
+        ignoring: hold != null ? opacity < 0.6 : ad >= 0.45,
         child: Visibility(
           visible: opacity > 0.01,
           maintainState: true,

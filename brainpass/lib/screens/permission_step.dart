@@ -157,13 +157,13 @@ class _PermissionStepScreenState extends State<PermissionStepScreen>
                           _hero(),
                           const SizedBox(height: 26),
                           Text(
-                            _granted ? 'Done!' : widget.title,
+                            _granted ? 'Done' : widget.title,
                             textAlign: TextAlign.center,
                             style: AppText.title,
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            _granted ? 'Permission granted.' : widget.subtitle,
+                            _granted ? '' : widget.subtitle,
                             textAlign: TextAlign.center,
                             style: AppText.body,
                           ),
@@ -202,7 +202,7 @@ class _PermissionStepScreenState extends State<PermissionStepScreen>
                         InfoPill(
                           icon: Symbols.favorite_rounded,
                           text: widget.footnote ??
-                              'A quick lesson, then straight to play',
+                              'You will come straight back here.',
                         ),
                       ],
                     ],

@@ -25,6 +25,7 @@ import 'package:flutter/material.dart';
 
 import '../../theme.dart';
 import '../../widgets.dart';
+import 'onb_widgets.dart';
 
 // ---------------------------------------------------------------------------
 // Shared maths — `support.js`'s `clamp` / `lerp` / its ease-in-out cubic.
@@ -182,8 +183,11 @@ class StoryProgressBar extends StatelessWidget {
                 ),
                 child: Transform.rotate(
                   angle: p * 6.2832,
-                  child: const Icon(Icons.star_rounded,
-                      size: 13, color: AppColors.accentDeep),
+                  child: const Icon(
+                    Icons.star_rounded,
+                    size: 13,
+                    color: AppColors.accentDeep,
+                  ),
                 ),
               ),
             ),
@@ -244,10 +248,16 @@ class BoredBeat extends StatelessWidget {
       ),
       child: Stack(
         children: [
+          // The room art is wider than it is tall (840x755), so at plain full
+          // width it only covered ~40% of the screen and hung 26 below the
+          // bottom edge — which left a dead band of wall between the copy and
+          // the bed, and pushed the duvet under the scroll hint. Bleeding it
+          // slightly past both edges makes it taller, and lifting it clear of
+          // the hint closes the gap to roughly the reference's proportions.
           Positioned(
-            left: 0,
-            right: 0,
-            bottom: -26,
+            left: -14,
+            right: -14,
+            bottom: 54,
             child: Transform.translate(
               offset: Offset(0, (1 - settle) * 60),
               child: Image.asset(
@@ -263,10 +273,10 @@ class BoredBeat extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: const [
-                _Eyebrow('FOR PARENTS · AGES 5–12'),
+                _Eyebrow('FOR PARENTS · AGES 5 TO 12'),
                 SizedBox(height: 12),
                 Text(
-                  "They grab the phone the second they're bored.",
+                  'They reach for the phone the second they are bored.',
                   style: TextStyle(
                     fontSize: 27,
                     height: 1.24,
@@ -327,7 +337,7 @@ class _ScrollHint extends StatelessWidget {
     mainAxisSize: MainAxisSize.min,
     children: [
       Text(
-        'KEEP SCROLLING',
+        'Keep scrolling',
         style: TextStyle(
           fontSize: 10.5,
           fontWeight: FontWeight.w600,
@@ -358,7 +368,7 @@ class EarnItBeat extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 32),
             child: Center(
               child: Text(
-                'What if they had to earn it — with 30 seconds of learning?',
+                'What if thirty seconds of learning came first?',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 30,
@@ -452,7 +462,7 @@ class ThatsNupoBeat extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: const [
             Text(
-              "That's Nupo.",
+              'That is Nupo.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 34,
@@ -523,8 +533,8 @@ class PickerBeat extends StatelessWidget {
                 const SizedBox(height: 14),
                 _SpeechCloud(
                   text: chosen == null
-                      ? 'Which app do they open the most?'
-                      : "Great — that's all Nupo needed.",
+                      ? 'Which app does your kid open most?'
+                      : 'Good. That is all Nupo needs.',
                 ),
                 SizedBox(
                   height: 104,
@@ -537,7 +547,7 @@ class PickerBeat extends StatelessWidget {
                         child: _AsideBubble(
                           chosen == null
                               ? 'Pick the one they reach for first'
-                              : 'Nupo will guard this one',
+                              : 'Nupo will watch this one.',
                         ),
                       ),
                       Positioned(
@@ -568,7 +578,7 @@ class PickerBeat extends StatelessWidget {
                   child: Column(
                     children: [
                       _Pill(
-                        'Nupo remembers ${chosen?.name ?? 'that'}',
+                        'Watching ${chosen?.name ?? 'that'}',
                         background: AppColors.textDark,
                         foreground: Colors.white,
                       ),
@@ -594,18 +604,27 @@ class _SpeechCloud extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 150,
-      child: CustomPaint(
-        painter: _CloudPainter(),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(40, 22, 40, 26),
-          child: Center(
+    // Placed against the path's own geometry rather than by guessed padding.
+    // The silhouette tapers hard toward the top — measured on device it is
+    // ~508px wide a third of the way down but ~792px at 70% — so centring the
+    // block put the LONGEST line in the NARROWEST band and left the wide
+    // bottom empty. Sitting the text low and capping it to ~72% of the box
+    // keeps every line inside the body instead of running at the lobes.
+    return CustomPaint(
+      painter: _CloudPainter(),
+      child: SizedBox(
+        height: 166,
+        child: Align(
+          // Just below centre: far enough down to clear the tapering top,
+          // not so far that the crown reads as empty.
+          alignment: const Alignment(0, 0.10),
+          child: FractionallySizedBox(
+            widthFactor: 0.72,
             child: Text(
               text,
               textAlign: TextAlign.center,
               style: const TextStyle(
-                fontSize: 19,
+                fontSize: 18,
                 height: 1.3,
                 fontWeight: FontWeight.w800,
                 color: AppColors.textDark,
@@ -854,7 +873,7 @@ class CloseBeat extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  "That's it.",
+                  'That is it.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 32,
@@ -868,8 +887,8 @@ class CloseBeat extends StatelessWidget {
                 SizedBox(
                   width: 300,
                   child: Text(
-                    'Nothing to police. No arguing. They learn a little, then '
-                    "they're off — every single time.",
+                    'Nothing to police. No arguing. They learn a little, the '
+                    'app opens, and it happens again tomorrow.',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 15,
@@ -893,7 +912,7 @@ class CloseBeat extends StatelessWidget {
                   spacing: 7,
                   runSpacing: 7,
                   children: const [
-                    _SoftChip('2-min setup'),
+                    _SoftChip('Two minute setup'),
                     _SoftChip('No ads'),
                     _SoftChip('You set the rules'),
                   ],
@@ -901,9 +920,11 @@ class CloseBeat extends StatelessWidget {
                 const SizedBox(height: 22),
                 SizedBox(
                   width: double.infinity,
-                  child: PrimaryButton(
-                    label: 'I want this for them',
-                    trailingArrow: true,
+                  // Same CTA as the tapped steps that follow, so the handover
+                  // out of the story does not change button styles mid-flow.
+                  child: NupoButton(
+                    label: 'I want this for my kid',
+                    buttonTone: ButtonTone.brand,
                     onPressed: onCta,
                   ),
                 ),
@@ -977,28 +998,35 @@ class StoryWelcome extends StatelessWidget {
                   _WavingNupo(size: hero),
                   const SizedBox(height: 26),
                   const InfoPill(
-                    text: 'FOR PARENTS · AGES 5–12',
+                    text: 'FOR PARENTS · AGES 5 TO 12',
                     background: AppColors.accentSoft,
                     foreground: AppColors.accentDeep,
                   ),
                   const SizedBox(height: 16),
-                  const Text(
-                    "Learning they'll\nactually do",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 30,
-                      height: 1.16,
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.textDark,
-                      letterSpacing: -0.2,
+                  // 30px hard-wrapped overflows the 28px gutters on a 393dp
+                  // phone — the first line alone is wider than the column, so
+                  // it rendered cramped. scaleDown keeps the designed two-line
+                  // shape and fits it to whatever width the screen allows.
+                  const FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      "Turns your kid's screen time\ninto a learning habit.",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 29,
+                        height: 1.18,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.textDark,
+                        letterSpacing: -0.2,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 12),
                   const SizedBox(
                     width: 288,
                     child: Text(
-                      'A little learning before the apps they love. '
-                      'Set it up in two minutes.',
+                      'A few quick questions before the apps they love. '
+                      'Two minutes to set up.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 15,
@@ -1010,9 +1038,9 @@ class StoryWelcome extends StatelessWidget {
                   const Spacer(flex: 3),
                   SizedBox(
                     width: double.infinity,
-                    child: PrimaryButton(
+                    child: NupoButton(
                       label: 'Get started',
-                      trailingArrow: true,
+                      buttonTone: ButtonTone.brand,
                       onPressed: onGetStarted,
                     ),
                   ),
@@ -1029,14 +1057,7 @@ class StoryWelcome extends StatelessWidget {
                             color: AppColors.textMuted,
                           ),
                           children: [
-                            TextSpan(text: 'I already have an account · '),
-                            TextSpan(
-                              text: 'Log in',
-                              style: TextStyle(
-                                fontWeight: FontWeight.w800,
-                                color: AppColors.primary,
-                              ),
-                            ),
+                            TextSpan(text: 'I already have an account'),
                           ],
                         ),
                       ),
@@ -1052,32 +1073,15 @@ class StoryWelcome extends StatelessWidget {
   }
 }
 
-/// The hero: Nupo's body with the wing rocking on its own pivot, over the
-/// halo rings. Two sprites rather than one so the wave can animate.
-class _WavingNupo extends StatefulWidget {
+/// Static welcome mascot. The body and wing sprites remain aligned without
+/// independent motion, so the opening pose is clean and stable.
+class _WavingNupo extends StatelessWidget {
   final double size;
   const _WavingNupo({required this.size});
 
   @override
-  State<_WavingNupo> createState() => _WavingNupoState();
-}
-
-class _WavingNupoState extends State<_WavingNupo>
-    with SingleTickerProviderStateMixin {
-  late final _c = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 2800),
-  )..repeat();
-
-  @override
-  void dispose() {
-    _c.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final halo = widget.size * 1.26;
+    final halo = size * 1.26;
     return SizedBox(
       width: halo,
       height: halo,
@@ -1102,25 +1106,16 @@ class _WavingNupoState extends State<_WavingNupo>
           Padding(
             padding: EdgeInsets.only(bottom: halo * 0.06),
             child: SizedBox(
-              width: widget.size,
+              width: size,
               child: Stack(
                 children: [
                   Image.asset(
                     Nupo.waveBody,
-                    width: widget.size,
-                    semanticLabel: 'Nupo',
+                    width: size,
+                    semanticLabel: 'Nupo saying hello',
                   ),
-                  AnimatedBuilder(
-                    animation: _c,
-                    builder: (context, child) => Transform.rotate(
-                      // The design pivots the wing at 29% / 49% of the sprite.
-                      alignment: const Alignment(-0.42, -0.02),
-                      angle: _wingAngle(_c.value),
-                      child: child,
-                    ),
-                    child: ExcludeSemantics(
-                      child: Image.asset(Nupo.waveWing, width: widget.size),
-                    ),
+                  ExcludeSemantics(
+                    child: Image.asset(Nupo.waveWing, width: size),
                   ),
                 ],
               ),
@@ -1129,15 +1124,5 @@ class _WavingNupoState extends State<_WavingNupo>
         ],
       ),
     );
-  }
-
-  /// The design's `wavehand` keyframes: 0° → -9° → 1° → -7° → 0°.
-  double _wingAngle(double p) {
-    const deg = math.pi / 180;
-    if (p < 0.20) return lerpD(0, -9, p / 0.20) * deg;
-    if (p < 0.38) return lerpD(-9, 1, (p - 0.20) / 0.18) * deg;
-    if (p < 0.56) return lerpD(1, -7, (p - 0.38) / 0.18) * deg;
-    if (p < 0.72) return lerpD(-7, 0, (p - 0.56) / 0.16) * deg;
-    return 0;
   }
 }
