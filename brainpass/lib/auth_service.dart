@@ -43,10 +43,18 @@ import 'storage.dart';
 
 /// A sign-in problem already phrased for a parent. [cancelled] marks the user
 /// backing out, which should never be shown as an error.
+///
+/// [code] is the STABLE machine reason (`invalid-credential`,
+/// `operation-not-allowed`, `no-id-token`, ...). Analytics logs the code and
+/// never [message]: parent-facing copy gets rewritten, and a report keyed on a
+/// sentence fragments the moment it does. Sign-in is a MANDATORY gate, so a
+/// spike on one code in one country is a whole market silently locked out —
+/// exactly what went unnoticed in 1.1.x.
 class AuthFailure implements Exception {
   final String message;
   final bool cancelled;
-  const AuthFailure(this.message, {this.cancelled = false});
+  final String code;
+  const AuthFailure(this.message, {this.cancelled = false, this.code = 'unknown'});
 
   @override
   String toString() => message;
@@ -114,17 +122,18 @@ class AuthService {
         throw const AuthFailure(
           "Google didn't return a sign-in token. Check that this app's "
           'signing certificate is registered in Firebase.',
+          code: 'no-id-token',
         );
       }
       final credential = GoogleAuthProvider.credential(idToken: idToken);
       return _auth.signInWithCredential(credential);
     } on GoogleSignInException catch (e) {
       if (e.code == GoogleSignInExceptionCode.canceled) {
-        throw const AuthFailure('cancelled', cancelled: true);
+        throw const AuthFailure('cancelled', cancelled: true, code: 'cancelled');
       }
-      throw AuthFailure(errorMessage(e));
+      throw AuthFailure(errorMessage(e), code: 'google-${e.code.name}');
     } on FirebaseAuthException catch (e) {
-      throw AuthFailure(errorMessage(e));
+      throw AuthFailure(errorMessage(e), code: e.code);
     }
   }
 
@@ -140,7 +149,7 @@ class AuthService {
         password: password,
       );
     } on FirebaseAuthException catch (e) {
-      throw AuthFailure(errorMessage(e));
+      throw AuthFailure(errorMessage(e), code: e.code);
     }
   }
 
@@ -152,7 +161,7 @@ class AuthService {
         password: password,
       );
     } on FirebaseAuthException catch (e) {
-      throw AuthFailure(errorMessage(e));
+      throw AuthFailure(errorMessage(e), code: e.code);
     }
   }
 
@@ -164,7 +173,7 @@ class AuthService {
     try {
       await _auth.sendPasswordResetEmail(email: email.trim());
     } on FirebaseAuthException catch (e) {
-      throw AuthFailure(errorMessage(e));
+      throw AuthFailure(errorMessage(e), code: e.code);
     }
   }
 
@@ -214,9 +223,9 @@ class AuthService {
       );
     } on GoogleSignInException catch (e) {
       if (e.code == GoogleSignInExceptionCode.canceled) {
-        throw const AuthFailure('cancelled', cancelled: true);
+        throw const AuthFailure('cancelled', cancelled: true, code: 'cancelled');
       }
-      throw AuthFailure(errorMessage(e));
+      throw AuthFailure(errorMessage(e), code: 'google-${e.code.name}');
     }
   }
 
@@ -245,6 +254,15 @@ class AuthService {
 
   static bool isRecentLoginError(Object e) =>
       e is FirebaseAuthException && e.code == 'requires-recent-login';
+
+  /// The stable machine reason for any auth error, for analytics only.
+  /// Never show this to a parent — [errorMessage] is what they read.
+  static String errorCode(Object e) {
+    if (e is AuthFailure) return e.code;
+    if (e is GoogleSignInException) return 'google-${e.code.name}';
+    if (e is FirebaseAuthException) return e.code;
+    return 'unknown';
+  }
 
   /// Parent-friendly message for any auth error.
   static String errorMessage(Object e) {

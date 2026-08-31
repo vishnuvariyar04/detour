@@ -3,8 +3,10 @@
 
     <!-- ===================================================================
          PERMISSIONS: only what the app needs — no location, camera, mic,
-         contacts, ads, or analytics. Network is used solely for parent login
-         (Firebase) and subscriptions (RevenueCat/Play Billing).
+         contacts, or ads. Network is used for parent login (Firebase),
+         subscriptions (RevenueCat/Play Billing), and product analytics
+         (Firebase Analytics, added 2026-08-31 — see the meta-data below,
+         which strips every advertising signal for the child audience).
          =================================================================== -->
 
     <!-- Parent login (Firebase Auth), profile sync (Firestore), and
@@ -68,6 +70,33 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+
+        <!-- ===============================================================
+             ANALYTICS, CONFIGURED FOR A CHILD-DIRECTED APP.
+
+             Firebase Analytics was added on 2026-08-31 to measure the
+             onboarding funnel and retention (see lib/analytics.dart and
+             Analytics.kt). Google Play Families forbids advertising
+             identifiers and ad personalisation for a child audience, so all
+             three ad-related signals are turned OFF here — the AD_ID
+             permission is separately stripped above, and SSAID collection is
+             disabled so no device-scoped identifier is sent either.
+
+             These flags are what make the SDK compliant for this audience.
+             Do not remove them. legal/DATA_SAFETY.md declares what is left.
+             =============================================================== -->
+        <meta-data
+            android:name="google_analytics_adid_collection_enabled"
+            android:value="false" />
+        <meta-data
+            android:name="google_analytics_default_allow_ad_personalization_signals"
+            android:value="false" />
+        <meta-data
+            android:name="google_analytics_default_allow_ad_user_data"
+            android:value="false" />
+        <meta-data
+            android:name="google_analytics_ssaid_collection_enabled"
+            android:value="false" />
 
         <!-- ===============================================================
              The guard: a foreground service that polls UsageStats to detect

@@ -26,6 +26,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
+import '../../analytics.dart';
 import '../../engine.dart';
 import '../../profile_service.dart';
 import '../../storage.dart';
@@ -52,6 +53,14 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
   int _step = 0;
   bool _autostartRelevant = false;
   bool _transitioning = false;
+
+  /// Guards [_finish] against being scheduled twice. It is triggered from
+  /// build(), and build can run again in the async window between the last
+  /// permission step and the router swapping this widget out — a late
+  /// autostart probe, or the keyboard closing, is enough. Without this the
+  /// engine sync, the profile sync AND the `setup_complete` activation event
+  /// all fire more than once for one setup.
+  bool _finishing = false;
   Timer? _transitionTimer;
 
   /// The questions carry the progress bar; the Android setup block that
@@ -61,9 +70,20 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
   @override
   void initState() {
     super.initState();
+    _logStep(0);
     Engine.autostartRelevant().then((v) {
       if (mounted) setState(() => _autostartRelevant = v);
     });
+  }
+
+  /// Emit the funnel step for [index]. Only the named steps are logged here —
+  /// the permission screens that follow report themselves per permission, so
+  /// it is visible WHICH one loses the parent. Logged from [_move] rather than
+  /// build() so a rebuild (keyboard, autostart probe returning) cannot double
+  /// count. See analytics.dart.
+  void _logStep(int index) {
+    if (index < 0 || index >= Analytics.onbSteps.length) return;
+    Analytics.onbStep(index, Analytics.onbSteps[index]);
   }
 
   void _move(int delta) {
@@ -72,7 +92,9 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
     // equals one story beat.
     if (_transitioning) return;
     _transitioning = true;
-    setState(() => _step = (_step + delta).clamp(0, 99));
+    final next = (_step + delta).clamp(0, 99);
+    if (delta > 0) _logStep(next);
+    setState(() => _step = next);
     _transitionTimer?.cancel();
     _transitionTimer = Timer(const Duration(milliseconds: 460), () {
       _transitioning = false;
@@ -92,6 +114,19 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
 
   Future<void> _finish() async {
     await Storage.setOnboardingComplete(true);
+    // THE activation event — mark it as a key event in GA4. Everything before
+    // it is funnel; everything after it is retention.
+    Analytics.setupComplete(
+      ageBand: Storage.ageBand,
+      subject: Storage.onbSubject,
+      appsGated: Storage.gatedApps.length,
+    );
+    Analytics.setProfile(
+      ageBand: Storage.ageBand,
+      subject: Storage.onbSubject,
+      appsGated: Storage.gatedApps.length,
+      onboardingDone: true,
+    );
     // Push everything down to the native engine so gating starts immediately.
     await syncToEngine();
     // Capture age band / app count in the parent's profile (fire-and-forget).
@@ -107,6 +142,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
     return [
       PermissionStepScreen(
         key: const ValueKey('perm-overlay'),
+        permissionId: 'overlay',
         icon: Symbols.layers_rounded,
         mascot: 'assets/mascot_pin.png',
         title: 'Let lessons appear',
@@ -125,6 +161,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
       ),
       PermissionStepScreen(
         key: const ValueKey('perm-usage'),
+        permissionId: 'usage',
         icon: Symbols.visibility_rounded,
         heroColor: AppColors.primary,
         heroBackground: AppColors.primarySoft,
@@ -145,6 +182,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
       ),
       PermissionStepScreen(
         key: const ValueKey('perm-battery'),
+        permissionId: 'battery',
         icon: Symbols.bolt_rounded,
         heroColor: AppColors.accent,
         heroBackground: AppColors.accentSoft,
@@ -163,6 +201,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
       if (_autostartRelevant)
         PermissionStepScreen(
           key: const ValueKey('perm-autostart'),
+          permissionId: 'autostart',
           icon: Symbols.rocket_launch_rounded,
           heroColor: AppColors.correct,
           heroBackground: AppColors.correctSoft,
@@ -364,7 +403,12 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
         key: const ValueKey('picker'),
         step: ++n,
         total: grandTotal,
-        onNext: _next,
+        onNext: () {
+          // Zero apps means the gate can never fire and the product does
+          // nothing — worth seeing separately from "finished setup".
+          Analytics.appsPicked(Storage.gatedApps.length);
+          _next();
+        },
       ),
       AppRulesScreen(
         key: const ValueKey('rules'),
@@ -389,8 +433,10 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
     ];
 
     final index = _step.clamp(0, screens.length - 1);
-    // The last permission step finishes onboarding.
-    if (_step >= screens.length) {
+    // The last permission step finishes onboarding. Exactly once — see
+    // [_finishing].
+    if (_step >= screens.length && !_finishing) {
+      _finishing = true;
       WidgetsBinding.instance.addPostFrameCallback((_) => _finish());
     }
 

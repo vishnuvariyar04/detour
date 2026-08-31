@@ -11,6 +11,7 @@ import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
+import 'analytics.dart';
 import 'auth_service.dart';
 import 'engine.dart';
 import 'profile_service.dart';
@@ -50,6 +51,15 @@ Future<void> main() async {
   try {
     await Firebase.initializeApp();
   } catch (_) {}
+  // Funnel + retention. Fail-safe like everything else here: if it throws,
+  // every Analytics call downstream quietly no-ops. See analytics.dart.
+  await Analytics.init();
+  await Analytics.setProfile(
+    ageBand: Storage.ageBand,
+    subject: Storage.onbSubject,
+    appsGated: Storage.gatedApps.length,
+    onboardingDone: Storage.onboardingComplete,
+  );
   // RevenueCat (Nupo Pro). Fail-safe: falls back to the cached entitlement.
   await SubscriptionService.init();
   // Remote kill-switch for paywall enforcement (see remote_config_service.dart).
@@ -107,6 +117,9 @@ class _RootRouterState extends State<RootRouter> {
   void initState() {
     super.initState();
     _sub = AuthService.authState().listen((user) {
+      // Tie the GA4 user to the Firestore `users/{uid}` doc so a funnel drop
+      // can be traced to an actual account.
+      Analytics.setUser(user?.uid, method: AuthService.providerId);
       if (user != null) {
         SubscriptionService.logIn(user.uid); // purchases follow the account
         _afterSignIn();
@@ -117,6 +130,7 @@ class _RootRouterState extends State<RootRouter> {
     });
     SubscriptionService.hasPro.addListener(_onGateChanged);
     RemoteConfigService.paywallEnabled.addListener(_onGateChanged);
+    Analytics.setProfile(hasPro: SubscriptionService.hasPro.value);
   }
 
   /// Fires on app start and on every sign-in. A returning parent's setup
@@ -128,6 +142,15 @@ class _RootRouterState extends State<RootRouter> {
       if (mounted) setState(() => _restoring = true);
       final restored = await ProfileService.restore();
       if (restored) {
+        // A returning parent, not a new one — they never see onboarding, so
+        // without this event they would look like a funnel drop-out.
+        Analytics.setupRestored();
+        Analytics.setProfile(
+          ageBand: Storage.ageBand,
+          subject: Storage.onbSubject,
+          appsGated: Storage.gatedApps.length,
+          onboardingDone: true,
+        );
         // Push the restored rules down so gating works on this device now,
         // not at next launch.
         await syncToEngine();
@@ -143,6 +166,7 @@ class _RootRouterState extends State<RootRouter> {
   }
 
   void _onGateChanged() {
+    Analytics.setProfile(hasPro: SubscriptionService.hasPro.value);
     if (mounted) setState(() {});
   }
 
@@ -275,6 +299,7 @@ class _ActiveLandingState extends State<ActiveLanding>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    Analytics.homeShown(Storage.masterEnabled);
     _refresh();
   }
 

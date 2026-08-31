@@ -40,6 +40,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../analytics.dart';
 import '../../storage.dart';
 import '../../theme.dart';
 import 'story_beats.dart';
@@ -96,6 +97,12 @@ class _OnboardingStoryState extends State<OnboardingStory> {
   bool _precached = false;
 
   @override
+  void initState() {
+    super.initState();
+    Analytics.storyShown();
+  }
+
+  @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     // The bird swaps pose mid-scroll and the phone swaps owl mid-question —
@@ -136,6 +143,9 @@ class _OnboardingStoryState extends State<OnboardingStory> {
 
   void _pick(StoryApp app) {
     if (_picked?.name == app.name) return;
+    // Gate 1 of the story. Everyone who scrolls past beat 5 passes through
+    // here, so it is the cleanest mid-pitch funnel step there is.
+    if (_picked == null) Analytics.storyAppPicked(app.name);
     setState(() => _picked = app);
     widget.onAppPicked(app);
   }
@@ -162,6 +172,9 @@ class _OnboardingStoryState extends State<OnboardingStory> {
     }
 
     _moodTimer?.cancel();
+    // Gate 2. `wrongs` says whether the demo question is pitched right — a
+    // parent who needs three goes is being made to feel stupid by the pitch.
+    Analytics.storyAnswered(_wrongs);
     setState(() {
       _lastWrong = null;
       _answered = true;
@@ -208,8 +221,14 @@ class _OnboardingStoryState extends State<OnboardingStory> {
                       curve: Curves.easeOut,
                       scale: _started ? 1.04 : 1,
                       child: StoryWelcome(
-                        onGetStarted: () => setState(() => _started = true),
-                        onLogIn: widget.onLogIn,
+                        onGetStarted: () {
+                          Analytics.storyStarted();
+                          setState(() => _started = true);
+                        },
+                        onLogIn: () {
+                          Analytics.storyLoginTapped();
+                          widget.onLogIn();
+                        },
                       ),
                     ),
                   ),
@@ -287,7 +306,10 @@ class _OnboardingStoryState extends State<OnboardingStory> {
           t: t,
           at: 8.4,
           hold: const [7.57, 99],
-          child: CloseBeat(onCta: widget.onFinished),
+          child: CloseBeat(onCta: () {
+            Analytics.storyFinished();
+            widget.onFinished();
+          }),
         ),
         Positioned.fill(child: IgnorePointer(child: _Progress(t: t))),
         Positioned.fill(

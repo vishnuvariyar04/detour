@@ -112,6 +112,7 @@ class GuardService : Service() {
         }
         startTicking()
         WatchdogReceiver.schedule(this) // self-healing wake-ups
+        Analytics.guardStarted(this)
         Log.d(TAG, "guard service started")
     }
 
@@ -281,6 +282,9 @@ class GuardService : Service() {
         val now = System.currentTimeMillis()
         if (now - lastPermWarnAt > 60_000L) {
             lastPermWarnAt = now
+            // Installed, configured, and silently doing nothing: the parent
+            // revoked "display over other apps" (or an OEM did it for them).
+            Analytics.overlayMissing(this)
             WatchdogReceiver.warnNow(this)
         }
     }
@@ -304,9 +308,17 @@ class GuardService : Service() {
         val minutes = EnginePrefs.minutes(this, pkg)
         val ui = LockUi(
             this, mode, band, target, minutes,
-            onEarned = { EnginePrefs.addEarned(this, pkg); hideLock() },
+            onEarned = {
+                EnginePrefs.addEarned(this, pkg)
+                Analytics.lessonEarned(this, pkg, minutes)
+                hideLock()
+            },
             // Parent PIN: free untimed session (no earned block, no chip).
-            onOverride = { freePkg = pkg; hideLock() },
+            onOverride = {
+                Analytics.parentOverride(this, pkg)
+                freePkg = pkg
+                hideLock()
+            },
         )
 
         val type = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
@@ -330,6 +342,9 @@ class GuardService : Service() {
             lockView = ui.root
             lockUi = ui
             lockAddedAt = System.currentTimeMillis()
+            // Logged only once the view is actually attached, so the event
+            // means "a child saw a lesson", not "we tried".
+            Analytics.lessonShown(this, pkg, mode, target)
             Log.d(TAG, "native lock shown: $pkg ($mode)")
         } catch (e: Throwable) {
             Log.e(TAG, "showLock failed", e)

@@ -1,6 +1,6 @@
 # Privacy Policy
 
-**Effective date:** 25 August 2026
+**Effective date:** 31 August 2026
 
 **Apps:** Nupo for iOS (bundle `com.app.nupo`) and Nupo for Android (package `app.nupo.kid`)
 
@@ -15,7 +15,8 @@ Nupo is a daily learning app for children aged 5–12, set up and controlled ent
 - The **parent** creates the account. On Android that means **Sign in with Google** or an **email address and password**; on iOS it means **Sign in with Apple or Sign in with Google**. Either way we get an email address for the parent.
 - **Children never create accounts, enter personal information, or see ads.**
 - Almost everything Nupo does — knowing which app was opened, showing lessons, counting minutes — happens **entirely on the device** and is never uploaded.
-- We show no ads, use no advertising, analytics, or marketing SDKs, and **never sell or share data** with anyone except the infrastructure providers listed below.
+- We show no ads and use no advertising or marketing SDKs. We do use **product analytics** (Google Firebase Analytics, and PostHog on iOS) to see where parents get stuck setting Nupo up and whether families keep using it — never to profile anyone and never for advertising. **No advertising identifier is collected, and no child's answers or names are ever sent.** See "Product analytics" below.
+- We **never sell or share data** with anyone except the infrastructure providers listed below.
 
 ## Information we collect (parent account)
 
@@ -82,13 +83,44 @@ If you believe we have inadvertently collected personal information from a child
 
 | Processor | What they handle |
 |---|---|
-| **Google LLC** (Firebase Authentication and Cloud Firestore) | The parent account record and saved setup described above. Google also handles Sign in with Google on both platforms, and email/password sign-in on Android. |
+| **Google LLC** (Firebase Authentication, Cloud Firestore and Firebase Analytics) | The parent account record and saved setup described above, plus the product-analytics events listed under "Product analytics". Google also handles Sign in with Google on both platforms, and email/password sign-in on Android. |
 | **Apple Inc.** (iOS only) | Sign in with Apple, and all payment processing for subscriptions. |
-| **RevenueCat, Inc.** (iOS only) | Confirming whether a subscription is active. Purchase history and an account identifier only. |
+| **RevenueCat, Inc.** (iOS purchases; the SDK also ships on Android) | Confirming whether a subscription is active. Purchase history and an account identifier only. Android is currently free, so RevenueCat holds only an account identifier there. |
+| **PostHog, Inc.** (iOS only) | The product-analytics events listed under "Product analytics". Hosted in PostHog's US region. No session replay and no automatic capture — only the events we write ourselves. |
 
 All data is encrypted in transit (TLS), and database access rules ensure each account can only ever read or write its own record.
 
-We use **no analytics SDKs, no advertising SDKs, no crash-reporting SDKs, and no data brokers**. We do not sell, rent, or share your personal information with third parties for their own purposes.
+We use **no advertising SDKs, no crash-reporting SDKs, and no data brokers**. We do not sell, rent, or share your personal information with third parties for their own purposes.
+
+## Product analytics
+
+Nupo uses product analytics so we can tell where the app is failing parents. Before we added it we had no way of knowing that a parent had installed Nupo, tried to sign in, and been blocked. We use two tools:
+
+- **Firebase Analytics** (Google LLC) — on **Android and iOS**.
+- **PostHog** (PostHog, Inc.) — on **iOS only**.
+
+**Both are configured to record only the events we deliberately write into the app.** We do not use session replay, screen recording, or automatic capture of taps and gestures. Nothing is recorded from the screens your child sees beyond the fact that a lesson happened.
+
+**What we record**
+
+- Which setup step was reached, and where a parent stopped.
+- Whether each permission was granted or skipped (Android), or whether Screen Time access was granted (iOS).
+- Whether sign-in succeeded or failed, and a short technical *reason code* when it fails (for example `invalid-credential`). We never record what was typed.
+- That a lesson was shown on the device, that it was completed, or that a parent used their PIN to skip it — and a once-a-day marker that the app was used.
+- The child's age **band** (such as 7-8), the chosen subject, and how many apps are gated.
+
+**What we never record**
+
+- Your child's name, the owl's name, your name, or anything else typed into the app.
+- Any question your child saw or any answer they gave. Those never leave the device.
+- Screen recordings, screenshots, or a general log of what was tapped.
+- Your advertising ID. Because Nupo is for children, there is no advertising identifier in either app — on Android it is removed from the app entirely and ad personalisation and ad-user-data signals are switched off; on iOS there is no IDFA and no App Tracking Transparency prompt. Analytics data is tied only to a random, app-specific identifier that is destroyed when you uninstall Nupo.
+
+This data is used solely to improve Nupo. It is never used for advertising, never sold, and never shared with anyone other than Google and PostHog as the processors running the service on our behalf.
+
+## Where your data is processed
+
+Our processors — Google, Apple, RevenueCat and PostHog — are United States companies, and your data is processed on their infrastructure, which may be in the United States or in other countries where they operate. Our PostHog project is hosted in PostHog's **US region**. Where the law requires a safeguard for such transfers (for example the GDPR), we rely on our processors' standard contractual clauses and equivalent data-protection terms. All data is encrypted in transit.
 
 ## How long we keep data
 

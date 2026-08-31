@@ -8,6 +8,7 @@
 
 import 'package:flutter/material.dart';
 
+import '../../analytics.dart';
 import '../../auth_service.dart';
 import '../../theme.dart';
 import '../../widgets.dart';
@@ -31,6 +32,12 @@ class _LoginFlowState extends State<LoginFlow> {
   String? _notice;
 
   @override
+  void initState() {
+    super.initState();
+    Analytics.loginShown();
+  }
+
+  @override
   void dispose() {
     _email.dispose();
     _password.dispose();
@@ -45,19 +52,30 @@ class _LoginFlowState extends State<LoginFlow> {
   bool get _canSubmit =>
       !_busy && _emailLooksValid && _password.text.length >= 6;
 
-  Future<void> _run(Future<void> Function() action) async {
+  /// [method] is 'google' | 'email' | 'email_create' | 'password_reset' — the
+  /// gate is mandatory, so every attempt, success and failure is counted. The
+  /// failure code (never the message) is what makes a market-wide sign-in
+  /// break visible instead of silent. See analytics.dart.
+  Future<void> _run(String method, Future<void> Function() action) async {
     if (_busy) return;
     setState(() {
       _busy = true;
       _error = null;
       _notice = null;
     });
+    Analytics.loginAttempt(method);
     try {
       await action();
+      Analytics.loginSuccess(method);
       // On success the router swaps this screen out; nothing to do here.
     } catch (error) {
-      if (!mounted) return;
       final cancelled = error is AuthFailure && error.cancelled;
+      if (cancelled) {
+        Analytics.loginCancelled(method);
+      } else {
+        Analytics.loginFailed(method, AuthService.errorCode(error));
+      }
+      if (!mounted) return;
       setState(() {
         _busy = false;
         _error = cancelled ? null : AuthService.errorMessage(error);
@@ -65,7 +83,8 @@ class _LoginFlowState extends State<LoginFlow> {
     }
   }
 
-  Future<void> _submitEmail() => _run(() async {
+  Future<void> _submitEmail() =>
+      _run(_creating ? 'email_create' : 'email', () async {
         if (_creating) {
           await AuthService.createWithEmail(_email.text, _password.text);
         } else {
@@ -78,7 +97,7 @@ class _LoginFlowState extends State<LoginFlow> {
       setState(() => _error = 'Type your email first, then tap this again.');
       return;
     }
-    await _run(() async {
+    await _run('password_reset', () async {
       await AuthService.sendPasswordReset(_email.text);
       if (!mounted) return;
       setState(() {
@@ -126,7 +145,7 @@ class _LoginFlowState extends State<LoginFlow> {
                         buttonTone: ButtonTone.brand,
                         onPressed: _busy
                             ? null
-                            : () => _run(AuthService.signInWithGoogle),
+                            : () => _run('google', AuthService.signInWithGoogle),
                       ),
 
                       const SizedBox(height: 18),

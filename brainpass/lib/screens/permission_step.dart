@@ -9,6 +9,7 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
+import '../analytics.dart';
 import '../engine.dart';
 import '../theme.dart';
 import '../widgets.dart';
@@ -48,6 +49,12 @@ class PermissionStepScreen extends StatefulWidget {
   /// One-line reassurance under the button (defaults to the brand line).
   final String? footnote;
 
+  /// Stable id for analytics: 'overlay' | 'usage' | 'battery' | 'autostart'.
+  /// The permission wall is the steepest cliff in any Android parental-control
+  /// app, and the whole point of reporting per permission is to see WHICH one
+  /// loses the parent — so this is required, not optional. See analytics.dart.
+  final String permissionId;
+
   final int step;
   final int total;
   final VoidCallback onNext;
@@ -62,6 +69,7 @@ class PermissionStepScreen extends StatefulWidget {
     required this.step,
     required this.total,
     required this.onNext,
+    required this.permissionId,
     this.heroColor = AppColors.primary,
     this.heroBackground = Colors.white,
     this.mascot,
@@ -87,6 +95,7 @@ class _PermissionStepScreenState extends State<PermissionStepScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    Analytics.permissionShown(widget.permissionId);
     _evaluate(initial: true);
   }
 
@@ -115,6 +124,8 @@ class _PermissionStepScreenState extends State<PermissionStepScreen>
 
   void _advance() {
     if (_advancing || !mounted) return;
+    Analytics.permissionGranted(widget.permissionId);
+    Analytics.setPermissionProp(widget.permissionId, true);
     setState(() {
       _advancing = true;
       _granted = true;
@@ -126,6 +137,9 @@ class _PermissionStepScreenState extends State<PermissionStepScreen>
 
   Future<void> _onButton() async {
     _opened = true;
+    // A wide gap between this and permission_granted means the parent got
+    // lost inside the OEM's settings and never found the toggle.
+    Analytics.permissionRequested(widget.permissionId);
     // Arm the auto-return BEFORE opening settings, so the watcher is already
     // polling when the parent flips the toggle.
     final kind = widget.returnKind;
@@ -194,7 +208,12 @@ class _PermissionStepScreenState extends State<PermissionStepScreen>
                       ),
                       if (widget.skippable)
                         TextButton(
-                          onPressed: widget.onNext,
+                          onPressed: () {
+                            Analytics.permissionSkipped(widget.permissionId);
+                            Analytics.setPermissionProp(
+                                widget.permissionId, false);
+                            widget.onNext();
+                          },
                           child: const Text('Skip for now'),
                         )
                       else ...[

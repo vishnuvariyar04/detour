@@ -46,12 +46,30 @@ App: `app.nupo.kid` · Target audience: **includes children (5–11)**
   account so a reinstall restores them. Child ANSWERS remain on-device and are
   never collected.
 
-### App activity → App interactions  → **only if you add analytics later**
-- **You currently have NO analytics SDK.** If that stays true, **do NOT tick
-  this** — declare nothing here.
-- If you later add analytics: Collected **Yes**, Shared **No** (or Yes if a
-  third-party SDK), Purpose **Analytics** + **App functionality**, identifier
-  **App Set ID only (no AAID)**.
+### App activity → App interactions
+- Collected: **Yes** · Shared: **No**
+- Purposes: **Analytics** + **App functionality**
+- **Firebase Analytics was added on 2026-08-31**, in the first release after
+  1.2.0 (4) — it must be declared here BEFORE that build is rolled out. It
+  records which onboarding step a parent reached, whether each permission was
+  granted or skipped, whether sign-in succeeded or failed (a failure CODE such
+  as `invalid-credential`, never the email or the message shown), and — from
+  the native guard — that a lesson was shown, earned, or skipped by parent PIN,
+  plus a once-a-day active marker.
+- **No child answers, no question text, no names, and no free text** typed by
+  a parent are ever sent. Only age BAND, chosen subject, and counts.
+- Identifier: the Firebase **app instance ID** only. The advertising ID (AAID)
+  is stripped from the manifest, `google_analytics_ssaid_collection_enabled` is
+  false, and ad personalisation / ad user data are both disabled — see the
+  `google_analytics_*` meta-data in `AndroidManifest.xml`. Those flags are what
+  keep the SDK compliant for a child audience under Play Families; do not
+  remove them.
+- The full event list, with the reason each one exists, is `lib/analytics.dart`
+  and `android/.../Analytics.kt`. Adding an event means revisiting this file
+  and `PRIVACY_POLICY.md`.
+- This form covers the ANDROID app only. iOS also uses PostHog (US region, no
+  session replay, no autocapture) — that belongs in App Store Connect's privacy
+  questionnaire and in `PRIVACY_POLICY.md`, not here.
 
 ### Financial info → Purchase history
 - Collected: **Yes** · Shared: **No**
@@ -100,9 +118,14 @@ App: `app.nupo.kid` · Target audience: **includes children (5–11)**
 
 ## Sanity cross-check before submitting
 
-- [ ] Phone number = the only Personal info; purposes Account mgmt + App func.
+- [ ] Email address = the only Personal info; purposes Account mgmt + App func.
 - [ ] Purchase history = Yes (Play Billing).
-- [ ] Device or other IDs = **No** (AD_ID removed; no hardware IDs read).
+- [ ] Device or other IDs = **No** (AD_ID removed; no hardware IDs read; the
+      Firebase app instance ID is not a "Device or other ID" for this form).
 - [ ] Nothing ticked for location, contacts, messages, photos, child answers.
 - [ ] Encryption in transit = Yes; Deletion available = Yes + URL.
-- [ ] If no analytics SDK: App interactions left **unticked**.
+- [ ] App interactions = **Yes** (Firebase Analytics, added after 1.2.0) with
+      purpose Analytics + App functionality.
+- [ ] Merged manifest re-verified after any release build:
+      `unzip -p app-release.aab base/manifest/AndroidManifest.xml | strings | grep permission.AD_ID`
+      must be EMPTY, and the four `google_analytics_*` flags must be present.

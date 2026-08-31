@@ -8,11 +8,25 @@
 import 'package:flutter/material.dart';
 import 'package:purchases_ui_flutter/purchases_ui_flutter.dart';
 
+import '../analytics.dart';
 import '../subscription_service.dart';
 import '../theme.dart';
 
-class PaywallGateScreen extends StatelessWidget {
+class PaywallGateScreen extends StatefulWidget {
   const PaywallGateScreen({super.key});
+
+  @override
+  State<PaywallGateScreen> createState() => _PaywallGateScreenState();
+}
+
+class _PaywallGateScreenState extends State<PaywallGateScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // The gate between a fully set-up family and a usable app. Logged from a
+    // State so it counts once per showing, not once per rebuild.
+    Analytics.paywallShown();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,8 +37,14 @@ class PaywallGateScreen extends StatelessWidget {
           children: [
             Expanded(
               child: PaywallView(
-                onPurchaseCompleted: (_, _) => SubscriptionService.refresh(),
-                onRestoreCompleted: (_) => SubscriptionService.refresh(),
+                onPurchaseCompleted: (_, _) {
+                  Analytics.purchaseCompleted();
+                  SubscriptionService.refresh();
+                },
+                onRestoreCompleted: (_) {
+                  Analytics.restoreCompleted();
+                  SubscriptionService.refresh();
+                },
                 // Hard gate: dismissing just re-checks; the router only moves
                 // on when the entitlement is actually active.
                 onDismiss: () => SubscriptionService.refresh(),

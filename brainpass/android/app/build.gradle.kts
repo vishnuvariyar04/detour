@@ -68,6 +68,19 @@ kotlin {
     }
 }
 
+dependencies {
+    // Firebase Analytics is used from KOTLIN as well as from Dart: the kid's
+    // learning moment is 100% native (GuardService + LockUi), so the events
+    // that measure real daily usage are logged in Analytics.kt. The Flutter
+    // firebase_analytics plugin puts the SDK on the RUNTIME classpath only, so
+    // the app module needs its own declaration to COMPILE against it.
+    //
+    // Keep this BoM in sync with the version firebase_core resolves — see
+    // `FirebaseSDKVersion` in that plugin's android/gradle.properties.
+    implementation(platform("com.google.firebase:firebase-bom:34.15.0"))
+    implementation("com.google.firebase:firebase-analytics")
+}
+
 flutter {
     source = "../.."
 }
