@@ -48,7 +48,17 @@ App: `app.nupo.kid` · Target audience: **includes children (5–11)**
 
 ### App activity → App interactions
 - Collected: **Yes** · Shared: **No**
-- Purposes: **Analytics** + **App functionality**
+- Purposes: **Analytics** ONLY. Not App functionality — these events are
+  write-only telemetry that the app never reads back and no feature depends on,
+  and Google defines App functionality as data used to *run a feature*. Not
+  Fraud prevention either: `login_failed` exists to catch a BROKEN sign-in, not
+  a fraudulent one, and the purpose must match the actual use.
+- Ephemeral: **No.** Events are uploaded to Google and retained (the GA4
+  property is set to 14 months).
+- Required or optional: **Required.** `Analytics.init()` enables collection
+  unconditionally and there is no opt-out in parent settings. If an opt-out is
+  ever added (a switch calling `setAnalyticsCollectionEnabled(false)`), change
+  this answer to "users can choose" in the same release.
 - **Firebase Analytics was added on 2026-08-31**, in the first release after
   1.2.0 (4) — it must be declared here BEFORE that build is rolled out. It
   records which onboarding step a parent reached, whether each permission was
@@ -124,8 +134,10 @@ App: `app.nupo.kid` · Target audience: **includes children (5–11)**
       Firebase app instance ID is not a "Device or other ID" for this form).
 - [ ] Nothing ticked for location, contacts, messages, photos, child answers.
 - [ ] Encryption in transit = Yes; Deletion available = Yes + URL.
-- [ ] App interactions = **Yes** (Firebase Analytics, added after 1.2.0) with
-      purpose Analytics + App functionality.
+- [ ] App interactions = **Yes** (Firebase Analytics, added after 1.2.0),
+      purpose **Analytics only**, ephemeral **No**, collection **required**.
+- [ ] Advertising or marketing purpose left UNTICKED everywhere — it would
+      contradict the stripped AD_ID and the Families declaration.
 - [ ] Merged manifest re-verified after any release build:
       `unzip -p app-release.aab base/manifest/AndroidManifest.xml | strings | grep permission.AD_ID`
       must be EMPTY, and the four `google_analytics_*` flags must be present.
