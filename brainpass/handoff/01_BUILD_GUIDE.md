@@ -4,8 +4,13 @@ A hand-off. Two of the four age bands have a real skill; two do not. This
 document is everything needed to build the other two, in the order it has to
 happen.
 
-Read it with the **Nupo Question Wall** open beside you — that page is where
-this work is reviewed and approved, and it is step 2 of five.
+Read it with the question wall open beside you — `handoff/question_wall.html`,
+or a fresh one from `python build_wall.py`. That page is where this work is
+reviewed and approved, and it is step 2 of five.
+
+Read [README.md](README.md) first if you have not. Topic sources for the two new
+bands are in [02_SPINES.md](02_SPINES.md); toolchain and daily commands are in
+[03_ENVIRONMENT.md](03_ENVIRONMENT.md).
 
 ---
 

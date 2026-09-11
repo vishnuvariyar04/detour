@@ -1,5 +1,8 @@
 # Curriculum authoring
 
+> Building a skill for a NEW age band? Start at `../../handoff/README.md`.
+> This file is the authoring reference for the two skills that already ship.
+
 The gate's content is a JSON asset, not code. A new skill is a new file; no
 Kotlin or Dart changes.
 
