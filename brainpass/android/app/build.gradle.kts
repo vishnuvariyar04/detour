@@ -1,3 +1,4 @@
+import org.gradle.api.tasks.PathSensitivity
 import java.util.Properties
 import java.io.FileInputStream
 
@@ -68,6 +69,18 @@ kotlin {
     }
 }
 
+// The curriculum JSON is an INPUT to the unit tests, not just something they
+// happen to read. Without this Gradle calls the test task up to date after the
+// content changes, and AnswersTest reports a pass it never actually ran — the
+// worst possible failure mode for a check whose whole job is to catch a wrong
+// answer before a child does.
+tasks.withType<Test>().configureEach {
+    inputs.dir(rootProject.file("../assets/curriculum"))
+        .withPropertyName("curriculum")
+        .withPathSensitivity(PathSensitivity.RELATIVE)
+    testLogging { showStandardStreams = true }
+}
+
 dependencies {
     // Firebase Analytics is used from KOTLIN as well as from Dart: the kid's
     // learning moment is 100% native (GuardService + LockUi), so the events
@@ -79,6 +92,14 @@ dependencies {
     // `FirebaseSDKVersion` in that plugin's android/gradle.properties.
     implementation(platform("com.google.firebase:firebase-bom:34.15.0"))
     implementation("com.google.firebase:firebase-analytics")
+
+    // Unit tests for the curriculum simulator. android.jar on the unit-test
+    // classpath is a stub whose org.json methods all throw, so a real
+    // implementation has to shadow it — Curriculum reads its content from
+    // JSON, and the test would fail before running a single question without
+    // this. No Android framework classes are touched by these tests.
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("org.json:json:20250107")
 }
 
 flutter {

@@ -104,6 +104,13 @@
              the whole engine (no accessibility service — the OS kept disabling
              that on Xiaomi/HyperOS).
              =============================================================== -->
+        <!-- Debug-only gallery of the Number Sense drawings; see
+             NumberPreviewActivity. Exported so adb can launch it. -->
+        <activity
+            android:name=".NumberPreviewActivity"
+            android:exported="true"
+            android:theme="@android:style/Theme.Light.NoTitleBar" />
+
         <service
             android:name=".GuardService"
             android:exported="false"

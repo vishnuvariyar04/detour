@@ -75,7 +75,7 @@ class GuardService : Service() {
     private var wm: WindowManager? = null
     private var chip: TextView? = null
     private var lockView: View? = null
-    private var lockUi: LockUi? = null
+    private var lockUi: GateUi? = null
     private var lockPkg: String? = null
 
     private var trackedPkg: String? = null
@@ -306,20 +306,36 @@ class GuardService : Service() {
         val band = bandFromString(EnginePrefs.ageBand(this))
         val target = EnginePrefs.questions(this, pkg)
         val minutes = EnginePrefs.minutes(this, pkg)
-        val ui = LockUi(
-            this, mode, band, target, minutes,
-            onEarned = {
-                EnginePrefs.addEarned(this, pkg)
-                Analytics.lessonEarned(this, pkg, minutes)
-                hideLock()
-            },
-            // Parent PIN: free untimed session (no earned block, no chip).
-            onOverride = {
-                Analytics.parentOverride(this, pkg)
-                freePkg = pkg
-                hideLock()
-            },
-        )
+        val earned = {
+            EnginePrefs.addEarned(this, pkg)
+            Analytics.lessonEarned(this, pkg, minutes)
+            hideLock()
+            releaseParked() // the lesson is done; the next gate starts fresh
+        }
+        // Parent PIN: free untimed session (no earned block, no chip).
+        val override = {
+            Analytics.parentOverride(this, pkg)
+            freePkg = pkg
+            hideLock()
+            releaseParked()
+        }
+
+        // Prefer the curriculum: a slice of the skill ladder, picking up exactly
+        // where the last gate left off. Falls back to the random question engine
+        // when the ladder is finished or the content asset is unreadable.
+        val skill = if (mode == "earn") Curriculum.skillFor(this) else null
+        // One gate is one stop; the app's question count is only a floor for a
+        // stop that happens to be very short.
+        val session = if (skill != null) Curriculum.session(this, target) else emptyList()
+        // Same app, unfinished lesson: put the child back exactly where they
+        // were instead of restarting the session.
+        val resumed = if (parkedPkg == pkg) parkedUi else null
+        val ui: GateUi = resumed ?: if (skill != null && session.isNotEmpty()) {
+            CoderGate(this, minutes, session, skill, earned, override)
+        } else {
+            LockUi(this, mode, band, target, minutes, earned, override)
+        }
+        if (resumed != null) { parkedUi = null; parkedPkg = null }
 
         val type = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
@@ -352,16 +368,44 @@ class GuardService : Service() {
         }
     }
 
+    /**
+     * A lesson the child started but has not finished, kept alive while the
+     * lock is off screen.
+     *
+     * The foreground-app reading is not perfectly stable: a gated app can
+     * re-assert itself behind our overlay, which makes one tick see a package
+     * we do not gate and the next see the gated one again. Destroying the gate
+     * on that flicker threw away the question the child was halfway through and
+     * restarted them at the top of the session. So the gate is PARKED, not
+     * released, and re-attached if the same app comes back.
+     */
+    private var parkedUi: GateUi? = null
+    private var parkedPkg: String? = null
+
+    /** Detach the lock. The gate object survives so the child keeps their place. */
     private fun hideLock() {
         val v = lockView ?: return
         lockView = null
+        val pkg = lockPkg
         lockPkg = null
-        lockUi?.release()
+        val ui = lockUi
         lockUi = null
         try {
             wm?.removeView(v)
         } catch (_: Throwable) {
         }
+        if (ui != null && pkg != null) {
+            releaseParked()
+            parkedUi = ui
+            parkedPkg = pkg
+        }
+    }
+
+    /** Throw away a parked lesson — it is finished, or no longer applies. */
+    private fun releaseParked() {
+        parkedUi?.release()
+        parkedUi = null
+        parkedPkg = null
     }
 
     private fun goHome() {

@@ -66,6 +66,13 @@ class Engine {
     );
   }
 
+  /// Ladder position and history, owned by the native gate.
+  static Future<Map<String, Object?>> learningProgress() async {
+    final m = await _channel.invokeMethod('learningProgress');
+    if (m == null) return const {};
+    return Map<String, Object?>.from(m as Map);
+  }
+
   // ---- permissions ----
   static Future<bool> hasUsageAccess() async =>
       (await _channel.invokeMethod<bool>('hasUsageAccess')) ?? false;

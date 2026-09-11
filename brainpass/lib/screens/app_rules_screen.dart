@@ -1,7 +1,8 @@
 // screens/app_rules_screen.dart — per-app rules.
 //
-// Each gated app gets its OWN questions / minutes / daily cap. Nothing is shared
-// across apps. Saving pushes the rules to the native engine immediately.
+// Each gated app gets its OWN minutes + daily cap. How many questions a lesson
+// asks now comes from the curriculum stop (Curriculum.session), not the parent.
+// Saving pushes the rules to the native engine immediately.
 
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
@@ -104,8 +105,9 @@ class _AppRulesScreenState extends State<AppRulesScreen> {
                       const Text('How much learning?', style: AppText.title),
                       const SizedBox(height: 8),
                       Text(
-                        'For each app: how many questions ${Storage.childNameOr()} '
-                        'answers, and how many minutes that earns.',
+                        'How many minutes ${Storage.childNameOr()} earns for '
+                        'finishing a learning moment. Nupo picks how many '
+                        'questions the next lesson needs.',
                         style: AppText.body,
                       ),
                       const SizedBox(height: 20),
@@ -202,7 +204,7 @@ class _AppRuleCard extends StatelessWidget {
                               color: AppColors.accent, size: 15),
                           const SizedBox(width: 4),
                           Text(
-                            '${rule.questions} question${rule.questions == 1 ? '' : 's'} → ${rule.minutes} min',
+                            'Learning moment → ${rule.minutes} min',
                             style: const TextStyle(
                               fontSize: 12.5,
                               fontWeight: FontWeight.w800,
@@ -219,14 +221,6 @@ class _AppRuleCard extends StatelessWidget {
           ),
           const SizedBox(height: 16),
 
-          IntStepper(
-            label: 'Questions per lesson',
-            value: rule.questions,
-            min: 1,
-            max: 10,
-            onChanged: (v) => onChanged(rule.copyWith(questions: v)),
-          ),
-          const SizedBox(height: 8),
           IntStepper(
             label: 'Minutes earned',
             value: rule.minutes,

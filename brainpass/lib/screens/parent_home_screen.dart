@@ -25,7 +25,12 @@ import 'permissions_screen.dart';
 import 'pin_create_screen.dart';
 
 class ParentHomeScreen extends StatefulWidget {
-  const ParentHomeScreen({super.key});
+  /// True when the screen is a tab inside [HomeShell] rather than a pushed
+  /// route: it drops its own Scaffold and back button, since the bottom bar is
+  /// already the way out.
+  final bool embedded;
+
+  const ParentHomeScreen({super.key, this.embedded = false});
 
   @override
   State<ParentHomeScreen> createState() => _ParentHomeScreenState();
@@ -108,14 +113,16 @@ class _ParentHomeScreenState extends State<ParentHomeScreen>
     final gated = Storage.gatedApps;
     final rules = Storage.appRules;
 
-    return Scaffold(
-      body: Container(
-        decoration: AppColors.bgDecoration(),
-        height: double.infinity,
-        child: SafeArea(
+    final content = Container(
+      decoration: AppColors.bgDecoration(),
+      height: double.infinity,
+      child: SafeArea(
           child: Column(
             children: [
-              const NupoTopBar(title: 'Parent settings'),
+              NupoTopBar(
+                title: 'Parent settings',
+                showBack: !widget.embedded,
+              ),
               Expanded(
                 child: ListView(
                   padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
@@ -200,16 +207,30 @@ class _ParentHomeScreenState extends State<ParentHomeScreen>
                     Row(
                       children: [
                         const Expanded(child: SectionLabel('Learning apps')),
+                        // "Edit" gave no clue that this is where another app
+                        // gets added, which is the main thing a parent comes
+                        // back here to do.
                         TextButton.icon(
                           onPressed: () => _edit(
                             (onNext) => AppPickerScreen(onNext: onNext),
                           ),
-                          icon: Icon(Symbols.edit_rounded, size: 15),
+                          style: TextButton.styleFrom(
+                            foregroundColor: AppColors.primary,
+                            backgroundColor: AppColors.primarySoft,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 8,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(999),
+                            ),
+                          ),
+                          icon: const Icon(Symbols.add_rounded, size: 18),
                           label: const Text(
-                            'Edit',
+                            'Add apps',
                             style: TextStyle(
                               fontSize: 13,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: FontWeight.w900,
                             ),
                           ),
                         ),
@@ -222,13 +243,28 @@ class _ParentHomeScreenState extends State<ParentHomeScreen>
                       ),
                       decoration: AppColors.cardDecoration(),
                       child: gated.isEmpty
-                          ? const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 24),
-                              child: Center(
-                                child: Text(
-                                  'No apps picked yet.',
-                                  style: AppText.body,
-                                ),
+                          ? Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 22),
+                              child: Column(
+                                children: [
+                                  Icon(
+                                    Symbols.apps_rounded,
+                                    size: 30,
+                                    color: AppColors.textMuted,
+                                  ),
+                                  const SizedBox(height: 8),
+                                  const Text(
+                                    'No apps picked yet.',
+                                    style: AppText.body,
+                                  ),
+                                  const SizedBox(height: 2),
+                                  const Text(
+                                    'Tap Add apps to choose which ones need a '
+                                    'learning moment first.',
+                                    textAlign: TextAlign.center,
+                                    style: AppText.caption,
+                                  ),
+                                ],
                               ),
                             )
                           : Column(
@@ -346,8 +382,9 @@ class _ParentHomeScreenState extends State<ParentHomeScreen>
             ],
           ),
         ),
-      ),
     );
+
+    return widget.embedded ? content : Scaffold(body: content);
   }
 
   Future<bool> _confirm(

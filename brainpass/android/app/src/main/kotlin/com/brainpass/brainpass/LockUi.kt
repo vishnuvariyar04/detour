@@ -44,7 +44,7 @@ class LockUi(
     private val minutes: Int,
     private val onEarned: () -> Unit,
     private val onOverride: () -> Unit,
-) {
+) : GateUi {
     // colours — bright and playful
     private val bgTop = 0xFF7A50F0.toInt()
     private val bgBottom = 0xFF4E86F7.toInt()
@@ -99,7 +99,7 @@ class LockUi(
     private var cardView: View? = null
     private var owlView: ImageView? = null
 
-    val root: FrameLayout = FrameLayout(ctx).apply {
+    override val root: FrameLayout = FrameLayout(ctx).apply {
         background = GradientDrawable(
             GradientDrawable.Orientation.TL_BR, intArrayOf(bgTop, bgBottom)
         )
@@ -141,7 +141,7 @@ class LockUi(
         if (id != 0) runCatching { pool.play(id, 1f, 1f, 1, 0, 1f) }
     }
 
-    fun release() {
+    override fun release() {
         runCatching { soundPool?.release() }
         soundPool = null
     }

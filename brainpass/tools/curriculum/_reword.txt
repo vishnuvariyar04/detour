@@ -1,0 +1,458 @@
+1.1.1#2    count     
+   - How many steps are in this list?
+   + How many steps are in this list? Tap the number.
+1.1.1#3    choose    
+   - Which list of steps takes Nupo to the flag?
+   + Tap the list that takes Nupo to the flag.
+1.1.1#5    compare   
+   - Do these two lists end on the same square?
+   + Do these two lists end on the same square? Tap your answer.
+1.1.2#0    compare   
+   - Same three steps, new order. Do they end on the same square?
+   + Same three steps, new order. Do they end on the same square? Tap your answer.
+1.1.2#2    choose    
+   - Only one of these gets Nupo to the flag. Which one?
+   + Only one of these gets Nupo to the flag. Tap it.
+1.1.2#4    compare   
+   - No wall this time. Do these two end on the same square?
+   + No wall this time. Do these two end on the same square? Tap your answer.
+1.1.3#2    choose    
+   - Which one picks up the key AND opens the door?
+   + Tap the one that picks up the key AND opens the door.
+1.1.3#4    chooseText
+   - Nupo gets to the door with no key. What happens?
+   + Nupo gets to the door with no key. Tap what happens.
+1.1.3#5    complete  
+   - One step is missing. Which one goes in the gap?
+   + One step is missing. Tap the one that goes in the gap.
+1.1.4#0    choose    
+   - Which one gets both stars and then the flag?
+   + Tap the one that gets both stars and then the flag.
+1.1.4#4    count     
+   - What is the smallest number of steps that reaches the flag?
+   + What is the smallest number of steps that reaches the flag? Tap the number.
+1.2.1#1    chooseText
+   - Nupo walks into a wall. What does he do?
+   + Nupo walks into a wall. Tap what he does.
+1.2.1#3    choose    
+   - Which list of steps gets round the wall to the flag?
+   + Tap the list that gets round the wall to the flag.
+1.2.2#0    complete  
+   - One step is missing. Which one reaches the flag?
+   + One step is missing. Tap the one that reaches the flag.
+1.2.2#2    count     
+   - How many more steps does Nupo need to reach the flag?
+   + How many more steps does Nupo need to reach the flag? Tap the number.
+1.2.2#3    complete  
+   - Fill the gap in the middle of this list.
+   + One step is missing from the middle. Tap the step that fills the gap.
+1.2.2#4    choose    
+   - Which list of steps reaches the star, not the flag?
+   + Tap the list that reaches the star, not the flag.
+1.2.3#1    count     
+   - How many steps here are wasted?
+   + How many steps here are wasted? Tap the number.
+1.2.3#3    choose    
+   - Both of these reach the flag. Which one is shorter?
+   + Both of these reach the flag. Tap the one that is shorter.
+1.2.3#4    fix       
+   - Get the star and then the flag, with no wasted steps.
+   + Get the star and then the flag, with no wasted steps. Drag the steps into order.
+1.2.3#5    count     
+   - What is the fewest steps that reaches the flag?
+   + What is the fewest steps that reaches the flag? Tap the number.
+1.2.3#6    constrain 
+   - Reach the flag in exactly 4 steps.
+   + Reach the flag in exactly 4 steps. Drag the steps into order.
+1.2.4#1    fix       
+   - Get the star and then the flag.
+   + Get the star and then the flag. Drag the steps into order.
+1.2.4#2    constrain 
+   - Reach the flag in exactly 3 steps.
+   + Reach the flag in exactly 3 steps. Drag the steps into order.
+1.2.4#3    complete  
+   - Two steps are missing. Which one fills the FIRST gap?
+   + Two steps are missing. Tap the one that fills the FIRST gap.
+1.2.4#4    count     
+   - What is the fewest steps that reaches the flag?
+   + What is the fewest steps that reaches the flag? Tap the number.
+1.2.4#5    choose    
+   - Which list is correct AND shortest?
+   + Tap the list that is correct AND shortest.
+1.3.1#2    predict   
+   - Where does this list end?
+   + Tap the square this list ends on.
+1.3.1#3    count     
+   - How many stars does Nupo collect?
+   + How many stars does Nupo collect? Tap the number.
+1.3.1#4    compare   
+   - Do these two lists end on the same square?
+   + Do these two lists end on the same square? Tap your answer.
+1.3.2#2    choose    
+   - Which list of steps draws this path to the flag?
+   + Tap the list that draws this path to the flag.
+1.3.2#3    complete  
+   - This list matches the path except one gap. Fill it.
+   + This list matches the path except one gap. Tap the step that fills it.
+1.3.2#5    compare   
+   - Does the second list draw the same path as the first?
+   + Does the second list draw the same path as the first? Tap your answer.
+1.3.2#6    count     
+   - How many steps are in this path?
+   + How many steps are in this path? Tap the number.
+1.3.3#0    choose    
+   - Both reach the flag. Which one is shorter?
+   + Both reach the flag. Tap the one that is shorter.
+1.3.3#1    count     
+   - What is the fewest steps to the flag?
+   + What is the fewest steps to the flag? Tap the number.
+1.3.3#2    constrain 
+   - Reach the flag in exactly 5 steps.
+   + Reach the flag in exactly 5 steps. Drag the steps into order.
+1.3.3#3    fix       
+   - Get the star and then the flag, with none wasted.
+   + Get the star and then the flag, with none wasted. Drag the steps into order.
+1.3.3#4    count     
+   - The wall is in the way. How many steps now?
+   + The wall is in the way. How many steps now? Tap the number.
+1.3.3#5    choose    
+   - Which one gets the star AND is shortest?
+   + Tap the one that gets the star AND is shortest.
+1.3.3#6    count     
+   - What is the fewest steps past this wall to the flag?
+   + What is the fewest steps past this wall to the flag? Tap the number.
+1.3.4#1    constrain 
+   - Reach the flag in exactly 5 steps.
+   + Reach the flag in exactly 5 steps. Drag the steps into order.
+1.3.4#4    count     
+   - What is the fewest steps that gets all three stars and the flag?
+   + What is the fewest steps that gets all three stars and the flag? Tap the number.
+1.3.4#5    choose    
+   - Which one is correct, shortest, and gets the star?
+   + Tap the one that is correct, shortest, and gets the star.
+2.1.1#1    count     
+   - How many times does that pair of steps happen?
+   + How many times does that pair of steps happen? Tap the number.
+2.1.1#2    choose    
+   - Which loop does the same job as the long list?
+   + Tap the loop that does the same job as the long list.
+2.1.1#3    compare   
+   - Do the long list and the loop end on the same square?
+   + Do the long list and the loop end on the same square? Tap your answer.
+2.1.1#5    count     
+   - How many moves does this loop make in total?
+   + How many moves does this loop make in total? Tap the number.
+2.1.2#1    choose    
+   - Which loop reaches the flag?
+   + Tap the loop that reaches the flag.
+2.1.2#3    count     
+   - How many rows does this listing have?
+   + How many rows does this listing have? Tap the number.
+2.1.2#4    count     
+   - How many moves does Nupo make?
+   + How many moves does Nupo make? Tap the number.
+2.1.2#5    compare   
+   - Does moving one step outside the loop change the ending?
+   + Does moving one step outside the loop change the ending? Tap your answer.
+2.1.3#0    count     
+   - How many rows does this long list use?
+   + How many rows does this long list use? Tap the number.
+2.1.3#1    count     
+   - The loop does the same job. How many rows does it use?
+   + The loop does the same job. How many rows does it use? Tap the number.
+2.1.3#2    compare   
+   - Same ending square, fewer rows. Is the loop still right?
+   + Same ending square, fewer rows. Is the loop still right? Tap your answer.
+2.1.3#3    choose    
+   - Which one reaches the flag with the fewest rows?
+   + Tap the one that reaches the flag with the fewest rows.
+2.1.3#5    choose    
+   - Which loop reaches this flag?
+   + Tap the loop that reaches this flag.
+2.1.3#6    count     
+   - How many moves does this loop make?
+   + How many moves does this loop make? Tap the number.
+2.1.4#1    count     
+   - How many times does that pattern repeat?
+   + How many times does that pattern repeat? Tap the number.
+2.1.4#2    choose    
+   - Which loop does the same as that long list?
+   + Tap the loop that does the same as that long list.
+2.1.4#4    count     
+   - How many moves does that loop make?
+   + How many moves does that loop make? Tap the number.
+2.1.4#5    choose    
+   - Which loop gets both stars and the flag?
+   + Tap the loop that gets both stars and the flag.
+2.2.1#1    count     
+   - How many moves does this loop make?
+   + How many moves does this loop make? Tap the number.
+2.2.1#2    choose    
+   - Which count reaches the flag?
+   + Tap the count that reaches the flag.
+2.2.1#3    complete  
+   - Fill in the missing count.
+   + The loop count is missing. Tap the count that reaches the flag.
+2.2.1#5    compare   
+   - Is DO 2 TIMES [UP UP] the same as DO 4 TIMES [UP]?
+   + Is DO 2 TIMES [UP UP] the same as DO 4 TIMES [UP]? Tap your answer.
+2.2.1#6    count     
+   - How many times do the steps inside run?
+   + How many times do the steps inside run? Tap the number.
+2.2.2#1    choose    
+   - Change the count so he lands on the flag.
+   + Change the count so he lands on the flag. Tap your answer.
+2.2.2#3    count     
+   - What count reaches this flag?
+   + What count reaches this flag? Tap the number.
+2.2.2#5    chooseText
+   - Nupo lands one square past the flag. What went wrong?
+   + Nupo lands one square past the flag. What went wrong? Tap your answer.
+2.2.2#6    compare   
+   - Does one extra time round always overshoot?
+   + Does one extra time round always overshoot? Tap your answer.
+2.2.3#0    count     
+   - The flag is 6 squares up and UP is inside. What count?
+   + The flag is 6 squares up and UP is inside. What count? Tap the number.
+2.2.3#1    count     
+   - Now UP UP is inside. What count reaches the same flag?
+   + Now UP UP is inside. What count reaches the same flag? Tap the number.
+2.2.3#2    choose    
+   - UP RIGHT is inside. Which count reaches the flag?
+   + UP RIGHT is inside. Tap the count that reaches the flag.
+2.2.3#3    complete  
+   - Fill the count so Nupo gets both stars and the flag.
+   + Tap the count that gets Nupo both stars and the flag.
+2.2.3#4    count     
+   - Count 3, and UP RIGHT inside. How many moves in total?
+   + Count 3, and UP RIGHT inside. How many moves in total? Tap the number.
+2.2.3#6    choose    
+   - Which loop reaches the flag with the fewest turns?
+   + Tap the loop that reaches the flag with the fewest turns.
+2.2.4#0    complete  
+   - Fill the missing count.
+   + Tap the loop count that gets Nupo to the flag.
+2.2.4#2    count     
+   - How many moves does this loop make?
+   + How many moves does this loop make? Tap the number.
+2.2.4#3    choose    
+   - Which loop lands exactly on the flag?
+   + Tap the loop that lands exactly on the flag.
+2.2.4#5    choose    
+   - Which loop gets the star and stops on the flag?
+   + Tap the loop that gets the star and stops on the flag.
+2.3.1#1    count     
+   - How many moves does Nupo make in total?
+   + How many moves does Nupo make in total? Tap the number.
+2.3.1#3    choose    
+   - Which one moves Nupo four squares up?
+   + Tap the one that moves Nupo four squares up.
+2.3.1#5    compare   
+   - Is 2 rounds of 3 the same as 6 rounds of 1?
+   + Is 2 rounds of 3 the same as 6 rounds of 1? Tap your answer.
+2.3.1#6    count     
+   - How many times does the OUTSIDE loop go round?
+   + How many times does the OUTSIDE loop go round? Tap the number.
+2.3.2#0    count     
+   - Outside 3, inside 4. How many times does UP run?
+   + Outside 3, inside 4. How many times does UP run? Tap the number.
+2.3.2#1    count     
+   - How many moves does this one make?
+   + How many moves does this one make? Tap the number.
+2.3.2#2    choose    
+   - Which one makes exactly six moves?
+   + Tap the one that makes exactly six moves.
+2.3.2#3    complete  
+   - Fill the inside count so Nupo reaches the flag.
+   + Tap the inside count that gets Nupo to the flag.
+2.3.2#4    compare   
+   - Outside 2 inside 3, or outside 3 inside 2. Same ending?
+   + Outside 2 inside 3, or outside 3 inside 2. Same ending? Tap your answer.
+2.3.2#6    choose    
+   - Which one lands exactly on the flag?
+   + Tap the one that lands exactly on the flag.
+2.3.3#0    choose    
+   - Which one reaches the flag four squares up?
+   + Tap the one that reaches the flag four squares up.
+2.3.3#1    choose    
+   - Now the flag is four squares across. Which one?
+   + Now the flag is four squares across. Tap it.
+2.3.3#2    count     
+   - How many rows does this nested loop use?
+   + How many rows does this nested loop use? Tap the number.
+2.3.3#3    compare   
+   - Would a plain loop do the same job here?
+   + Would a plain loop do the same job here? Tap your answer.
+2.3.3#5    count     
+   - How many moves does that make?
+   + How many moves does that make? Tap the number.
+2.3.3#6    choose    
+   - Which one reaches the flag six squares up?
+   + Tap the one that reaches the flag six squares up.
+2.3.4#1    count     
+   - How many moves was that?
+   + How many moves was that? Tap the number.
+2.3.4#2    count     
+   - How many moves does this one make?
+   + How many moves does this one make? Tap the number.
+2.3.4#3    complete  
+   - Fill the inside count to reach the flag.
+   + The inside count is missing. Tap the one that reaches the flag.
+2.3.4#4    choose    
+   - Which one lands exactly on the flag?
+   + Tap the one that lands exactly on the flag.
+2.3.4#5    choose    
+   - Which one collects every star and stops on the flag?
+   + Tap the one that collects every star and stops on the flag.
+4.1.1#4    choose    
+   - Which list gets round the wall to the flag?
+   + Tap the list that gets round the wall to the flag.
+4.1.1#5    count     
+   - How many moves happen before the wall stops him?
+   + How many moves happen before the wall stops him? Tap the number.
+4.1.2#1    count     
+   - How many steps ran correctly before the bug?
+   + How many steps ran correctly before the bug? Tap the number.
+4.1.2#4    chooseText
+   - Why fix only the FIRST wrong step?
+   + Why fix only the FIRST wrong step? Tap your answer.
+4.1.2#5    choose    
+   - Which single list gets past the wall to the flag?
+   + Which single list gets past the wall to the flag? Tap your answer.
+4.1.2#6    count     
+   - How many moves does the broken list actually make?
+   + How many moves does the broken list actually make? Tap the number.
+4.1.3#3    choose    
+   - Which list gets to the flag with that wall there?
+   + Tap the list that gets to the flag with that wall there.
+4.1.3#5    compare   
+   - Do your fixed list and the loop end in the same place?
+   + Do your fixed list and the loop end in the same place? Tap your answer.
+4.1.3#6    chooseText
+   - When your guess and the run disagree, what have you found?
+   + When your guess and the run disagree, what have you found? Tap your answer.
+4.1.4#4    count     
+   - How many moves does the loop make in total?
+   + How many moves does the loop make in total? Tap the number.
+4.1.4#5    choose    
+   - Which list gets round this wall to the flag?
+   + Tap the list that gets round this wall to the flag.
+4.2.1#0    count     
+   - COINS starts at 0. What is in the box at the end?
+   + COINS starts at 0. What is in the box at the end? Tap the number.
+4.2.1#1    count     
+   - What is in COINS now?
+   + What is in COINS now? Tap the number.
+4.2.1#4    count     
+   - This box does not start empty. What is in it at the end?
+   + This box does not start empty. What is in it at the end? Tap the number.
+4.2.1#5    chooseText
+   - Does looking in the box change what is inside?
+   + Does looking in the box change what is inside? Tap your answer.
+4.2.2#0    count     
+   - COINS holds 5, then SET COINS = 2. What is in it now?
+   + COINS holds 5, then SET COINS = 2. What is in it now? Tap the number.
+4.2.2#1    count     
+   - COINS holds 5, then ADD 2. What is in it now?
+   + COINS holds 5, then ADD 2. What is in it now? Tap the number.
+4.2.2#2    chooseText
+   - What is the difference between SET and ADD?
+   + What is the difference between SET and ADD? Tap your answer.
+4.2.2#3    count     
+   - SET 3, then ADD 4, then ADD 1. What is in the box?
+   + SET 3, then ADD 4, then ADD 1. What is in the box? Tap the number.
+4.2.2#4    count     
+   - Two SET rows in a row. What is left in the box?
+   + Two SET rows in a row. What is left in the box? Tap the number.
+4.2.2#5    count     
+   - A SET in the middle wipes what came before. Final value?
+   + A SET in the middle wipes what came before. Final value? Tap the number.
+4.2.3#1    count     
+   - A loop with an ADD inside. What ends up in COINS?
+   + A loop with an ADD inside. What ends up in COINS? Tap the number.
+4.2.3#2    count     
+   - Two boxes now. What is in COINS at the end?
+   + Two boxes now. What is in COINS at the end? Tap the number.
+4.2.3#3    count     
+   - And what is in KEYS?
+   + And what is in KEYS? Tap the number.
+4.2.3#4    count     
+   - ADD can take away too. What is left in COINS?
+   + ADD can take away too. What is left in COINS? Tap the number.
+4.2.3#6    chooseText
+   - Why write out a trace table?
+   + Why write out a trace table? Tap your answer.
+4.2.4#0    trace     
+   - Complete the trace table.
+   + Complete the trace table. Tap the number.
+4.2.4#1    count     
+   - What is the final value in COINS?
+   + What is the final value in COINS? Tap the number.
+4.2.4#2    count     
+   - A loop adding 5, four times round. Final value?
+   + A loop adding 5, four times round. Final value? Tap the number.
+4.2.4#4    count     
+   - How many times does the value change inside this loop?
+   + How many times does the value change inside this loop? Tap the number.
+4.2.4#5    count     
+   - If that loop ran one fewer time, what would be in the box?
+   + If that loop ran one fewer time, what would be in the box? Tap the number.
+4.3.1#0    chooseText
+   - This level needs a key, a door and a flag. What comes first?
+   + This level needs a key, a door and a flag. What comes first? Tap your answer.
+4.3.1#1    count     
+   - How many separate jobs does this level have?
+   + How many separate jobs does this level have? Tap the number.
+4.3.1#4    choose    
+   - Which order does all three jobs?
+   + Tap the order that does all three jobs.
+4.3.1#5    count     
+   - How many steps does the whole level take?
+   + How many steps does the whole level take? Tap the number.
+4.3.1#6    chooseText
+   - Why solve a big level one part at a time?
+   + Why solve a big level one part at a time? Tap your answer.
+4.3.2#1    count     
+   - How many rows does the long version use?
+   + How many rows does the long version use? Tap the number.
+4.3.2#2    count     
+   - The named version uses a loop. How many rows is that?
+   + The named version uses a loop. How many rows is that? Tap the number.
+4.3.2#3    compare   
+   - Same job, fewer rows. Do they end on the same square?
+   + Same job, fewer rows. Do they end on the same square? Tap your answer.
+4.3.2#4    choose    
+   - Which one uses the chunk three times to reach the flag?
+   + Tap the one that uses the chunk three times to reach the flag.
+4.3.2#5    constrain 
+   - Use the chunk twice: reach the flag in exactly 4 steps.
+   + Use the chunk twice: reach the flag in exactly 4 steps. Drag the steps into order.
+4.3.2#6    chooseText
+   - Why give a group of steps a name?
+   + Why give a group of steps a name? Tap your answer.
+4.3.3#1    count     
+   - How many stars does that collect?
+   + How many stars does that collect? Tap the number.
+4.3.3#2    count     
+   - A loop with a box inside. What ends up in COINS?
+   + A loop with a box inside. What ends up in COINS? Tap the number.
+4.3.3#3    choose    
+   - Which one gets round the wall to the flag?
+   + Tap the one that gets round the wall to the flag.
+4.3.3#6    count     
+   - How many moves does that loop make in total?
+   + How many moves does that loop make in total? Tap the number.
+4.3.4#1    count     
+   - How many stars does that list collect?
+   + How many stars does that list collect? Tap the number.
+4.3.4#2    count     
+   - What ends up in COINS?
+   + What ends up in COINS? Tap the number.
+4.3.4#3    constrain 
+   - Reach the flag in exactly 4 steps.
+   + Reach the flag in exactly 4 steps. Drag the steps into order.
+4.3.4#4    choose    
+   - Which one fetches the key, opens the door and reaches the flag?
+   + Tap the one that fetches the key, opens the door and reaches the flag.
+
+152 prompts to reword

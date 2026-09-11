@@ -88,6 +88,7 @@ flutter:
     - assets/mascot_pin.png
     - assets/nupo/
     - assets/videos/
+    - assets/curriculum/
 
   fonts:
     - family: Nunito

@@ -63,6 +63,28 @@ class MainActivity : FlutterFragmentActivity() {
                             )
                         )
                     }
+                    // What the child has climbed. The gate owns this state (it
+                    // runs in the service, not here), so the roadmap reads it
+                    // back rather than keeping its own copy.
+                    "learningProgress" -> {
+                        val skill = Curriculum.skill(this)
+                        result.success(
+                            mapOf(
+                                "skillId" to (skill?.id ?: ""),
+                                "stopsDone" to Curriculum.Progress.stopsDone(this),
+                                "stopsPlayable" to (skill?.ladder?.size ?: 0),
+                                "currentStopId" to
+                                    (skill?.ladder?.getOrNull(
+                                        Curriculum.Progress.stopIndex(this))?.id ?: ""),
+                                "questionIndex" to Curriculum.Progress.questionIndex(this),
+                                "asked" to Curriculum.Progress.asked(this),
+                                "right" to Curriculum.Progress.right(this),
+                                "streak" to Curriculum.Progress.streak(this),
+                                "answeredToday" to Curriculum.Progress.answeredToday(this),
+                                "week" to Curriculum.Progress.week(this),
+                            )
+                        )
+                    }
                     "hasUsageAccess" -> result.success(GuardService.hasUsageAccess(this))
                     "openUsageAccessSettings" -> {
                         // Best-effort: some OEMs honor a package URI and jump
