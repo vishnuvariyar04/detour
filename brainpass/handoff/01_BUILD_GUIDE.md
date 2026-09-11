@@ -214,8 +214,10 @@ The page gives you:
    many, one too few), so the answer still has to be worked out?
 5. Does anything repeat that should not?
 
-Then send the wall and your notes for approval. **Do not proceed to Kotlin
-until you have it.**
+Then publish the wall as an artifact and send Vishnu the link — the full loop,
+including how to republish to the same URL and what his feedback looks like when
+it arrives, is in [04_REVIEW_LOOP.md](04_REVIEW_LOOP.md). **Do not proceed to
+Kotlin until you have sign-off.**
 
 ---
 

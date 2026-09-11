@@ -19,20 +19,22 @@ scripts before it is allowed anywhere near a phone.
 That last point is the job. You are writing content and the drawings for it, not
 rebuilding the app.
 
-## The four files here
+## The files here
 
 | Read | File | What it is |
 |---|---|---|
 | 1st | **[01_BUILD_GUIDE.md](01_BUILD_GUIDE.md)** | The whole job: the shape of a skill, the five-step procedure, the JSON schema, every check that must pass, and the defects already in the shipped skills that you must not copy. |
 | 2nd | **[02_SPINES.md](02_SPINES.md)** | The topic source for the two new bands, from the original curriculum plan. Your proposed spine gets approved before you write 324 questions. |
 | 3rd | **[03_ENVIRONMENT.md](03_ENVIRONMENT.md)** | Getting the toolchain running, and the commands you will type every day. |
+| 4th | **[04_REVIEW_LOOP.md](04_REVIEW_LOOP.md)** | How the wall actually reaches Vishnu for approval, and how his feedback comes back. Read before you build the wall the first time. |
 | when reviewing | **question_wall.html** | Every question in both shipped skills, drawn the way the phone draws it. Open it in a browser — no server, no build. |
 
 ## The order of work
 
 ```
 1. Author the content in Python        →  the JSON asset
-2. Build the wall, review it, GET SIGN-OFF   ←  hard stop, do not skip
+2. Build the wall, send it, GET SIGN-OFF      ←  hard stop, do not skip
+                                              see 04_REVIEW_LOOP.md
 3. Build it in Kotlin                  →  the drawings
 4. Test on a real phone
 5. Ship
