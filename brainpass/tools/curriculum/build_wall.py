@@ -7,7 +7,7 @@ way to compare stop 3.2.1 against stop 1.1.4 without walking the whole ladder
 again. The wall renders the same shapes with the same measurements, so what is
 on the page is what a child will see.
 
-The renderers live in template.html and mirror the Kotlin views. The data is
+The renderers live in wall_template.html and mirror the Kotlin views. The data is
 spliced in at build time rather than fetched, so the published page has no
 network dependency and keeps working when this machine is off.
 """
@@ -20,11 +20,14 @@ from collections import Counter
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 CUR = os.path.join(HERE, "..", "..", "assets", "curriculum")
-SCRATCH = os.environ.get(
-    "NUPO_SCRATCH",
-    r"C:\Users\vishn\AppData\Local\Temp\claude"
-    r"\c--dev-detour\d520351f-ce1e-4293-90b0-82feee008fd5\scratchpad")
+# The template is part of the repo, not of whoever's scratch directory happened
+# to be live the day the wall was first built. It was a temp path for exactly
+# one session, and the wall became unbuildable the moment that was cleared.
+TEMPLATE = os.path.join(HERE, "wall_template.html")
 
+# Where the built page lands. Untracked: 280KB of generated HTML whose every
+# byte comes from the template and the JSON sitting next to it.
+OUT = os.environ.get("NUPO_OUT", os.path.join(HERE, "..", "..", "build", "wall"))
 # The fields a rendered screen needs. Anything else is authoring bookkeeping
 # and would only bloat the page.
 KEEP = ("shape", "prompt", "hint", "pic", "visual", "truth", "choices",
@@ -119,9 +122,12 @@ def main():
                     q["echo"] = prompts[q["prompt"]]
                     echoes += 1
 
-    tpl = io.open(os.path.join(SCRATCH, "template.html"), encoding="utf-8").read()
+    if not os.path.exists(TEMPLATE):
+        print(f"missing {TEMPLATE}")
+        return 1
+    tpl = io.open(TEMPLATE, encoding="utf-8").read()
     if "/*__DATA__*/" not in tpl:
-        print("template.html has no /*__DATA__*/ placeholder")
+        print("wall_template.html has no /*__DATA__*/ placeholder")
         return 1
     out = tpl.replace("/*__DATA__*/",
                       json.dumps({"skills": skills}, ensure_ascii=False,
@@ -131,7 +137,8 @@ def main():
     # plain purple circle and the review was looking at a different character
     # from the one on the phone.
     out = out.replace("__NUPO__", nupo_b64())
-    path = os.path.join(SCRATCH, "question_wall.html")
+    os.makedirs(OUT, exist_ok=True)
+    path = os.path.abspath(os.path.join(OUT, "question_wall.html"))
     io.open(path, "w", encoding="utf-8").write(out)
 
     total = sum(len(u["qs"]) for sk in skills for u in sk["units"])

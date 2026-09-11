@@ -1,0 +1,1060 @@
+<title>Nupo Question Wall</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Nunito:wght@400;600;700;800;900&display=swap">
+<style>
+:root{
+  --ground:#EEEFF4; --panel:#FFFFFF; --panel-2:#F7F8FC;
+  --ink:#20222C; --ink-2:#5B5F72; --muted:#8B8FA3;
+  --edge:#DBDDE8; --edge-2:#C7CAD9;
+  --tool:#E1502A; --tool-soft:#FDEAE4;
+  --flag:#B26A00; --flag-soft:#FFF3DC;
+  --ok:#12784A;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#131521; --panel:#1B1E2B; --panel-2:#232735;
+    --ink:#E8E9F1; --ink-2:#AFB3C6; --muted:#7E8398;
+    --edge:#2C3143; --edge-2:#3A4056;
+    --tool:#FF7A59; --tool-soft:#3A2018;
+    --flag:#FFB020; --flag-soft:#382A12;
+    --ok:#4ADE9B;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#131521; --panel:#1B1E2B; --panel-2:#232735;
+  --ink:#E8E9F1; --ink-2:#AFB3C6; --muted:#7E8398;
+  --edge:#2C3143; --edge-2:#3A4056;
+  --tool:#FF7A59; --tool-soft:#3A2018;
+  --flag:#FFB020; --flag-soft:#382A12;
+  --ok:#4ADE9B;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font-family:"IBM Plex Sans",system-ui,-apple-system,Segoe UI,sans-serif;
+  font-size:14px; line-height:1.5;
+}
+code,.mono{font-family:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace}
+
+/* ---------------------------------------------------------------- chrome */
+header{
+  position:sticky; top:0; z-index:20; background:var(--panel);
+  border-bottom:1px solid var(--edge);
+  padding:14px 20px 12px; display:flex; flex-wrap:wrap; gap:14px; align-items:center;
+}
+h1{
+  font-size:16px; font-weight:700; margin:0; letter-spacing:-.01em;
+  display:flex; align-items:baseline; gap:9px;
+}
+h1 .sub{font-size:12px; font-weight:500; color:var(--muted); letter-spacing:.02em}
+.tallies{display:flex; gap:16px; margin-left:auto; align-items:center; flex-wrap:wrap}
+.tally{display:flex; flex-direction:column; line-height:1.15}
+.tally b{font-family:"IBM Plex Mono",monospace; font-size:16px; font-weight:600;
+  font-variant-numeric:tabular-nums}
+.tally span{font-size:10.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.07em}
+.controls{display:flex; gap:8px; flex-wrap:wrap; align-items:center; width:100%}
+select,input[type=search],button{
+  font:inherit; color:var(--ink); background:var(--panel-2);
+  border:1px solid var(--edge); border-radius:8px; padding:6px 10px;
+}
+input[type=search]{min-width:200px}
+button{cursor:pointer}
+button:hover{border-color:var(--edge-2)}
+button.primary{background:var(--tool); border-color:var(--tool); color:#fff; font-weight:600}
+button.primary:hover{filter:brightness(1.06)}
+:focus-visible{outline:2px solid var(--tool); outline-offset:2px}
+.chk{display:flex; align-items:center; gap:6px; font-size:13px; color:var(--ink-2)}
+
+/* ---------------------------------------------------------------- wall */
+main{padding:20px 20px 150px}
+.unit{margin:0 0 30px}
+.unit-head{
+  display:flex; align-items:baseline; gap:10px; margin:0 0 12px;
+  padding-bottom:7px; border-bottom:1px solid var(--edge);
+}
+.unit-head h2{margin:0; font-size:14.5px; font-weight:600; letter-spacing:-.01em}
+.unit-head .id{font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--tool)}
+.unit-head .note{font-size:12px; color:var(--muted); margin-left:auto}
+.grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(212px,1fr)); gap:16px}
+figure{margin:0; display:flex; flex-direction:column; gap:7px}
+.frame{
+  position:relative; border-radius:14px; overflow:hidden; cursor:pointer;
+  border:1px solid var(--edge); background:#F6F7FB;
+  aspect-ratio:1080/2392; transition:border-color .12s, box-shadow .12s;
+}
+.frame canvas{width:100%; height:100%; display:block}
+.frame:hover{border-color:var(--edge-2)}
+figure.sel .frame{border-color:var(--tool); box-shadow:0 0 0 3px var(--tool-soft)}
+.cap{display:flex; align-items:center; gap:6px; flex-wrap:wrap; font-size:11.5px}
+.cap .qid{font-family:"IBM Plex Mono",monospace; color:var(--ink-2); font-weight:500}
+.tag{
+  font-size:10px; letter-spacing:.04em; text-transform:uppercase; font-weight:600;
+  padding:2px 6px; border-radius:5px; background:var(--panel-2);
+  color:var(--muted); border:1px solid var(--edge);
+}
+.tag.dup{background:var(--flag-soft); color:var(--flag); border-color:transparent}
+.facts{
+  width:100%; margin-top:2px; font-size:11px; line-height:1.45; color:var(--muted);
+}
+.facts b{color:var(--ink-2); font-weight:600}
+.facts .ans{color:var(--tool); font-weight:600}
+.badge{
+  position:absolute; top:8px; left:8px; z-index:2;
+  font-size:9.5px; font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+  padding:3px 7px; border-radius:999px; background:var(--flag); color:#231600;
+}
+figure.sel .frame::after{
+  content:"✓"; position:absolute; top:7px; right:7px; z-index:2;
+  width:20px; height:20px; border-radius:50%; background:var(--tool); color:#fff;
+  font-size:12px; font-weight:700; display:grid; place-items:center;
+}
+
+/* ---------------------------------------------------------------- basket */
+.basket{
+  position:fixed; left:0; right:0; bottom:0; z-index:30; background:var(--panel);
+  border-top:1px solid var(--edge); max-height:56vh; display:flex; flex-direction:column;
+  transform:translateY(calc(100% - 46px)); transition:transform .18s ease;
+}
+.basket.open{transform:translateY(0)}
+.basket-bar{
+  display:flex; align-items:center; gap:12px; padding:0 20px; height:46px;
+  cursor:pointer; user-select:none; flex:0 0 auto;
+}
+.basket-bar b{font-family:"IBM Plex Mono",monospace; font-size:14px}
+.basket-bar .spacer{margin-left:auto}
+.basket-body{overflow:auto; padding:4px 20px 18px; display:grid; gap:9px}
+.row{
+  display:grid; grid-template-columns:118px 1fr auto; gap:10px; align-items:center;
+  padding:8px 10px; background:var(--panel-2); border:1px solid var(--edge); border-radius:9px;
+}
+.row .qid{font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--tool)}
+.row input{
+  font:inherit; font-size:13px; width:100%; padding:5px 8px; color:var(--ink);
+  background:var(--panel); border:1px solid var(--edge); border-radius:7px;
+}
+.row button{padding:4px 8px; font-size:12px}
+.empty{color:var(--muted); font-size:13px; padding:10px 0}
+@media (max-width:560px){
+  .row{grid-template-columns:1fr; }
+  .tallies{width:100%; margin-left:0}
+}
+</style>
+
+<header>
+  <h1>Question Wall <span class="sub">every screen a child will see</span></h1>
+  <div class="tallies">
+    <div class="tally"><b id="t-shown">0</b><span>shown</span></div>
+    <div class="tally"><b id="t-total">0</b><span>total</span></div>
+    <div class="tally"><b id="t-dup" style="color:var(--flag)">0</b><span>same screen</span></div>
+    <div class="tally"><b id="t-echo">0</b><span>same words</span></div>
+    <div class="tally"><b id="t-sel" style="color:var(--tool)">0</b><span>picked</span></div>
+  </div>
+  <div class="controls">
+    <select id="f-skill"></select>
+    <select id="f-shape"></select>
+    <input type="search" id="f-text" placeholder="Search the prompt…">
+    <label class="chk"><input type="checkbox" id="f-dup"> Repeats only</label>
+    <label class="chk"><input type="checkbox" id="f-echo"> Same words only</label>
+    <label class="chk"><input type="checkbox" id="f-sel"> Picked only</label>
+    <button id="clear">Clear filters</button>
+  </div>
+</header>
+
+<main id="wall"></main>
+
+<section class="basket" id="basket">
+  <div class="basket-bar" id="basket-bar">
+    <b id="b-count">0</b> picked
+    <span class="spacer"></span>
+    <button id="copy" class="primary">Copy notes for Claude</button>
+    <button id="wipe">Clear</button>
+  </div>
+  <div class="basket-body" id="basket-body"></div>
+</section>
+
+<script>
+const DATA = /*__DATA__*/;
+const NUPO_SRC = "data:image/png;base64,__NUPO__";
+const nupo = new Image(); nupo.src = NUPO_SRC;
+
+/* The app's own palette. These are the values in Design.kt — the phone cards
+   must match the device, so nothing here is a re-interpretation. */
+const K = {
+  bg:"#F6F7FB", surface:"#FFFFFF", line:"#E3E6F0", ledge:"#D3D8E6",
+  text:"#181B26", muted:"#757B8C",
+  primary:"#7A50F0", primaryLedge:"#5E36CC",
+  accent:"#FDC703", accentLedge:"#D9A600",
+  good:"#2FBF71", goodWash:"#E6F8EE", bad:"#FF5C5C", badWash:"#FFECEC",
+  tile:"#FFFFFF", tileAlt:"#F0F2F9", wall:"#9AA1B5", trail:"#B9A6F5",
+};
+const W = 360, H = 797;                    // logical dp of the gate screen
+const SC = 3;                              // canvas scale
+
+/* ------------------------------------------------------------- glyphs */
+function poly(c,cx,cy,r,n,start){
+  c.beginPath();
+  for(let i=0;i<n;i++){
+    const a=(start+i*360/n)*Math.PI/180;
+    const x=cx+r*Math.cos(a), y=cy+r*Math.sin(a);
+    i?c.lineTo(x,y):c.moveTo(x,y);
+  }
+  c.closePath();
+}
+function starPath(c,cx,cy,r){
+  c.beginPath();
+  for(let i=0;i<10;i++){
+    const rad=i%2?r*0.46:r, a=(-90+i*36)*Math.PI/180;
+    const x=cx+rad*Math.cos(a), y=cy+rad*Math.sin(a);
+    i?c.lineTo(x,y):c.moveTo(x,y);
+  }
+  c.closePath();
+}
+function heartPath(c,cx,cy,r){
+  const top=cy-r*0.42;
+  c.beginPath(); c.moveTo(cx,cy+r*0.78);
+  c.bezierCurveTo(cx-r*1.35,cy-r*0.15,cx-r*0.62,top-r*0.62,cx,top);
+  c.bezierCurveTo(cx+r*0.62,top-r*0.62,cx+r*1.35,cy-r*0.15,cx,cy+r*0.78);
+  c.closePath();
+}
+function shape(c,kind,cx,cy,r,rot){
+  if(rot){c.save();c.translate(cx,cy);c.rotate(rot*Math.PI/180);c.translate(-cx,-cy);}
+  switch(kind){
+    case "square":{const q=r*0.9,rr=r*0.26;
+      c.beginPath();c.roundRect(cx-q,cy-q,q*2,q*2,rr);c.fill();break;}
+    case "triangle": poly(c,cx,cy,r,3,-90); c.fill(); break;
+    case "diamond":  poly(c,cx,cy,r,4,-90); c.fill(); break;
+    case "hexagon":  poly(c,cx,cy,r,6,-90); c.fill(); break;
+    case "star":     starPath(c,cx,cy,r); c.fill(); break;
+    case "heart":    heartPath(c,cx,cy,r); c.fill(); break;
+    case "flower":
+      for(let i=0;i<6;i++){const a=i*60*Math.PI/180;
+        c.beginPath();c.arc(cx+r*0.55*Math.cos(a),cy+r*0.55*Math.sin(a),r*0.45,0,7);c.fill();}
+      c.beginPath();c.arc(cx,cy,r*0.42,0,7);c.fill();break;
+    default: c.beginPath();c.arc(cx,cy,r,0,7);c.fill();
+  }
+  if(rot)c.restore();
+}
+function glyph(c,kind,cx,cy,r,face,ledge,rot){
+  if(ledge){c.fillStyle=ledge; shape(c,kind,cx,cy+r*0.13,r,rot);}
+  c.fillStyle=face; shape(c,kind,cx,cy,r,rot);
+}
+const COLOR = k => k==="accent"?K.accent:k==="good"?K.good:K.primary;
+const LEDGE = k => k==="accent"?K.accentLedge:k==="good"?K.good:K.primaryLedge;
+
+/* ------------------------------------------------------------- helpers */
+function rrect(c,x,y,w,h,r,fill,stroke,sw){
+  c.beginPath(); c.roundRect(x,y,w,h,r);
+  if(fill){c.fillStyle=fill;c.fill();}
+  if(stroke){c.lineWidth=sw||1.5;c.strokeStyle=stroke;c.stroke();}
+}
+function text(c,s,x,y,size,color,weight,align){
+  c.fillStyle=color; c.textAlign=align||"left"; c.textBaseline="middle";
+  c.font=`${weight||700} ${size}px Nunito, sans-serif`;
+  c.fillText(s,x,y);
+}
+function wrap(c,s,x,y,maxW,size,color,weight,lh){
+  c.font=`${weight||900} ${size}px Nunito, sans-serif`;
+  const words=String(s||"").split(" "); let line="", yy=y;
+  for(const w of words){
+    const t=line?line+" "+w:w;
+    if(c.measureText(t).width>maxW && line){
+      text(c,line,x,yy,size,color,weight); yy+=lh||size*1.35; line=w;
+    } else line=t;
+  }
+  if(line) text(c,line,x,yy,size,color,weight);
+  return yy+(lh||size*1.35);
+}
+function arrow(c,cx,cy,size,dir,color){
+  c.save(); c.translate(cx,cy);
+  c.rotate({right:0,down:90,left:180,up:270}[dir]*Math.PI/180);
+  c.fillStyle=color; c.strokeStyle=color; c.lineWidth=size*0.42; c.lineCap="round";
+  c.beginPath(); c.moveTo(-size,0); c.lineTo(size*0.25,0); c.stroke();
+  c.beginPath(); c.moveTo(size*1.05,0); c.lineTo(size*0.1,-size*0.72);
+  c.lineTo(size*0.1,size*0.72); c.closePath(); c.fill();
+  c.restore();
+}
+const ARROWS={up:1,down:1,left:1,right:1};
+function word(t){
+  if(ARROWS[t]) return t.toUpperCase();
+  if(t==="pick") return "PICK UP";
+  if(t==="open") return "OPEN";
+  if(t==="end") return "END";
+  if(t==="else") return "OR ELSE";
+  if(t.startsWith("repeat:")) return "DO "+t.split(":")[1]+" TIMES";
+  if(t.startsWith("if:")) return "IF "+sensor(t.slice(3));
+  if(t.startsWith("set:")||t.startsWith("add:")){
+    const p=t.split(":"); const n=parseInt(p[2],10);
+    if(p[0]==="set") return `SET ${p[1]} = ${p[2]}`;
+    return n<0?`TAKE ${-n} FROM ${p[1]}`:`ADD ${n} TO ${p[1]}`;
+  }
+  return t.toUpperCase();
+}
+/* A check has to read as something a child can go and look at. "IF NO WALL UP"
+   is neither English nor a description of the board; "IF WAY UP IS CLEAR" is
+   the same test written as the thing they should check. */
+const SIDE={up:"ABOVE",down:"BELOW",left:"ON THE LEFT",right:"ON THE RIGHT"};
+const WAY={up:"UP",down:"DOWN",left:"LEFT",right:"RIGHT"};
+function sensor(cd){
+  if(cd.startsWith("not-")){
+    const b=cd.slice(4);
+    if(b.startsWith("wall-")) return "WAY "+WAY[b.split("-")[1]]+" IS CLEAR";
+    if(b==="star") return "NOT ON A STAR";
+    return "NOT "+sensor(b);
+  }
+  if(cd==="star") return "ON A STAR";
+  if(cd==="key") return "HOLDING THE KEY";
+  if(cd==="door") return "AT THE DOOR";
+  if(cd.startsWith("wall-")) return "WALL "+SIDE[cd.split("-")[1]];
+  return cd.toUpperCase();
+}
+const isScaffold = t => t.startsWith("repeat:")||t==="end"||t==="else"||t.startsWith("if:");
+
+/* ------------------------------------------------------------- pictures */
+function drawBoard(c,b,x,y,w,h){
+  const pad=6, cw=b.w||5, ch=b.h||5;
+  const cell=Math.min((w-pad*2)/cw,(h-pad*2)/ch);
+  const ox=x+(w-cell*cw)/2, oy=y+(h-cell*ch)/2;
+  const T=(gx,gy)=>[ox+gx*cell, oy+(ch-1-gy)*cell];
+  const walls=new Set((b.walls||[]).map(p=>p.join(",")));
+  for(let gy=0;gy<ch;gy++)for(let gx=0;gx<cw;gx++){
+    if(walls.has(gx+","+gy))continue;
+    const [tx,ty]=T(gx,gy);
+    rrect(c,tx+2,ty+2,cell-4,cell-4,8,(gx+gy)%2===0?K.tile:K.tileAlt);
+  }
+  for(const p of (b.walls||[])){const [tx,ty]=T(p[0],p[1]);
+    rrect(c,tx+2,ty+2,cell-4,cell-4,8,K.wall);}
+  for(const s of (b.stars||[])){const [tx,ty]=T(s[0],s[1]);
+    glyph(c,"star",tx+cell/2,ty+cell/2,cell*0.26,K.accent,K.accentLedge);}
+  if(b.goal){const [tx,ty]=T(b.goal[0],b.goal[1]);
+    c.strokeStyle="#5B6070";c.lineWidth=2;
+    c.beginPath();c.moveTo(tx+cell*0.36,ty+cell*0.24);c.lineTo(tx+cell*0.36,ty+cell*0.78);c.stroke();
+    c.fillStyle="#2FBF71";c.beginPath();c.moveTo(tx+cell*0.36,ty+cell*0.24);
+    c.lineTo(tx+cell*0.74,ty+cell*0.38);c.lineTo(tx+cell*0.36,ty+cell*0.5);c.closePath();c.fill();}
+  if(b.key){const [tx,ty]=T(b.key[0],b.key[1]);
+    c.fillStyle=K.accent;c.beginPath();c.arc(tx+cell*0.4,ty+cell*0.5,cell*0.13,0,7);c.fill();
+    c.fillRect(tx+cell*0.44,ty+cell*0.45,cell*0.3,cell*0.09);}
+  if(b.door){const [tx,ty]=T(b.door[0],b.door[1]);
+    rrect(c,tx+cell*0.24,ty+cell*0.2,cell*0.52,cell*0.62,5,"#B98A5A");}
+  const st=b.start||[0,0];
+  const [bx,by]=T(st[0],st[1]);
+  if(nupo.complete&&nupo.naturalWidth)
+    c.drawImage(nupo,bx+cell*0.12,by+cell*0.1,cell*0.76,cell*0.76);
+  else{c.fillStyle=K.primary;c.beginPath();c.arc(bx+cell/2,by+cell/2,cell*0.3,0,7);c.fill();}
+  return cell;
+}
+function drawListing(c,prog,x,y,w,compact){
+  const rowH=compact?34:44, gap=compact?6:8, gut=17, indent=9;
+  let depth=0;
+  prog.forEach((t,i)=>{
+    let d=depth;
+    if(t==="end"){depth=Math.max(0,depth-1); d=depth;}
+    else if(t==="else"){d=Math.max(0,depth-1);}
+    else if(t.startsWith("repeat:")||t.startsWith("if:")){d=depth; depth++;}
+    const ry=y+i*(rowH+gap), bx=x+gut+d*indent, bw=w-gut-d*indent;
+    const scaf=isScaffold(t);
+    text(c,String(i+1),x+7,ry+rowH/2,12,K.muted,600);
+    rrect(c,bx,ry,bw,rowH,rowH/2.6,scaf?"#F3EFFF":K.surface,scaf?"#E4DBFF":K.line,1.5);
+    const label=word(t);
+    if(scaf) text(c,label,bx+bw/2,ry+rowH/2,label.length>11?11.5:13.5,K.primary,800,"center");
+    else{
+      if(ARROWS[t]) arrow(c,bx+18,ry+rowH/2,8,t,K.text);
+      text(c,label,bx+31,ry+rowH/2,label.length>12?11.5:13.5,K.text,800);
+    }
+  });
+  return prog.length*(rowH+gap);
+}
+function drawTenFrame(c,pic,x,y,w){
+  const frames=(pic.second>=0)?2:1;
+  const cell=Math.min((w-8)/5,56);
+  const ox=x+(w-cell*5)/2;
+  for(let f=0;f<frames;f++){
+    const oy=y+f*(cell*2+14);
+    const n=f?pic.second:Math.min(pic.filled,10);
+    const face=f?K.accent:K.primary, led=f?K.accentLedge:K.primaryLedge;
+    for(let i=0;i<10;i++){
+      const cx=ox+(i%5)*cell, cy=oy+Math.floor(i/5)*cell;
+      rrect(c,cx+3,cy+3,cell-6,cell-6,9,K.surface,K.line,2);
+      if(i<n) glyph(c,pic.glyph||"circle",cx+cell/2,cy+cell/2,cell*0.27,face,led);
+    }
+  }
+  return frames*(cell*2)+(frames-1)*14;
+}
+function drawCount(c,pic,x,y,w){
+  const per=5, cell=Math.min(w/per,62), rows=Math.ceil(pic.n/per);
+  const total=Math.min(pic.n,per)*cell, ox=x+(w-total)/2;
+  for(let i=0;i<pic.n;i++){
+    const second=pic.splitAt>=0&&i>=pic.splitAt;
+    glyph(c,pic.glyph||"star",ox+(i%per)*cell+cell/2,y+Math.floor(i/per)*cell+cell/2,
+      cell*0.33,second?K.accent:K.primary,second?K.accentLedge:K.primaryLedge);
+  }
+  return Math.max(rows*cell,48);
+}
+function drawLine(c,pic,x,y,w){
+  const h=104, pad=24, yy=y+h*0.42, span=w-pad*2;
+  const from=pic.from||0, to=pic.to==null?10:pic.to, steps=Math.max(1,to-from);
+  const X=n=>x+pad+span*(n-from)/steps;
+  c.strokeStyle=K.line; c.lineWidth=3;
+  c.beginPath(); c.moveTo(X(from),yy); c.lineTo(X(to),yy); c.stroke();
+  for(let n=from;n<=to;n++){
+    const lab=n===from||n===to||((n-from)%(pic.labelEvery||1)===0);
+    c.strokeStyle=K.ledge; c.lineWidth=2;
+    c.beginPath(); c.moveTo(X(n),yy-(lab?9:5)); c.lineTo(X(n),yy+(lab?9:5)); c.stroke();
+    if(lab) text(c,String(n),X(n),yy+32,13,K.muted,800,"center");
+  }
+  if(pic.marker!=null) glyph(c,"circle",X(pic.marker),yy,10,K.accent,K.accentLedge);
+  if(pic.step>1) text(c,`hops of ${pic.step}`,x+w-pad,yy-26,11.5,K.muted,700,"right");
+  return h;
+}
+function drawBond(c,pic,x,y,w){
+  const h=196, r=Math.min(38,w/6.5), cx=x+w/2;
+  const topY=y+r+4, botY=y+h-r-4, dx=Math.min(w/4,88);
+  c.strokeStyle=K.line; c.lineWidth=3;
+  c.beginPath(); c.moveTo(cx,topY+r*0.9); c.lineTo(cx-dx,botY-r*0.9); c.stroke();
+  c.beginPath(); c.moveTo(cx,topY+r*0.9); c.lineTo(cx+dx,botY-r*0.9); c.stroke();
+  const node=(nx,ny,v,gap)=>{
+    c.beginPath(); c.arc(nx,ny,r,0,7);
+    c.fillStyle=gap?"#F1EBFF":K.surface; c.fill();
+    c.lineWidth=gap?3:2; c.strokeStyle=gap?K.primary:K.line; c.stroke();
+    text(c,v==null?"?":String(v),nx,ny,r*0.9,gap?K.primary:K.text,900,"center");
+  };
+  node(cx,topY,pic.whole,pic.gap==="whole");
+  node(cx-dx,botY,pic.left,pic.gap==="left");
+  node(cx+dx,botY,pic.right,pic.gap==="right");
+  return h;
+}
+function drawBalance(c,pic,x,y,w){
+  const h=196, cx=x+w/2, pivotY=y+h*0.36, arm=Math.min(w*0.78,300)/2;
+  // The heavier pan goes DOWN. Larger y is lower on a canvas, so a heavier
+  // left means a LARGER ly — the old code negated this and lifted the heavy
+  // side, teaching the opposite of how a balance works.
+  const diff=Math.max(-3,Math.min(3,pic.leftCount-pic.rightCount))/3;
+  const tilt=diff*30;
+  c.fillStyle=K.ledge;
+  rrect(c,cx-7,pivotY-4,14,y+h-14-(pivotY-4),5,K.ledge);
+  rrect(c,cx-46,y+h-18,92,14,7,K.ledge);
+  const ly=pivotY+tilt, ry=pivotY-tilt;
+  c.strokeStyle=K.primary; c.lineWidth=8; c.lineCap="round";
+  c.beginPath(); c.moveTo(cx-arm,ly); c.lineTo(cx+arm,ry); c.stroke();
+  c.fillStyle=K.primaryLedge; c.beginPath(); c.arc(cx,pivotY,11,0,7); c.fill();
+  const pan=(px,py,n,face,led)=>{
+    const panTop=py+42;
+    c.strokeStyle=K.ledge; c.lineWidth=2.5;
+    c.beginPath(); c.moveTo(px,py); c.lineTo(px,panTop); c.stroke();
+    rrect(c,px-40,panTop,80,9,5,K.line);
+    const r=8, per=4;
+    for(let i=0;i<Math.min(n,9);i++){
+      const col=i%per, row=Math.floor(i/per);
+      const cols=Math.min(n-row*per,per);
+      glyph(c,pic.glyph||"star",px+(col-(cols-1)/2)*r*2.15,
+        panTop-r*1.05-row*r*2.05,r,face,led);
+    }
+  };
+  pan(cx-arm,ly,pic.leftCount,K.primary,K.primaryLedge);
+  pan(cx+arm,ry,pic.rightCount,K.accent,K.accentLedge);
+  return h;
+}
+function drawRods(c,pic,x,y,w){
+  const h=200, tens=Math.floor(pic.n/10), ones=pic.n%10;
+  const unit=Math.min(18,h/11.5,w/14), rodH=unit*10, gap=unit*0.7;
+  const cols=tens+(ones?1:0); if(!cols) return h;
+  const total=cols*unit+(cols-1)*gap, ox=x+(w-total)/2, oy=y+(h-rodH)/2;
+  const cube=(bx,by,face,led)=>{
+    const s=unit*0.9;
+    rrect(c,bx+unit/2-s/2,by+unit/2-s/2+unit*0.08,s,s,unit*0.22,led);
+    rrect(c,bx+unit/2-s/2,by+unit/2-s/2,s,s,unit*0.22,face);
+  };
+  for(let t=0;t<tens;t++)for(let k=0;k<10;k++)
+    cube(ox+t*(unit+gap),oy+k*unit,K.primary,K.primaryLedge);
+  for(let k=0;k<ones;k++)
+    cube(ox+tens*(unit+gap),oy+rodH-(k+1)*unit,K.accent,K.accentLedge);
+  return h;
+}
+const SPOTS={1:[[1,1]],2:[[0,0],[2,2]],3:[[0,0],[1,1],[2,2]],
+  4:[[0,0],[2,0],[0,2],[2,2]],5:[[0,0],[2,0],[1,1],[0,2],[2,2]],
+  6:[[0,0],[2,0],[0,1],[2,1],[0,2],[2,2]]};
+function drawDice(c,pic,x,y,w){
+  const faces=pic.faces&&pic.faces.length?pic.faces:[pic.n||1];
+  const face=Math.min((w-16*(faces.length-1))/faces.length,112);
+  const total=face*faces.length+16*(faces.length-1), ox=x+(w-total)/2;
+  faces.forEach((n,fi)=>{
+    const left=ox+fi*(face+16);
+    rrect(c,left,y+4,face,face,face*0.2,K.ledge);
+    rrect(c,left,y,face,face,face*0.2,K.surface,K.line,2);
+    const dot=face*0.11, step=face*0.27, c0=left+face/2, r0=y+face/2;
+    const col=fi?K.accent:K.primary, led=fi?K.accentLedge:K.primaryLedge;
+    (SPOTS[Math.max(1,Math.min(6,n))]||[]).forEach(([gx,gy])=>
+      glyph(c,"circle",c0+(gx-1)*step,r0+(gy-1)*step,dot,col,led));
+  });
+  return face+12;
+}
+function drawMirror(c,pic,x,y,w){
+  const cols=pic.cols||6, rows=pic.rows||5;
+  const cell=Math.min(w/cols,46), ox=x+(w-cell*cols)/2;
+  const given=new Set((pic.given||[]).map(g=>g.join(",")));
+  for(let r=0;r<rows;r++)for(let cc=0;cc<cols;cc++){
+    const gx=ox+cc*cell, gy=y+r*cell, on=given.has(cc+","+r);
+    rrect(c,gx+2.5,gy+2.5,cell-5,cell-5,7,on?K.surface:"#F7F6FC",K.line,1.5);
+    if(on) glyph(c,"square",gx+cell/2,gy+cell/2,cell*0.3,K.primary,K.primaryLedge);
+  }
+  const mx=ox+cell*cols/2;
+  c.save(); c.setLineDash([9,7]); c.strokeStyle=K.primary; c.lineWidth=3;
+  c.beginPath(); c.moveTo(mx,y); c.lineTo(mx,y+cell*rows); c.stroke(); c.restore();
+  return cell*rows;
+}
+function drawFigure(c,pic,x,y,w){
+  // The polygons travel with the question, so this page and the app cannot
+  // disagree about what the figure looks like.
+  const h=Math.min(w,260), s=Math.min(w,h)*0.86;
+  const ox=x+(w-s)/2, oy=y+(h-s)/2;
+  for(const part of (pic.parts||[])){
+    c.beginPath();
+    part.pts.forEach((pt,i)=>{const px=ox+pt[0]*s, py=oy+pt[1]*s;
+      i?c.lineTo(px,py):c.moveTo(px,py);});
+    c.closePath();
+    c.fillStyle="#F3F1FB"; c.fill();
+    c.lineJoin="round"; c.lineCap="round"; c.lineWidth=3.5;
+    c.strokeStyle=K.ledge; c.stroke();
+  }
+  return h;
+}
+function drawArray(c,pic,x,y,w){
+  const r=pic.rows, n=pic.cols;
+  const cell=Math.min(w/(n+0.5),46,190/(r+0.5));
+  const tw=cell*n, th=cell*r, ox=x+(w-tw)/2;
+  for(let i=0;i<r;i++)for(let j=0;j<n;j++)
+    glyph(c,pic.glyph||"circle",ox+j*cell+cell/2,y+i*cell+cell/2,cell*0.3,
+      K.primary,K.primaryLedge);
+  return th;
+}
+function drawGroups(c,pic,x,y,w){
+  const g=pic.groups, per=pic.per;
+  const bw=Math.min((w-10*(g-1))/g,96), gap=10;
+  const total=bw*g+gap*(g-1), ox=x+(w-total)/2;
+  const cols=per<=4?2:3, rows=Math.ceil(per/cols);
+  const bh=Math.max(64,rows*bw/cols+18);
+  for(let i=0;i<g;i++){
+    const bx=ox+i*(bw+gap);
+    rrect(c,bx,y,bw,bh,14,"#F7F6FC",K.line,2);
+    for(let k=0;k<per;k++){
+      const cw=bw/cols;
+      glyph(c,pic.glyph||"star",bx+(k%cols)*cw+cw/2,
+        y+12+Math.floor(k/cols)*cw+cw/2,Math.min(cw*0.3,13),
+        K.primary,K.primaryLedge);
+    }
+  }
+  return bh;
+}
+function drawBars(c,pic,x,y,w){
+  const hi=Math.max(pic.a,pic.b), unit=(w-40)/Math.max(hi,1);
+  const bh=34, gap=16;
+  [[pic.a,K.primary,K.primaryLedge],[pic.b,K.accent,K.accentLedge]]
+    .forEach(([v,face,led],i)=>{
+      const by=y+i*(bh+gap);
+      rrect(c,x,by+3,v*unit,bh,9,led);
+      rrect(c,x,by,v*unit,bh,9,face);
+      text(c,String(v),x+v*unit+12,by+bh/2,15,K.muted,800);
+    });
+  return bh*2+gap;
+}
+function drawWall(c,pic,x,y,w){
+  // The top strip is a REFERENCE only when the question compares against it.
+  // For "biggest pieces" every strip is a candidate, so none is singled out.
+  const rows=pic.rows||[], sh=32, gap=10, ref=(pic.ask!=="biggest");
+  rows.forEach((r,i)=>{
+    const [parts,on]=r, by=y+i*(sh+gap), cw=w/parts;
+    for(let k=0;k<parts;k++){
+      const bx=x+k*cw;
+      rrect(c,bx+1.5,by,cw-3,sh,6,
+        k<on?((i===0&&ref)?K.primary:K.accent):"#F1EFFA",K.line,1.5);
+    }
+    if(i===0&&ref){
+      c.save(); c.setLineDash([5,5]); c.strokeStyle=K.ledge; c.lineWidth=2;
+      c.beginPath(); c.moveTo(x,by+sh+gap/2); c.lineTo(x+w,by+sh+gap/2); c.stroke();
+      c.restore();
+    }
+  });
+  return rows.length*(sh+gap);
+}
+function drawPattern(c,pic,x,y,w){
+  const cells=pic.cells||[], n=cells.length||1;
+  const cell=Math.min((w-8)/n,76), ox=x+(w-cell*n)/2, cy=y+cell/2;
+  cells.forEach((cl,i)=>{
+    const cx=ox+i*cell+cell/2, r=cell*0.31;
+    if(i===pic.gapAt){
+      c.save(); c.setLineDash([7,6]); c.strokeStyle=K.primary; c.lineWidth=3;
+      c.beginPath(); c.roundRect(cx-r*1.25,cy-r*1.25,r*2.5,r*2.5,r*0.4); c.stroke(); c.restore();
+      text(c,"?",cx,cy,r*1.15,K.primary,900,"center");
+    } else glyph(c,cl.kind,cx,cy,r,COLOR(cl.color),LEDGE(cl.color),cl.rotation);
+  });
+  return cell+8;
+}
+function drawOdd(c,pic,x,y,w){
+  const cells=pic.cells||[], n=cells.length||1;
+  const tile=Math.min((w-10*(n-1))/n,84);
+  const total=tile*n+10*(n-1), ox=x+(w-total)/2, cy=y+tile/2+5;
+  cells.forEach((cl,i)=>{
+    const left=ox+i*(tile+10);
+    rrect(c,left,cy-tile/2,tile,tile,16,K.surface,K.line,2);
+    glyph(c,cl.kind,left+tile/2,cy,tile*0.28,COLOR(cl.color),null,cl.rotation);
+  });
+  return tile+10;
+}
+function drawSort(c,pic,x,y,w){
+  const h=210, gap=12, tw=(w-gap)/2, top=y+34;
+  [0,1].forEach(t=>{
+    const tx=x+t*(tw+gap);
+    rrect(c,tx,top,tw,y+h-top,16,"#F7F6FC",K.line,2);
+    text(c,t?(pic.rightLabel||"NO"):(pic.leftLabel||"YES"),tx+tw/2,y+22,12,K.muted,800,"center");
+  });
+  const cols=3, cell=tw/cols;
+  (pic.cells||[]).forEach((cl,i)=>{
+    const cx=x+(i%cols)*cell+cell/2, cy=top+16+Math.floor(i/cols)*cell+cell/2;
+    glyph(c,cl.kind,cx,cy,cell*0.28,COLOR(cl.color),LEDGE(cl.color),cl.rotation);
+  });
+  return h;
+}
+function drawSize(c,pic,x,y,w){
+  const h=150, sizes=pic.sizes||[], n=sizes.length||1;
+  const cell=w/n, maxR=Math.min(cell*0.42,46);
+  sizes.forEach((s,i)=>glyph(c,pic.glyph||"star",x+i*cell+cell/2,y+h/2,
+    maxR*s,K.primary,K.primaryLedge));
+  return h;
+}
+function drawFraction(c,pic,x,y,w){
+  const h=176, two=(pic.otherSlices||0)>0;
+  const r=Math.min(72,two?w/4.6:w/2.6), cy=y+h/2;
+  const pie=(cx,n,on,which)=>{
+    const sweep=2*Math.PI/n;
+    for(let i=0;i<n;i++){
+      c.beginPath(); c.moveTo(cx,cy);
+      c.arc(cx,cy,r,-Math.PI/2+i*sweep,-Math.PI/2+(i+1)*sweep); c.closePath();
+      c.fillStyle=i<on?(which?K.accent:K.primary):"#F3F1FB"; c.fill();
+    }
+    c.strokeStyle=K.ledge; c.lineWidth=2.5;
+    for(let i=0;i<n;i++){const a=-Math.PI/2+i*sweep;
+      c.beginPath(); c.moveTo(cx,cy); c.lineTo(cx+r*Math.cos(a),cy+r*Math.sin(a)); c.stroke();}
+    c.lineWidth=3; c.beginPath(); c.arc(cx,cy,r,0,7); c.stroke();
+  };
+  if(two){pie(x+w*0.28,pic.slices,pic.shaded,0); pie(x+w*0.72,pic.otherSlices,pic.otherShaded,1);}
+  else pie(x+w/2,pic.slices,pic.shaded,0);
+  return h;
+}
+
+/* ------------------------------------------------------------- options */
+/* A labelled box with a number in it.
+
+   Code.org teaches this unplugged as an ENVELOPE: a label on the outside, a
+   card inside that can be swapped. The drawing follows that — the name is the
+   label, the number is the card — so the picture agrees with the lesson
+   instead of being an empty grid the child has to ignore. */
+function drawBoxes(c,boxes,x,y,w){
+  const h=84, gap=12, bw=(w-gap*(boxes.length-1))/boxes.length;
+  boxes.forEach(([name,value],i)=>{
+    const bx=x+i*(bw+gap);
+    rrect(c,bx,y,bw,h,18,K.surface,K.primary,2.5);
+    text(c,name,bx+bw/2,y+24,12,K.muted,900,"center");
+    text(c,String(value),bx+bw/2,y+h-18,30,K.primary,900,"center");
+  });
+  return h+4;
+}
+
+/* The step-by-step table. One row per step, the box's value beside it, and
+   one row left blank for the child to work out. This is the representation
+   the UK computing curriculum calls a trace table, given as a worked example
+   with values missing — which is the form the research says works. */
+function drawTrace(c,steps,values,gapRow,boxName,x,y,w){
+  const rowH=40, headH=34, split=x+w*0.62;
+  const h=headH+steps.length*rowH;
+  rrect(c,x,y,w,h,14,K.surface,K.line,2);
+  text(c,"STEP",x+14,y+headH*0.66,11.5,K.muted,900);
+  text(c,boxName||"COINS",split+(x+w-split)/2,y+headH*0.66,11.5,K.muted,900,"center");
+  steps.forEach((label,i)=>{
+    const top=y+headH+i*rowH;
+    if(i>0){ c.fillStyle=K.line; c.fillRect(x+10,top,w-20,1); }
+    text(c,label,x+14,top+rowH/2,13,K.text,600);
+    if(i===gapRow){
+      rrect(c,split+18,top+7,w-(split-x)-36,rowH-14,9,"#F3EFFF",K.primary,2);
+      text(c,"?",split+(x+w-split)/2,top+rowH/2,17,K.primary,900,"center");
+    } else {
+      text(c,String(values[i]),split+(x+w-split)/2,top+rowH/2,16,K.text,800,"center");
+    }
+  });
+  return h+4;
+}
+
+/* The two lists a compare question is ABOUT. Without these the child is shown
+   a bare board and asked whether "these two" end in the same place, with no
+   two of anything on the screen. */
+function compareCards(c,options,x,y,w){
+  const rowH=58, gap=8;
+  options.forEach((prog,i)=>{
+    const ry=y+i*(rowH+gap);
+    rrect(c,x,ry,w,rowH,16,K.surface,K.line,1.5);
+    text(c,String.fromCharCode(65+i),x+22,ry+rowH/2,14,K.muted,900,"center");
+    text(c,"RUN",x+w-16,ry+rowH/2,12,K.primary,900,"right");
+    // chips, sized to their own words so nothing runs together
+    const avail=w-44-46, chipGap=6;
+    let size=9.5, widths;
+    for(;;){
+      c.font=`800 ${size}px Nunito,system-ui,sans-serif`;
+      widths=prog.map(t=>Math.max(14,c.measureText(shortWord(t)).width));
+      const tot=widths.reduce((a,b)=>a+b,0)+chipGap*(prog.length-1);
+      if(tot<=avail||size<=6.5) break;
+      size-=0.5;
+    }
+    let cx=x+44;
+    prog.forEach((t,k)=>{
+      const cw=widths[k], scaf=isScaffold(t);
+      rrect(c,cx,ry+15,cw+10,rowH-30,8,scaf?"#F3EFFF":K.bg,scaf?"#E4DBFF":K.line,1.2);
+      text(c,shortWord(t),cx+(cw+10)/2,ry+rowH/2,size,scaf?K.primary:K.text,800,"center");
+      cx+=cw+10+chipGap;
+    });
+  });
+  return options.length*(rowH+gap);
+}
+
+/* The drag tray: empty boxes to fill, and the steps to fill them with.
+
+   BlockBankView draws a row of slots above a row of chips. Without this the
+   review page showed a board and a listing for every fix/inverse/constrain
+   question and no way to answer it — twenty-two screens that looked broken
+   because the control was missing, not because the question was. */
+function drawBank(c,blocks,slots,x,y,w,reusable){
+  const h=58, gap=6;
+  const sw=(w-gap*(slots-1))/slots;
+  for(let i=0;i<slots;i++){
+    const bx=x+i*(sw+gap);
+    // a ghost box: dashed, empty, waiting
+    c.save(); c.setLineDash([5,5]);
+    rrect(c,bx,y,sw,h,16,K.bg,K.line,2);
+    c.restore();
+  }
+  const ty=y+h+14;
+  const tw=(w-gap*(blocks.length-1))/blocks.length;
+  blocks.forEach((t,i)=>{
+    const bx=x+i*(tw+gap);
+    rrect(c,bx,ty,tw,h,16,K.surface,K.line,1.5);
+    const label=word(t);
+    if(ARROWS[t]){
+      arrow(c,bx+tw/2,ty+h/2-7,8,t,K.text);
+      text(c,label,bx+tw/2,ty+h/2+13,10.5,K.text,800,"center");
+    } else {
+      text(c,label,bx+tw/2,ty+h/2,label.length>7?10.5:12.5,K.text,800,"center");
+    }
+  });
+  return h*2+14;
+}
+
+function textOptions(c,labels,x,y,w){
+  labels.forEach((l,i)=>{
+    const oy=y+i*(62+10);
+    rrect(c,x,oy+4,w,62,16,K.ledge);
+    rrect(c,x,oy,w,62,16,K.surface,K.line,1.5);
+    text(c,l,x+w/2,oy+31,16,K.text,700,"center");
+  });
+  return labels.length*72;
+}
+function numberKeys(c,choices,x,y,w){
+  const n=choices.length||4, gap=10, bw=(w-gap*(n-1))/n;
+  choices.forEach((v,i)=>{
+    const bx=x+i*(bw+gap);
+    rrect(c,bx,y+4,bw,62,16,K.ledge);
+    rrect(c,bx,y,bw,62,16,K.surface,K.line,1.5);
+    text(c,String(v),bx+bw/2,y+31,22,K.text,900,"center");
+  });
+  return 72;
+}
+function cellOptions(c,cells,x,y,w){
+  const n=cells.length||1, gap=10, bw=(w-gap*(n-1))/n;
+  cells.forEach((cl,i)=>{
+    const bx=x+i*(bw+gap);
+    rrect(c,bx,y+4,bw,76,16,K.ledge);
+    rrect(c,bx,y,bw,76,16,K.surface,K.line,1.5);
+    glyph(c,cl.kind,bx+bw/2,y+38,Math.min(bw,76)*0.28,
+      COLOR(cl.color),LEDGE(cl.color),cl.rotation);
+  });
+  return 86;
+}
+function programOptions(c,progs,x,y,w){
+  progs.forEach((p,i)=>{
+    const oy=y+i*(62+10);
+    rrect(c,x,oy+4,w,62,16,K.ledge);
+    rrect(c,x,oy,w,62,16,K.surface,K.line,1.5);
+    text(c,String.fromCharCode(65+i),x+22,oy+31,14,K.muted,900,"center");
+    const avail=w-56, gap=6;
+    let size=9.5, widths=[];
+    for(;;){
+      c.font=`800 ${size}px Nunito, sans-serif`;
+      widths=p.map(t=>ARROWS[t]?Math.max(14,c.measureText(word(t)).width)
+                              :c.measureText(shortWord(t)).width);
+      const tot=widths.reduce((a,b)=>a+b,0)+gap*(p.length-1);
+      if(tot<=avail||size<=6.5)break; size-=0.5;
+    }
+    const tot=widths.reduce((a,b)=>a+b,0)+gap*(p.length-1);
+    let cx=x+44+Math.max(0,(avail-tot)/2);
+    p.forEach((t,k)=>{
+      const wd=widths[k];
+      if(ARROWS[t]){
+        arrow(c,cx+wd/2,oy+31-5,7,t,K.text);
+        text(c,word(t),cx+wd/2,oy+62-11,size,K.muted,600,"center");
+      } else text(c,shortWord(t),cx+wd/2,oy+32,size,K.text,800,"center");
+      cx+=wd+gap;
+    });
+  });
+  return progs.length*72;
+}
+function shortWord(t){
+  if(t==="pick")return "PICK"; if(t==="end")return "END"; if(t==="else")return "ELSE";
+  if(t.startsWith("repeat:"))return "x"+t.split(":")[1];
+  if(t.startsWith("if:"))return "IF";
+  if(t.startsWith("set:")||t.startsWith("add:")){
+    const q=t.split(":"); const n=parseInt(q[2],10);
+    return q[0]==="set"?"="+q[2]:(n<0?String(n):"+"+n);
+  }
+  return word(t);
+}
+
+/* ------------------------------------------------------------- a screen */
+function render(cv,q){
+  const c=cv.getContext("2d");
+  cv.width=W*SC; cv.height=H*SC; c.scale(SC,SC);
+  c.fillStyle=K.bg; c.fillRect(0,0,W,H);
+  c.textBaseline="middle";
+
+  // top chrome: progress pips and the Parent pill
+  for(let i=0;i<8;i++) rrect(c,16+i*30,55,24,11,6,"#E2E1F2");
+  rrect(c,W-78,44,62,34,17,K.surface,K.line,1.5);
+  text(c,"Parent",W-47,61,13,K.muted,800,"center");
+
+  const M=16, CW=W-M*2;
+  let y=100;
+  y=wrap(c,q.prompt,M,y,CW,18,K.text,900,26)+10;
+
+  const pic=q.pic, vis=q.visual, sh=q.shape;
+  const P={c,x:M,w:CW};
+  const put=fn=>{y+=fn+16;};
+
+  if(pic){
+    switch(sh){
+      case "countObjects": put(drawCount(c,pic,M,y,CW)); break;
+      case "tenFrame":     put(drawTenFrame(c,pic,M,y,CW)); break;
+      case "numberLine":   put(drawLine(c,pic,M,y,CW)); break;
+      case "bond":         put(drawBond(c,pic,M,y,CW)); break;
+      case "balance":      put(drawBalance(c,pic,M,y,CW)); break;
+      case "rods":         put(drawRods(c,pic,M,y,CW)); break;
+      case "dice":         put(drawDice(c,pic,M,y,CW)); break;
+      case "mirror":       put(drawMirror(c,pic,M,y,CW)); break;
+      case "shapeHunt":
+      case "shapeCount":   put(drawFigure(c,pic,M,y,CW)); break;
+      case "array":        put(drawArray(c,pic,M,y,CW)); break;
+      case "groups":       put(drawGroups(c,pic,M,y,CW)); break;
+      case "barModel":     put(drawBars(c,pic,M,y,CW)); break;
+      case "fractionWall": put(drawWall(c,pic,M,y,CW)); break;
+      case "pattern":      put(drawPattern(c,pic,M,y,CW)); break;
+      case "oddOneOut":    put(drawOdd(c,pic,M,y,CW)); break;
+      case "sortTwo":      put(drawSort(c,pic,M,y,CW)); break;
+      case "sizeOrder":    put(drawSize(c,pic,M,y,CW)); break;
+      case "fraction":     put(drawFraction(c,pic,M,y,CW)); break;
+    }
+  } else if(sh==="trace"){
+    // The table IS the question. A grid here would be the empty scenery the
+    // review flagged: nothing on it moves and nothing on it is being asked.
+    y+=drawTrace(c,(vis&&vis.program||[]).map(word),q.traceOf||[],
+                 q.gapRow==null?-1:q.gapRow,q.varName,M,y,CW)+14;
+  } else if(vis){
+    const vars=vis.vars&&Object.keys(vis.vars).length?Object.entries(vis.vars):null;
+    // A board with no flag, star, wall, key or door is scenery. For a box
+    // question the box is the subject, so the grid is left out entirely.
+    const hasWorld=!!(vis.goal||(vis.stars||[]).length||(vis.walls||[]).length
+                      ||vis.key||vis.door);
+    if(vars) y+=drawBoxes(c,vars,M,y,CW)+14;
+    const wide=(vis.w||5)>=6||(vis.h||5)>=6;
+    const prog=vis.program||[];
+    const showGrid=!vars||hasWorld;
+    if(!showGrid){
+      if(prog.length) y+=drawListing(c,prog,M,y,CW,true)+10;
+    } else if(prog.length&&!wide){
+      const bw=CW*0.55;
+      drawBoard(c,vis,M,y,bw,190);
+      drawListing(c,prog,M+bw+10,y,CW-bw-10,true);
+      y+=Math.max(190,prog.length*40)+16;
+    } else {
+      y+=drawBoard(c,vis,M,y,CW,wide?260:210)*0+ (wide?260:210) +12;
+      if(prog.length) y+=drawListing(c,prog,M,y,CW,true)+10;
+    }
+    // The two lists a compare question is asking about.
+    if(sh==="compare"&&q.options&&q.options.length)
+      y+=compareCards(c,q.options,M,y,CW)+12;
+  }
+
+  // the answer control
+  if(q.blocks&&q.blocks.length&&q.slots){
+    y+=drawBank(c,q.blocks,q.slots,M,y,CW,q.reusable)+8;
+    if(!q.caption) q=Object.assign({},q,{caption: q.reusable
+      ? "Fill every box, then run it. Steps can be used again."
+      : "Tap the steps to fill the boxes, then run it."});
+  }
+  else if(q.choices&&q.choices.length) y+=numberKeys(c,q.choices,M,y,CW)+8;
+  else if(q.optionCells&&q.optionCells.length) y+=cellOptions(c,q.optionCells,M,y,CW)+8;
+  else if(sh==="balance") y+=textOptions(c,["Left","Right","Same"],M,y,CW)+8;
+  else if(sh==="fraction") y+=textOptions(c,["Left","Right"],M,y,CW)+8;
+  else if(sh==="yesno") y+=textOptions(c,["Yes","No"],M,y,CW)+8;
+  else if(sh==="compare") y+=textOptions(c,["The same square","Different squares"],M,y,CW)+8;
+  else if(q.optionsText&&q.optionsText.length) y+=textOptions(c,q.optionsText,M,y,CW)+8;
+  else if(q.options&&q.options.length) y+=programOptions(c,q.options,M,y,CW)+8;
+
+  if(q.caption) text(c,q.caption,W/2,y+6,13.5,K.muted,600,"center");
+
+  // action bar
+  const by=H-70;
+  rrect(c,M,by+5,96,54,18,K.ledge); rrect(c,M,by,96,54,18,K.surface,K.line,1.5);
+  text(c,"Hint",M+48,by+27,15,K.ink||K.text,700,"center");
+  rrect(c,M+108,by+5,CW-108,54,18,"#B9A0F5");
+  rrect(c,M+108,by,CW-108,54,18,"#C4AEF7");
+  text(c,(q.blocks&&q.blocks.length&&q.slots)?"Run it":"Check",
+       M+108+(CW-108)/2,by+27,17,"#FFFFFF",800,"center");
+}
+
+/* The answer in the words a reviewer needs, not the shape the app grades.
+   Checking 648 pictures for beauty is half a review; the other half is
+   checking that the answer under each one is the true one. */
+function answerWords(q){
+  const a=q.answer; if(!a) return "";
+  const v=a.value;
+  switch(a.type){
+    case "cell":   return `the square ${v[0]} across, ${v[1]} up`;
+    case "number": return String(v);
+    case "bool":
+      return q.shape==="yesno" ? (v?"Yes":"No")
+           : q.shape==="compare" ? (v?"the same square":"different squares")
+           : (v?"yes":"no");
+    case "block":  return `step ${v+1}${q.visual&&q.visual.program?
+                     ' (“'+word(q.visual.program[v])+'”)':""}`;
+    case "option": {
+      const t=q.optionsText&&q.optionsText[v];
+      if(t) return `“${t}”`;
+      const o=q.options&&q.options[v];
+      if(o) return `option ${v+1}: ${o.map(word).join(" · ")}`;
+      return `option ${v+1}`;
+    }
+    case "order":  return Array.isArray(v)?v.map(word).join(" · "):String(v);
+    default:       return JSON.stringify(v);
+  }
+}
+
+/* ------------------------------------------------------------- the wall */
+const $=s=>document.querySelector(s);
+const esc=t=>String(t==null?"":t).replace(/[&<>"]/g,
+  ch=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[ch]));
+const state={sel:new Map()};
+let items=[];
+DATA.skills.forEach(sk=>sk.units.forEach(u=>u.qs.forEach(q=>{
+  q._skill=sk.name; q._skillId=sk.id; q._unit=u.name; q._unitId=u.id; items.push(q);
+})));
+$("#t-total").textContent=items.length;
+$("#t-dup").textContent=items.filter(q=>q.dup).length;
+$("#t-echo").textContent=items.filter(q=>q.echo).length;
+
+const fSkill=$("#f-skill"), fShape=$("#f-shape");
+fSkill.innerHTML='<option value="">Both skills</option>'+
+  DATA.skills.map(s=>`<option value="${s.id}">${s.name}</option>`).join("");
+fShape.innerHTML='<option value="">Every kind</option>'+
+  [...new Set(items.map(q=>q.shape))].sort()
+  .map(s=>`<option value="${s}">${s}</option>`).join("");
+
+const io=new IntersectionObserver(es=>{
+  for(const e of es){
+    if(!e.isIntersecting) continue;
+    const cv=e.target.querySelector("canvas");
+    if(cv&&!cv.dataset.done){ cv.dataset.done="1"; render(cv,JSON.parse(cv.dataset.q)); }
+    io.unobserve(e.target);
+  }
+},{rootMargin:"600px 0px"});
+
+function build(){
+  const sk=fSkill.value, shp=fShape.value, txt=$("#f-text").value.trim().toLowerCase();
+  const dupOnly=$("#f-dup").checked, echoOnly=$("#f-echo").checked,
+        selOnly=$("#f-sel").checked;
+  const keep=q=>(!sk||q._skillId===sk)&&(!shp||q.shape===shp)
+    &&(!txt||(q.prompt||"").toLowerCase().includes(txt))
+    &&(!dupOnly||q.dup)&&(!echoOnly||q.echo)&&(!selOnly||state.sel.has(q.id));
+  const wall=$("#wall"); wall.innerHTML="";
+  let shown=0, lastUnit=null, grid=null;
+  for(const q of items){
+    if(!keep(q)) continue;
+    if(q._unitId!==lastUnit){
+      lastUnit=q._unitId;
+      const sec=document.createElement("section"); sec.className="unit";
+      sec.innerHTML=`<div class="unit-head"><span class="id">${q._unitId}</span>`+
+        `<h2>${q._unit}</h2><span class="note">${q._skill}</span></div>`;
+      grid=document.createElement("div"); grid.className="grid";
+      sec.appendChild(grid); wall.appendChild(sec);
+    }
+    const fig=document.createElement("figure");
+    if(state.sel.has(q.id)) fig.classList.add("sel");
+    fig.innerHTML=
+      `<div class="frame">${q.dup?'<span class="badge">repeat</span>':""}`+
+      `<canvas data-q='${JSON.stringify(q).replace(/'/g,"&#39;")}'></canvas></div>`+
+      `<figcaption class="cap"><span class="qid">${q.id}</span>`+
+      `<span class="tag">${q.shape}</span>`+
+      `${q.dup?'<span class="tag dup">×'+q.dup+"</span>":""}`+
+      `${q.echo&&!q.dup?'<span class="tag">same words ×'+q.echo+"</span>":""}`+
+      `<div class="facts"><span class="ans">answer: ${esc(answerWords(q))}</span>`+
+      `${q.hint?"<br><b>hint:</b> "+esc(q.hint):""}</div>`+
+      `</figcaption>`;
+    fig.querySelector(".frame").addEventListener("click",()=>toggle(q,fig));
+    grid.appendChild(fig); io.observe(fig); shown++;
+  }
+  $("#t-shown").textContent=shown;
+  if(!shown) wall.innerHTML='<p class="empty">Nothing matches those filters.</p>';
+}
+function toggle(q,fig){
+  if(state.sel.has(q.id)) state.sel.delete(q.id);
+  else state.sel.set(q.id,{q,note:""});
+  fig.classList.toggle("sel");
+  paintBasket();
+}
+function paintBasket(){
+  const n=state.sel.size;
+  $("#t-sel").textContent=n; $("#b-count").textContent=n;
+  const body=$("#basket-body");
+  if(!n){ body.innerHTML='<p class="empty">Tap any screen to pick it, then say what to change.</p>'; return; }
+  body.innerHTML="";
+  for(const [id,v] of state.sel){
+    const row=document.createElement("div"); row.className="row";
+    row.innerHTML=`<span class="qid">${id} · ${v.q.shape}</span>`+
+      `<input id="note-${id.replace(/[^\w]/g,'_')}" value="${(v.note||"").replace(/"/g,"&quot;")}" placeholder="What should change here?">`+
+      `<button>Remove</button>`;
+    row.querySelector("input").addEventListener("input",e=>v.note=e.target.value);
+    row.querySelector("button").addEventListener("click",()=>{
+      state.sel.delete(id); build(); paintBasket();
+    });
+    body.appendChild(row);
+  }
+}
+$("#copy").addEventListener("click",async()=>{
+  const lines=[...state.sel].map(([id,v])=>
+    `${id} (${v.q.shape}, ${v.q._skillId}) — ${v.q.prompt}\n    change: ${v.note||"(not said)"}`);
+  const out=lines.length?"Questions to change:\n\n"+lines.join("\n\n"):"Nothing picked.";
+  try{ await navigator.clipboard.writeText(out); $("#copy").textContent="Copied"; }
+  catch{ $("#copy").textContent="Press Ctrl+C"; console.log(out); }
+  setTimeout(()=>$("#copy").textContent="Copy notes for Claude",1400);
+});
+$("#wipe").addEventListener("click",()=>{state.sel.clear();build();paintBasket();});
+$("#basket-bar").addEventListener("click",e=>{
+  if(e.target.tagName==="BUTTON")return;
+  $("#basket").classList.toggle("open");
+});
+["#f-skill","#f-shape","#f-dup","#f-echo","#f-sel"].forEach(s=>$(s).addEventListener("change",build));
+$("#f-text").addEventListener("input",build);
+$("#clear").addEventListener("click",()=>{
+  fSkill.value="";fShape.value="";$("#f-text").value="";
+  $("#f-dup").checked=false;$("#f-echo").checked=false;
+  $("#f-sel").checked=false;build();
+});
+nupo.onload=()=>document.querySelectorAll("canvas[data-done]").forEach(cv=>{
+  render(cv,JSON.parse(cv.dataset.q));
+});
+build(); paintBasket();
+</script>
