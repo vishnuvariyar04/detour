@@ -36,7 +36,8 @@ KEEP = ("shape", "prompt", "hint", "pic", "visual", "truth", "choices",
         "gapRow", "expr", "state", "answer")
 
 SKILLS = [("coder", "Think Like a Coder", "think_like_a_coder.json"),
-          ("number", "Number Sense", "number_sense.json")]
+          ("number", "Number Sense", "number_sense.json"),
+          ("puzzles", "Puzzles & Logic", "puzzles_and_logic.json")]
 
 
 def nupo_b64():
@@ -82,7 +83,12 @@ def main():
             for u in sec["units"]:
                 qs = []
                 for st in u["stops"]:
-                    if not st.get("authored"):
+                    # Was "not authored -> skip", because unauthored used to
+                    # mean an empty skeleton. Band b marks a fully authored stop
+                    # unauthored when the gate cannot draw its shapes yet, and
+                    # those are the ones most needing review, so skip only what
+                    # genuinely has nothing in it.
+                    if not st.get("questions"):
                         continue
                     for i, q in enumerate(st["questions"]):
                         item = {k: q[k] for k in KEEP if k in q}

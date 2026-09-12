@@ -24,6 +24,7 @@ SIX SECONDS. The card sits over the app a child actually wanted to open. A
 question that needs a paragraph read, or two separate ideas held at once, is the
 wrong question for this surface however good it would be on paper.
 """
+import hashlib, json
 
 # The vocabulary the existing views already draw. Staying inside it is what lets
 # band b reuse PlayViews, SortViews and the option rows unchanged.
@@ -46,10 +47,51 @@ def _same(a, b):
              b.get("size", 1)))
 
 
+def _seed(prompt, pic):
+    """A stable number for one question, so builds stay reproducible."""
+    blob = json.dumps([prompt, pic], sort_keys=True, ensure_ascii=False)
+    return int(hashlib.sha256(blob.encode("utf-8")).hexdigest()[:8], 16)
+
+
+def _vary_slot(q):
+    """Move the right answer off whichever slot it would otherwise always sit in.
+
+    Measured on the shipped skills before writing this: EVERY number answer in
+    Think Like a Coder is the second of the four offered -- 100% of 93 -- and 88%
+    of Number Sense's are the third. numkit.near() says in its own docstring that
+    returning the choices in ascending order means "the position of the answer is
+    not a tell", but a window centred on the answer puts it in the same slot every
+    time, so the order never mattered. A child who taps the second number scores
+    full marks on 85 coder questions without reading one of them.
+
+    Fixed for the drawn options by rotating them, which keeps the row's order
+    intact while moving the answer; and for numbers by sliding the window rather
+    than shuffling it, so the four stay in ascending order and stay easy to scan.
+    """
+    v = (q.get("answer") or {}).get("value")
+    if not isinstance(v, int) or isinstance(v, bool):
+        return
+    seed = _seed(q.get("prompt"), q.get("pic"))
+
+    opts = q.get("optionCells")
+    if opts and 0 <= v < len(opts):
+        k = seed % len(opts)
+        q["optionCells"] = [opts[(i - k) % len(opts)] for i in range(len(opts))]
+        q["answer"] = dict(q["answer"], value=(v + k) % len(opts))
+        return
+
+    ch = q.get("choices")
+    if ch and v in ch:
+        below = seed % len(ch)
+        start = max(0, v - below)
+        q["choices"] = [start + i for i in range(len(ch))]
+
+
 def _q(shape, prompt, hint, pic, answer, **extra):
     q = {"shape": shape, "prompt": prompt, "hint": hint, "pic": pic,
          "answer": answer}
     q.update(extra)
+    _vary_slot(q)
     return q
 
 
@@ -123,6 +165,40 @@ def grow_strip(start, step, count):
     return [start + step * i for i in range(count)]
 
 
+def interleaved(prompt, shapes, colours, length, gap, hint=None):
+    """A strip where shape and colour run on DIFFERENT cycles.
+
+    This is the thing that separates band b from band a. Number Sense's patterns
+    are period two on a single property -- star, heart, star, heart -- and a five
+    year old solves them by seeing the repeat without reasoning about it. Two
+    shapes against three colours gives a period of six: long enough that the eye
+    cannot just match it, so the child has to track each cycle separately and put
+    them back together. A child who follows only the shapes, or only the colours,
+    gets a specific wrong answer rather than a random one.
+
+    Which is what the distractors are. The three wrong options are exactly those
+    mistakes -- right shape with the wrong colour, right colour with the wrong
+    shape, and both wrong -- so an answer cannot be reached by tracking half the
+    pattern and guessing the rest.
+    """
+    if len(shapes) < 2 or len(colours) < 2:
+        raise ValueError("an interleaved strip needs at least two of each")
+    if len(shapes) == len(colours):
+        raise ValueError(f"{len(shapes)} shapes against {len(colours)} colours "
+                         f"repeats every {len(shapes)}, the same as one property")
+    cells = [cell(shapes[i % len(shapes)], colours[i % len(colours)])
+             for i in range(length)]
+    want = cells[gap]
+    other_shape = shapes[(shapes.index(want["kind"]) + 1) % len(shapes)]
+    other_colour = [c for c in colours if c != want["color"]][0]
+    options = [cell(want["kind"], want["color"]),
+               cell(want["kind"], other_colour),
+               cell(other_shape, want["color"]),
+               cell(other_shape, other_colour)]
+    return pattern(prompt, cells, gap, options,
+                   hint or "Follow the shapes and the colours separately.")
+
+
 def skip_line(prompt, to, start, step, hops, hint=None):
     """Hops of the same size along a number line.
 
@@ -182,6 +258,64 @@ def odd_one_out(prompt, cells, hint=None):
               {"type": "int", "value": odd[0]})
 
 
+def odd_readings(cells):
+    """Every property on which exactly one cell differs and the rest agree.
+
+    Band a's odd-one-out has all four cells identical but for one, so a single
+    full-signature comparison finds it. Band b makes the other properties noise
+    on purpose, so the outlier has to be found one property at a time -- and if
+    TWO properties each single out a DIFFERENT cell, the question has two
+    defensible answers and must not ship.
+    """
+    out = []
+    for prop in ("kind", "color", "rotation"):
+        vals = [c.get(prop, 0) for c in cells]
+        counts = {}
+        for v in vals:
+            counts[v] = counts.get(v, 0) + 1
+        lone = [i for i, v in enumerate(vals) if counts[v] == 1]
+        common = [v for v, n in counts.items() if n == len(cells) - 1]
+        if len(lone) == 1 and len(common) == 1:
+            out.append((prop, lone[0]))
+    return out
+
+
+def odd_by(prompt, cells, prop, hint=None):
+    """Odd one out where the OTHER properties are deliberately noisy.
+
+    Number Sense's odd-one-out gives four cells identical but for one, so the
+    outlier pops without any reasoning. Here only [prop] is shared -- five
+    triangles in four different colours and one square -- so the child must
+    decide which property matters before they can find the one that breaks it.
+    That is the "and why" the unit is named for, and it is a different question
+    from the band a version even though it is the same drawing.
+
+    Exactly one cell may differ on [prop], and every other cell must agree on it.
+    """
+    vals = [c[prop] for c in cells]
+    counts = {}
+    for v in vals:
+        counts[v] = counts.get(v, 0) + 1
+    lone = [i for i, v in enumerate(vals) if counts[v] == 1]
+    common = [v for v, n in counts.items() if n == len(cells) - 1]
+    if len(lone) != 1 or len(common) != 1:
+        raise ValueError(f"odd-by-{prop} is ambiguous: {vals}")
+    # The noise must be real noise, or this is just the band a question again.
+    noisy = [k for k in ("kind", "color") if k != prop
+             and len({c[k] for c in cells}) > 1]
+    if not noisy:
+        raise ValueError(f"every cell agrees on everything but {prop}; nothing "
+                         f"to see past, so this is a band a question")
+    others = [(pr, i) for pr, i in odd_readings(cells)
+              if pr != prop and i != lone[0]]
+    if others:
+        raise ValueError(f"ambiguous: odd by {prop} is cell {lone[0]}, but "
+                         f"{others} single out a different cell")
+    return _q("oddOneOut", prompt, hint or "Decide what they share first.",
+              {"kind": "oddOneOut", "cells": cells},
+              {"type": "int", "value": lone[0]})
+
+
 def sort_two(prompt, cells, rule, left_label, right_label, hint=None):
     """Two trays, and [rule] decides which tray each shape belongs in.
 
@@ -215,10 +349,29 @@ def yes_no(prompt, cells, rule, hint=None):
 
 
 def size_order(prompt, sizes, glyph=STAR, hint=None):
-    """Tap smallest first. The order is computed, never written out."""
+    """Tap smallest first. The order is computed, never written out.
+
+    [sizes] are FRACTIONS OF THE LARGEST RADIUS, 0.15 to 1.0 -- not ranks. Both
+    SizeOrderView and the review wall multiply a maximum radius by this number,
+    so passing 1, 2, 3, 4 draws the last shape at four times full size and it
+    runs off the card. That shipped in the first draft of this skill and was
+    spotted on the wall; the range check below is why it cannot come back.
+
+    Neighbouring sizes must also differ enough to be told apart at a glance, or
+    the question has no defensible answer.
+    """
     if len(set(sizes)) != len(sizes):
         raise ValueError(f"two shapes are the same size ({sizes}); the order is "
                          f"not decidable")
+    for v in sizes:
+        if not (0.15 <= v <= 1.0):
+            raise ValueError(f"size {v} is outside 0.15-1.0; these are fractions "
+                             f"of the largest radius, not ranks, and this would "
+                             f"draw off the card")
+    ordered = sorted(sizes)
+    tight = [(a, b) for a, b in zip(ordered, ordered[1:]) if b - a < 0.12]
+    if tight:
+        raise ValueError(f"sizes {tight} are too close to tell apart by eye")
     return _q("sizeOrder", prompt, hint or "Find the smallest one first.",
               {"kind": "sizeOrder", "sizes": list(sizes), "glyph": glyph},
               {"type": "ints",

@@ -621,6 +621,62 @@ function drawSize(c,pic,x,y,w){
     maxR*s,K.primary,K.primaryLedge));
   return h;
 }
+// ---- band b: Puzzles & Logic ---------------------------------------------
+// An analogy item can carry a count and a size as well as a shape and a colour,
+// because "one becomes three" and "small becomes big" are relations a seven
+// year old can see, and neither of them fits in a plain cell.
+function drawItem(c,it,cx,cy,r){
+  const n=it.n||1, sz=it.size||1, rr=r*(sz>1?1.3:0.85);
+  if(n<=1){ glyph(c,it.kind,cx,cy,rr,COLOR(it.color),LEDGE(it.color),it.rotation); return; }
+  const small=rr*0.6, step=small*1.5, span=step*(n-1);
+  for(let i=0;i<n;i++)
+    glyph(c,it.kind,cx-span/2+i*step,cy,small,COLOR(it.color),LEDGE(it.color),it.rotation);
+}
+function drawAnalogy(c,pic,x,y,w){
+  const rowH=78, h=rowH*2+16, colW=w/3, r=27;
+  const rows=[[pic.a,pic.b,false],[pic.c,null,true]];
+  rows.forEach(function(row,ri){
+    const left=row[0], right=row[1], isGap=row[2];
+    const cy=y+rowH/2+ri*(rowH+16);
+    drawItem(c,left,x+colW*0.5,cy,r);
+    text(c,"→",x+colW*1.5,cy,25,K.muted,900,"center");
+    if(!isGap){ drawItem(c,right,x+colW*2.5,cy,r); }
+    else{
+      const gx=x+colW*2.5;
+      c.save(); c.setLineDash([7,6]); c.strokeStyle=K.primary; c.lineWidth=3;
+      c.beginPath(); c.roundRect(gx-r,cy-r,r*2,r*2,r*0.4); c.stroke(); c.restore();
+      text(c,"?",gx,cy,r*1.1,K.primary,900,"center");
+    }
+  });
+  return h;
+}
+// A key of symbol to number, then the row that uses it. When the row has a gap
+// the total is given instead, and that is what makes it two steps.
+function drawCode(c,pic,x,y,w){
+  const key=pic.key||[], row=pic.row||[];
+  const kw=Math.min(w/Math.max(key.length,1),100), kx=x+(w-kw*key.length)/2;
+  key.forEach(function(k,i){
+    const cx=kx+i*kw+kw/2;
+    glyph(c,k.glyph,cx-15,y+26,17,K.primary,K.primaryLedge);
+    text(c,"= "+k.n,cx+17,y+26,17,K.text,900,"center");
+  });
+  const top=y+64;
+  c.save(); c.strokeStyle=K.line; c.lineWidth=2;
+  c.beginPath(); c.moveTo(x+12,top-12); c.lineTo(x+w-12,top-12); c.stroke(); c.restore();
+  const hasTotal=(pic.total!==null&&pic.total!==undefined);
+  const slots=row.length+(hasTotal?1:0);
+  const sw=Math.min(w/Math.max(slots,1),86), sx=x+(w-sw*slots)/2;
+  row.forEach(function(g,i){
+    const cx=sx+i*sw+sw/2, cy=top+36;
+    if(i===pic.gapAt){
+      c.save(); c.setLineDash([7,6]); c.strokeStyle=K.primary; c.lineWidth=3;
+      c.beginPath(); c.roundRect(cx-24,cy-24,48,48,10); c.stroke(); c.restore();
+      text(c,"?",cx,cy,26,K.primary,900,"center");
+    } else glyph(c,g,cx,cy,22,K.primary,K.primaryLedge);
+  });
+  if(hasTotal) text(c,"= "+pic.total,sx+row.length*sw+sw/2,top+36,20,K.text,900,"center");
+  return 64+76;
+}
 function drawFraction(c,pic,x,y,w){
   const h=176, two=(pic.otherSlices||0)>0;
   const r=Math.min(72,two?w/4.6:w/2.6), cy=y+h/2;
@@ -854,6 +910,9 @@ function render(cv,q){
       case "pattern":      put(drawPattern(c,pic,M,y,CW)); break;
       case "oddOneOut":    put(drawOdd(c,pic,M,y,CW)); break;
       case "sortTwo":      put(drawSort(c,pic,M,y,CW)); break;
+      case "analogy":      put(drawAnalogy(c,pic,M,y,CW)); break;
+      case "codeRead":
+      case "codePick":     put(drawCode(c,pic,M,y,CW)); break;
       case "sizeOrder":    put(drawSize(c,pic,M,y,CW)); break;
       case "fraction":     put(drawFraction(c,pic,M,y,CW)); break;
     }
