@@ -88,7 +88,11 @@ for si,(stitle,ssub,units) in enumerate(SECTIONS, start=1):
         sec["units"].append(unit)
     out["sections"].append(sec)
 
-path = r"C:\dev\detour\brainpass\assets\curriculum\think_like_a_coder.json"
+# Resolved relative to this file, the way ns_emit.py does it. This was an
+# absolute C:\dev path, which on a non-Windows machine is a valid FILENAME:
+# the emit silently wrote a junk file here and left the real asset stale.
+HERE = os.path.dirname(os.path.abspath(__file__))
+path = os.path.join(HERE, "..", "..", "assets", "curriculum", "think_like_a_coder.json")
 io.open(path,"w",encoding="utf-8").write(json.dumps(out, indent=1, ensure_ascii=False))
 
 stops = sum(len(u["stops"]) for s in out["sections"] for u in s["units"])

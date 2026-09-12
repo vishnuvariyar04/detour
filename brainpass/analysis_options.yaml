@@ -9,6 +9,14 @@
 # packages, and plugins designed to encourage good coding practices.
 include: package:flutter_lints/flutter.yaml
 
+# Added automatically by `flutter pub get` on Flutter 3.47. Kept (it stops the
+# analyzer walking build output and the Kotlin tree) but moved below the include
+# so the comment above still belongs to the line it describes.
+analyzer:
+  exclude:
+    - build/**
+    - android/**
+
 linter:
   # The lint rules applied to this project can be customized in the
   # section below to disable rules from the `package:flutter_lints/flutter.yaml`
