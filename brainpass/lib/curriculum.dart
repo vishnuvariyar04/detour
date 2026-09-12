@@ -40,7 +40,11 @@ class Curriculum {
   static Curriculum _fromJson(Map<String, dynamic> json) => Curriculum(
         id: json['id'] as String? ?? '',
         name: json['name'] as String? ?? '',
-        band: json['band'] as String? ?? '',
+        // Lowercased here so every comparison downstream is case-safe.
+        // Curriculum.kt lowercases too; when this did not, an uppercase
+        // "band" in the asset made load() pick a different skill than the
+        // gate served, and the roadmap drew a path the child was not on.
+        band: (json['band'] as String? ?? '').toLowerCase(),
         ages: json['ages'] as String? ?? '',
         promise: json['promise'] as String? ?? '',
         sections: (json['sections'] as List? ?? [])

@@ -113,10 +113,19 @@ factors, order of operations, `√49`–`√144`, ratio and rates, mean/median/m
 
 ## Two constraints the Ladder does not mention
 
-**The count pad stops at 9.** Any answer above 9 cannot be tapped on the number
-pad, and the checker rejects it as an answer a child cannot physically give. The
-nth term, binary values, squares and roots all want bigger numbers — pose them
-as multiple choice, or agree on a new input before authoring.
+**Numbers are tapped, not typed — but they are not capped at 9.** An earlier
+version of this file said the count pad stopped at 9 and that band d therefore
+needed a new input. That was checked against the code on 2026-09-12 and is
+wrong. Numbers are answered by tapping one of FOUR drawn options
+(`numberChoices`, CoderGate.kt:1199 — "This was a typed keypad"), so the
+value is whatever the author chose. The shipped coder skill already has
+`count` answers up to 20 with choices up to 22, and `numkit.count_objects`
+draws its distractors from `near(n, 0, 20)`. Every check passes on that data;
+there is no 1-9 rule anywhere in the toolchain.
+
+What still holds is the *shape*: an answer is one of four drawn options, so a
+question must have three plausible wrong numbers as well as a right one. The
+nth term, binary values, squares and roots are all fine.
 
 **Everything must work in about six seconds, silently, over another app.** That
 was the original filter for the eight strands and it still applies. A question

@@ -345,10 +345,11 @@ screenshot shows the settled state. Use video:
 
 ## 8. Inherited problems — read before you copy anything
 
-These are real and unfixed **today**. Two of them are patterns you would
-otherwise copy straight into the new skills.
+8.1, 8.2, 8.3 and 8.6 were **fixed on 2026-09-12** and are kept here with what
+the fix was, because two of them are conventions the new skills must follow.
+8.4 and 8.5 are still open and are decisions, not bugs.
 
-### 8.1 `band` is uppercase in the coder skill, and Dart does not lowercase it
+### 8.1 ~~`band` is uppercase~~ — FIXED 2026-09-12
 
 `think_like_a_coder.json` has `"band": "C"`. `Curriculum.kt:335` calls
 `.lowercase()`; `lib/curriculum.dart:43` does not. Because `'C'` (0x43) sorts
@@ -357,10 +358,13 @@ child: the gate serves Think Like a Coder while the roadmap draws Number Sense.
 The file's own header comment says the two "can never describe two different
 curricula" — right now they do.
 
-Fix: `"band": "c"` in the JSON, and `.toLowerCase()` in the Dart for safety.
+Fixed at both ends: `data.py` now declares `"band": "c"`, and
+`lib/curriculum.dart` lowercases the skill band in `_fromJson` so the asset can
+never decide this again. Confirmed live before the fix — a band-c child got
+Number Sense on the roadmap and the coder skill in the gate.
 **Write the new skills' bands lowercase.**
 
-### 8.2 Number Sense section and unit names do not render
+### 8.2 ~~Number Sense section and unit names do not render~~ — FIXED 2026-09-12
 
 `number_sense.json` emits `name` / `promise` on sections and `name` on units.
 Both readers want `title` / `subtitle` / `title`
@@ -368,17 +372,26 @@ Both readers want `title` / `subtitle` / `title`
 and unit label on the Number Sense roadmap is therefore **blank** —
 `roadmap_screen.dart:524,533,571` renders empty strings.
 
-Fix: emit `title` / `subtitle`. **Use `title` in the new skills.**
+Fixed: `ns_emit.py` now emits `title` / `subtitle` on sections and `title` on
+units, so both skills carry identical key shapes. The skill-level `name` /
+`promise` were always correct and were left alone.
+**Use `title` / `subtitle` in the new skills.**
 
-### 8.3 `fits.py` currently fails
+### 8.3 ~~`fits.py` currently fails~~ — FIXED 2026-09-12
 
 ```
 FAIL 3.2.3#5: "IF NO WALL RIGHT" needs 108dp, has 92dp (depth 1, column 134dp)
 1 row(s) will clip
 ```
 
-One label in the coder skill will clip on the phone. It is committed and
-unfixed. Shorten the token or widen the column before this compounds.
+Fixed in the content, not the layout. A `rep()` wrapper puts the check at
+depth 1, where the 134dp side-by-side column leaves a scaffold row 92dp;
+"IF NO WALL RIGHT" measures 107.5dp. `_c3` in `u32.py` is now a 6-wide board,
+which stacks the listing full width (278dp) — the same reason `_c2` directly
+above it is already 6-wide. Nupo never passes x=3, so the answer is unchanged;
+the whole asset diff was `"w": 5` to `"w": 6`. `fits.py` is now green.
+
+The general rule: **a `rep()`- or `if`-nested listing wants a 6-wide board.**
 
 ### 8.4 Finishing a skill falls back to random questions
 
@@ -392,11 +405,18 @@ The coder skill plays a worked example before each stop; Number Sense just
 shows the sentence. The pictures to build demos from now exist. Decide early
 whether the new skills get demos — it is much cheaper to author them up front.
 
-### 8.6 A docstring disagrees with the data
+### 8.6 ~~A docstring disagrees with the data~~ — FIXED 2026-09-12
 
-`ns_units.py:2` says Number Sense is "ages 7-8"; the JSON says band `a`,
-ages `5-6`; the README says "ages 5-8". Settle which is true before band b
-lands next to it, or the two will overlap.
+`ns_units.py:2` said Number Sense was "ages 7-8" while `ns_emit.py` emits band
+`a` / ages `5-6`. Settled in favour of the asset, since that is what the gate
+serves: the docstring now reads band a, ages 5-6, and says that 7-8 is band b's
+territory. (The claimed "README says ages 5-8" was not there — no README in this
+repo makes that claim.)
+
+One cosmetic inconsistency is left deliberately: `number_sense.json` has
+`"ages": "5-6"` with a hyphen while `think_like_a_coder.json` has `"9–10"` with
+an en dash. Both are parent-facing on the roadmap. Worth settling when a copy
+pass happens, not worth a content re-emit on its own.
 
 ---
 
@@ -427,9 +447,9 @@ Current state: everything green **except `fits.py`** (§8.3).
 - a build-a-list puzzle that cannot reach the goal — or where *every*
   arrangement can, which teaches nothing
 - a missing hint, or a "first step that fails" index that is not the first
-- **an answer a child cannot physically give** — a count above 9 (the pad stops
-  there) or a square behind a wall (taps on walls are ignored). Either traps a
-  child on a question with no way forward.
+- **an answer a child cannot physically give** — a square behind a wall (taps
+  on walls are ignored) traps a child on a question with no way forward. Note
+  there is NO upper bound on a number answer; see the note below.
 - a question every answer passes, or one where a wrong answer is accepted
 - a teach card whose demo board is one of its own question boards — the
   animation would play the answer before the question is asked
@@ -438,9 +458,17 @@ Current state: everything green **except `fits.py`** (§8.3).
   everything wrong, because a child who gets everything wrong must still reach
   the end.
 
-> **The count pad stops at 9.** This bites band d hardest — nth term, binary
-> values, squares and roots all want answers above 9. Either pose them as
-> multiple choice, or build a new input and say so early.
+> **Numbers are not capped at 9.** This guide used to warn that the count pad
+> stopped at 9 and that band d would need a new input. Verified against the code
+> on 2026-09-12: false. Numbers are answered by tapping one of FOUR drawn options
+> (`numberChoices`, CoderGate.kt:1199 — "This was a typed keypad"), so the
+> value is whatever the author chose. The shipped coder skill already has
+> `count` answers up to 20 with choices up to 22, and `numkit.count_objects`
+> draws its distractors from `near(n, 0, 20)`. Every check passes on that data;
+> there is no 1-9 rule anywhere in the toolchain.
+>
+> The real constraint is that every number answer needs three plausible wrong
+> options beside it. Band d's nth term, binary, squares and roots are fine.
 
 ### The two-simulator rule
 

@@ -120,7 +120,7 @@ _c1gap = g(5, 5, (0, 0), goal=(1, 0), walls=[(0, 1)],
            program=["if:not-wall-up", U, "else", "?", "end"])
 _c2 = g(6, 6, (0, 0), stars=[(0, 1), (0, 3)], mustPick=True,
         program=rep(4, [U, "if:not-star", R, "end"]))
-_c3 = g(5, 5, (0, 0), goal=(3, 0), walls=[(1, 1), (2, 1)],
+_c3 = g(6, 5, (0, 0), goal=(3, 0), walls=[(1, 1), (2, 1)],
         program=rep(3, ["if:not-wall-right", R, "else", U, "end"]))
 
 S323 = [

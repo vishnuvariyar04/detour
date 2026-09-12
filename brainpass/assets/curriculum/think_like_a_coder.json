@@ -1,7 +1,7 @@
 {
  "id": "think_like_a_coder",
  "name": "Think Like a Coder",
- "band": "C",
+ "band": "c",
  "ages": "9–10",
  "promise": "Your child will read a program, spot the bug, and think in loops and conditions — the thinking behind every game they play.",
  "sections": [
@@ -8011,7 +8011,7 @@
          },
          "criterion": "reachesFlag",
          "visual": {
-          "w": 5,
+          "w": 6,
           "h": 5,
           "start": [
            0,

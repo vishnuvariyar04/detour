@@ -7,12 +7,12 @@
  "sections": [
   {
    "n": 1,
-   "name": "Counting",
-   "promise": "Every number is a pile you can count.",
+   "title": "Counting",
+   "subtitle": "Every number is a pile you can count.",
    "units": [
     {
      "n": 1,
-     "name": "How many",
+     "title": "How many",
      "stops": [
       {
        "id": "1.1.1",
@@ -635,7 +635,7 @@
     },
     {
      "n": 2,
-     "name": "More and fewer",
+     "title": "More and fewer",
      "stops": [
       {
        "id": "1.2.1",
@@ -1222,7 +1222,7 @@
     },
     {
      "n": 3,
-     "name": "Where numbers live",
+     "title": "Where numbers live",
      "stops": [
       {
        "id": "1.3.1",
@@ -1938,12 +1938,12 @@
   },
   {
    "n": 2,
-   "name": "Making numbers",
-   "promise": "Numbers are made of other numbers.",
+   "title": "Making numbers",
+   "subtitle": "Numbers are made of other numbers.",
    "units": [
     {
      "n": 1,
-     "name": "Parts of a number",
+     "title": "Parts of a number",
      "stops": [
       {
        "id": "2.1.1",
@@ -2562,7 +2562,7 @@
     },
     {
      "n": 2,
-     "name": "Past ten",
+     "title": "Past ten",
      "stops": [
       {
        "id": "2.2.1",
@@ -3157,7 +3157,7 @@
     },
     {
      "n": 3,
-     "name": "Tens and pieces",
+     "title": "Tens and pieces",
      "stops": [
       {
        "id": "2.3.1",
@@ -3753,12 +3753,12 @@
   },
   {
    "n": 3,
-   "name": "Looking",
-   "promise": "Shapes, patterns and the odd one out.",
+   "title": "Looking",
+   "subtitle": "Shapes, patterns and the odd one out.",
    "units": [
     {
      "n": 1,
-     "name": "Odd one out",
+     "title": "Odd one out",
      "stops": [
       {
        "id": "3.1.1",
@@ -4983,7 +4983,7 @@
     },
     {
      "n": 2,
-     "name": "Shapes inside shapes",
+     "title": "Shapes inside shapes",
      "stops": [
       {
        "id": "3.2.1",
@@ -7367,7 +7367,7 @@
     },
     {
      "n": 3,
-     "name": "Rules and order",
+     "title": "Rules and order",
      "stops": [
       {
        "id": "3.3.1",
@@ -8757,12 +8757,12 @@
   },
   {
    "n": 4,
-   "name": "Putting it together",
-   "promise": "Everything so far, mixed up.",
+   "title": "Putting it together",
+   "subtitle": "Everything so far, mixed up.",
    "units": [
     {
      "n": 1,
-     "name": "Bigger numbers",
+     "title": "Bigger numbers",
      "stops": [
       {
        "id": "4.1.1",
@@ -9397,7 +9397,7 @@
     },
     {
      "n": 2,
-     "name": "Parts and pieces",
+     "title": "Parts and pieces",
      "stops": [
       {
        "id": "4.2.1",
@@ -10433,7 +10433,7 @@
     },
     {
      "n": 3,
-     "name": "All of it",
+     "title": "All of it",
      "stops": [
       {
        "id": "4.3.1",

@@ -6,10 +6,13 @@ further and checks that the gate can actually ask each question and that a child
 can actually give the answer:
 
   RENDER      every field CoderGate reads for that shape is present
-  ANSWERABLE  the answer can be expressed with the controls on screen — the
-              number pad only has 1-9, and GridBotView refuses taps on a wall,
-              so an answer of 12 or a cell behind a wall is unanswerable and
-              would trap a child on a question forever
+  ANSWERABLE  the answer can be expressed with the controls on screen —
+              GridBotView refuses taps on a wall, so a cell behind a wall is
+              unanswerable and would trap a child on a question forever.
+              (This said "the number pad only has 1-9, so an answer of 12 is
+              unanswerable". That keypad was replaced by four tappable options
+              years of commits ago; this file happily passes answers up to 20
+              today and enforces no such bound.)
   GRADING     feeding the stored answer through the same logic as
               CoderGate.submit() marks it right, and a wrong answer marks it
               wrong (a question that accepts anything teaches nothing)

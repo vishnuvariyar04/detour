@@ -197,8 +197,8 @@ def build():
                             pic["parts"] = _F.parts_json(pic["figure"])
                         stop["teach"]["pic"] = pic
                 stops.append(stop)
-            units.append({"n": un, "name": UNITS[uid], "stops": stops})
-        sections.append({"n": sn, "name": sname, "promise": spromise,
+            units.append({"n": un, "title": UNITS[uid], "stops": stops})
+        sections.append({"n": sn, "title": sname, "subtitle": spromise,
                          "units": units})
 
     return {

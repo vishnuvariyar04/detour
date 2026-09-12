@@ -91,5 +91,7 @@ Three things are genuinely undecided and are yours to raise, not to guess:
 2. **Band D's 3D section** — nets, rotation, cross-sections — would be the first
    true 3D drawing in the app. Prove one on a phone before authoring twelve
    stops that depend on it.
-3. **The count pad stops at 9.** Band D wants answers above that. Either pose
-   those as multiple choice or agree on a new input, early.
+3. ~~**The count pad stops at 9.**~~ **Resolved 2026-09-12 — no action needed.**
+   Checked against the code: numbers are tapped as one of four drawn options and
+   carry no upper bound (see 01_BUILD_GUIDE.md §9). Band D's nth term, binary,
+   squares and roots need no new input.

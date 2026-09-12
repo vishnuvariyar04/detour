@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
-"""Number Sense — 48 stops, 324 questions, ages 7-8.
+"""Number Sense — 48 stops, 324 questions, band a, ages 5-6.
+
+The docstring said "ages 7-8" while ns_emit.py emits band "a" / ages "5-6".
+Corrected to match the asset, which is what the gate actually serves. 7-8 is
+band b (Puzzles & Logic) and must not overlap this file.
 
 Three rules hold everywhere in this file.
 

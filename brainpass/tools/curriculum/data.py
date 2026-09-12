@@ -7,7 +7,11 @@
 
 SKILL = {
     "name": "Think Like a Coder",
-    "band": "C",
+    # Lowercase. Curriculum.kt lowercases before comparing but
+    # lib/curriculum.dart did not, and 'C' (0x43) sorts below 'a' (0x61), so
+    # an uppercase band made the roadmap pick Number Sense for a band-c child
+    # while the gate served this skill.
+    "band": "c",
     "ages": "9–10",
     "promise": "Your child will read a program, spot the bug, and think in loops "
                "and conditions — the thinking behind every game they play.",

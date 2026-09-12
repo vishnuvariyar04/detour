@@ -51,9 +51,10 @@ simulator and rejects:
 
 `simulate.py` adds the checks a phone test would not reliably find:
 
-- an answer a child cannot physically give — a count above 9 (the pad stops
-  there) or a square behind a wall (GridBotView ignores taps on walls). Either
-  one traps a child on a question with no way forward.
+- an answer a child cannot physically give — a square behind a wall
+  (GridBotView ignores taps on walls) traps a child with no way forward. There
+  is no upper bound on a number answer: the `count` row above is four tappable
+  options, not a 1-9 keypad, and shipped answers already go to 20.
 - a question every answer passes, or one where a wrong answer is accepted
 - a teach card whose demo board is one of its own question boards, so the
   animation plays the answer before the question is asked
