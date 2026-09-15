@@ -359,33 +359,32 @@ S222 = [
 ]
 
 S223 = [
-    odd_by(P_ODD, [cell(TRIANGLE), cell(CIRCLE, ACCENT), cell(SQUARE),
-                   cell(HEART, ACCENT, 90), cell(HEXAGON)], "rotation"),
-    odd_by(P_ODD, [cell(STAR, ACCENT, 90), cell(DIAMOND, PRIMARY, 90),
-                   cell(HEART, PRIMARY, 90), cell(FLOWER, ACCENT),
-                   cell(CIRCLE, PRIMARY, 90)], "rotation"),
-    odd_by(P_ODD, [cell(SQUARE, PRIMARY, 45), cell(TRIANGLE, ACCENT, 45),
-                   cell(HEXAGON, PRIMARY, 45), cell(DIAMOND, ACCENT),
-                   cell(STAR, PRIMARY, 45), cell(FLOWER, ACCENT, 45)], "rotation"),
-    odd_by(P_ODD, [cell(HEART), cell(STAR, ACCENT), cell(TRIANGLE),
-                   cell(HEXAGON, ACCENT, 180), cell(CIRCLE)], "rotation"),
-    odd_by(P_ODD, [cell(FLOWER, ACCENT, 180), cell(SQUARE, PRIMARY, 180),
-                   cell(DIAMOND, ACCENT, 180), cell(TRIANGLE, PRIMARY),
-                   cell(HEART, ACCENT, 180)], "rotation"),
-    odd_by(P_ODD, [cell(CIRCLE, PRIMARY, 90), cell(HEXAGON, ACCENT, 90),
-                   cell(STAR, PRIMARY), cell(HEART, ACCENT, 90),
-                   cell(SQUARE, PRIMARY, 90), cell(FLOWER, ACCENT, 90)], "rotation"),
-    odd_by(P_ODD, [cell(DIAMOND, ACCENT), cell(TRIANGLE, PRIMARY),
-                   cell(HEXAGON, ACCENT), cell(SQUARE, PRIMARY, 45),
-                   cell(CIRCLE, ACCENT)], "rotation"),
+    odd_by(P_ODD, [cell(TRIANGLE), cell(HEART, ACCENT), cell(STAR),
+                   cell(TRIANGLE, ACCENT), cell(HEART, PRIMARY, 90)], "rotation"),
+    odd_by(P_ODD, [cell(HEART, PRIMARY, 90), cell(TRIANGLE, ACCENT, 90),
+                   cell(HEART, ACCENT, 90), cell(TRIANGLE, PRIMARY, 90),
+                   cell(STAR)], "rotation"),
+    odd_by(P_ODD, [cell(TRIANGLE, PRIMARY, 180), cell(TRIANGLE, ACCENT, 180),
+                   cell(HEART, PRIMARY, 180), cell(HEART, ACCENT, 180),
+                   cell(TRIANGLE), cell(STAR, PRIMARY, 180)], "rotation"),
+    odd_by(P_ODD, [cell(HEART, ACCENT), cell(TRIANGLE), cell(STAR, ACCENT),
+                   cell(TRIANGLE, PRIMARY, 270), cell(HEART)], "rotation"),
+    odd_by(P_ODD, [cell(TRIANGLE, ACCENT), cell(HEART), cell(TRIANGLE),
+                   cell(HEART, ACCENT), cell(STAR, PRIMARY, 180)], "rotation"),
+    odd_by(P_ODD, [cell(HEART, PRIMARY, 270), cell(TRIANGLE, ACCENT, 270),
+                   cell(HEART, ACCENT, 270), cell(TRIANGLE, PRIMARY, 270),
+                   cell(HEART), cell(TRIANGLE, PRIMARY, 270)], "rotation"),
+    odd_by(P_ODD, [cell(TRIANGLE), cell(HEART, ACCENT),
+                   cell(TRIANGLE, ACCENT, 180), cell(HEART), cell(STAR, ACCENT)],
+           "rotation"),
 ]
 
 S224 = [
     odd_by(P_ODD, [_TRy, _HXy, _CIy, _SQ, _FLy], "color"),
     odd_by(P_ODD, [_HE, _HEy, _HE, _ST, _HEy, _HE], "kind"),
-    odd_by(P_ODD, [cell(STAR, PRIMARY, 180), cell(CIRCLE, ACCENT, 180),
-                   cell(TRIANGLE, PRIMARY, 180), cell(FLOWER, ACCENT),
-                   cell(DIAMOND, PRIMARY, 180)], "rotation"),
+    odd_by(P_ODD, [cell(HEART, ACCENT, 90), cell(TRIANGLE, PRIMARY, 90),
+                   cell(HEART, PRIMARY, 90), cell(TRIANGLE, ACCENT),
+                   cell(TRIANGLE, ACCENT, 90)], "rotation"),
     sort_two(P_SORT, [_ST, _STy, _HX, _HXy, _CI, _CIy],
              lambda c: _pointy(c) and not _y(c), "PURPLE, POINTY", "THE REST"),
     odd_by(P_ODD, [_DI, _SQ, _HX, _CI, _FLy, _TR], "color"),
@@ -413,6 +412,11 @@ def analogy2(prompt, a, c, r1, r2, hint=None):
     a child who spots only one of the two changes lands on a wrong option rather
     than stumbling onto the right one.
     """
+    from puzzles_kit import _same
+    for part, rel in (("first", r1), ("second", r2)):
+        if _same(rel(a), a):
+            raise ValueError(f"the {part} change is invisible on {a['kind']}, so "
+                             f"the child is never shown it but graded on it")
     return analogy(prompt, a, c, _both(r1, r2),
                    [_both(r1, r2)(c), r1(c), r2(c), dict(c)], hint)
 
@@ -426,9 +430,9 @@ S311 = [
             [item(SQUARE, n=2), item(SQUARE), item(SQUARE, n=3), item(CIRCLE, n=2)]),
     analogy(P_AN, item(TRIANGLE), item(DIAMOND), rel_bigger,
             [item(DIAMOND, size=2), item(DIAMOND), item(TRIANGLE, size=2), item(HEXAGON, size=2)]),
-    analogy(P_AN, item(HEXAGON), item(FLOWER), rel_turn,
-            [item(FLOWER, rotation=90), item(FLOWER), item(HEXAGON, rotation=90),
-             item(FLOWER, rotation=180)]),
+    analogy(P_AN, item(TRIANGLE), item(HEART), rel_turn,
+            [item(HEART, rotation=90), item(HEART), item(TRIANGLE, rotation=90),
+             item(HEART, rotation=180)]),
     analogy(P_AN, item(HEART, ACCENT), item(STAR, ACCENT), rel_colour,
             [item(STAR), item(STAR, ACCENT), item(HEART), item(CIRCLE)]),
     analogy(P_AN, item(SQUARE), item(HEXAGON), rel_count(3),
@@ -442,20 +446,20 @@ S312 = [
     analogy2(P_AN, item(STAR), item(HEART), rel_colour, rel_count(2)),
     analogy2(P_AN, item(CIRCLE), item(SQUARE), rel_colour, rel_bigger),
     analogy2(P_AN, item(TRIANGLE), item(HEXAGON), rel_count(2), rel_bigger),
-    analogy2(P_AN, item(FLOWER), item(DIAMOND), rel_colour, rel_turn),
+    analogy2(P_AN, item(TRIANGLE), item(HEART), rel_colour, rel_turn),
     analogy2(P_AN, item(HEART), item(CIRCLE), rel_count(3), rel_colour),
-    analogy2(P_AN, item(SQUARE), item(STAR), rel_bigger, rel_turn),
+    analogy2(P_AN, item(HEART), item(TRIANGLE), rel_bigger, rel_turn),
     interleaved(P_NEXT, [HEXAGON, TRIANGLE], [ACCENT, PRIMARY, ACCENT], 9, 8),
 ]
 
 S313 = [
-    analogy2(P_AN, item(DIAMOND), item(FLOWER), rel_turn, rel_count(2)),
+    analogy2(P_AN, item(HEART, ACCENT), item(TRIANGLE, ACCENT), rel_turn, rel_count(2)),
     analogy(P_AN, item(STAR, ACCENT, n=2), item(HEART, ACCENT, n=2), rel_count(2),
             [item(HEART, ACCENT, n=4), item(HEART, ACCENT, n=2),
              item(HEART, ACCENT, n=3), item(STAR, ACCENT, n=4)]),
     analogy2(P_AN, item(CIRCLE, size=2), item(HEXAGON, size=2), rel_smaller, rel_colour),
-    analogy(P_AN, item(TRIANGLE, rotation=90), item(SQUARE, rotation=90), rel_turn,
-            [item(SQUARE, rotation=180), item(SQUARE, rotation=90), item(SQUARE),
+    analogy(P_AN, item(TRIANGLE, rotation=90), item(HEART, rotation=90), rel_turn,
+            [item(HEART, rotation=180), item(HEART, rotation=90), item(HEART),
              item(TRIANGLE, rotation=180)]),
     analogy2(P_AN, item(FLOWER, ACCENT), item(STAR, ACCENT), rel_colour, rel_bigger),
     analogy2(P_AN, item(HEART), item(DIAMOND), rel_bigger, rel_count(2)),
@@ -466,11 +470,11 @@ S314 = [
     analogy2(P_AN, item(STAR), item(FLOWER), rel_colour, rel_count(3)),
     analogy(P_AN, item(HEXAGON), item(HEART), rel_bigger,
             [item(HEART, size=2), item(HEART), item(HEXAGON, size=2), item(CIRCLE, size=2)]),
-    analogy2(P_AN, item(DIAMOND), item(SQUARE), rel_count(2), rel_turn),
+    analogy2(P_AN, item(TRIANGLE), item(HEART), rel_count(3), rel_turn),
     analogy(P_AN, item(CIRCLE, ACCENT), item(TRIANGLE, ACCENT), rel_colour,
             [item(TRIANGLE), item(TRIANGLE, ACCENT), item(CIRCLE), item(HEXAGON)]),
     analogy2(P_AN, item(HEART, size=2), item(HEXAGON, size=2), rel_smaller, rel_count(2)),
-    analogy2(P_AN, item(FLOWER), item(CIRCLE), rel_turn, rel_bigger),
+    analogy2(P_AN, item(HEART), item(TRIANGLE, ACCENT), rel_turn, rel_bigger),
 ]
 
 # ---- 3.2 Symbol codes ------------------------------------------------------
@@ -725,9 +729,9 @@ S432 = [
     code_pick(P_CODEGAP, _K4b, [SQUARE, TRIANGLE], 1, 11, _O4b),
     interleaved(P_GAP, [CIRCLE, FLOWER], [ACCENT, PRIMARY, PRIMARY], 10, 5),
     size_order(P_SMALL, [0.2, 0.45, 0.7, 1.0], DIAMOND),
-    analogy(P_AN, item(HEXAGON), item(SQUARE), rel_turn,
-            [item(SQUARE, rotation=90), item(SQUARE), item(HEXAGON, rotation=90),
-             item(SQUARE, rotation=180)]),
+    analogy(P_AN, item(HEART), item(TRIANGLE), rel_turn,
+            [item(TRIANGLE, rotation=90), item(TRIANGLE), item(HEART, rotation=90),
+             item(TRIANGLE, rotation=180)]),
     odd_by(P_ODD, [_ST, _CI, _TR, _HEy, _DI], "color"),
     array("Count them. Tap the number.", 7, 7, STAR),
     sort_two(P_SORT, [_HEy, _HE, _FLy, _FL, _SQy, _SQ],
@@ -742,16 +746,16 @@ S433 = [
     interleaved(P_GAP, [DIAMOND, TRIANGLE], [PRIMARY, ACCENT, ACCENT], 12, 7),
     skip_line(P_LAND, 50, 45, -6, 7),
     analogy2(P_AN, item(STAR), item(HEXAGON), rel_bigger, rel_colour),
-    odd_by(P_ODD, [cell(HEART, PRIMARY, 90), cell(STAR, ACCENT, 90),
-                   cell(CIRCLE, PRIMARY, 90), cell(SQUARE, ACCENT),
-                   cell(FLOWER, PRIMARY, 90)], "rotation"),
+    odd_by(P_ODD, [cell(HEART, PRIMARY, 180), cell(STAR, ACCENT, 180),
+                   cell(TRIANGLE, PRIMARY, 180), cell(HEART, ACCENT),
+                   cell(TRIANGLE, ACCENT, 180)], "rotation"),
     array("Count them. Tap the number.", 6, 9, HEART),
 ]
 
 S434 = [
     interleaved(P_NEXT, [SQUARE, HEXAGON], [ACCENT, PRIMARY, ACCENT], 11, 10),
     code_pick(P_CODEGAP, _K4c, [STAR, HEART, SQUARE], 2, 14, _O4c),
-    analogy2(P_AN, item(FLOWER), item(HEART), rel_turn, rel_count(3)),
+    analogy2(P_AN, item(TRIANGLE, ACCENT), item(HEART), rel_turn, rel_count(3)),
     yes_no("Is it purple and pointy? Move each shape.",
            [_STy, _ST, _TRy, _TR, _DIy, _DI],
            lambda c: _pointy(c) and not _y(c)),

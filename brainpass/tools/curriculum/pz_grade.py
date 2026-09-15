@@ -28,8 +28,30 @@ def bad(qid, msg):
     FAILS.append(f"{qid}: {msg}")
 
 
+# How many ways each drawing can be turned and look unchanged, read off the
+# geometry in Glyphs.kt: a circle any way, a 4-gon every 90, a 6-gon and the
+# six-petal flower every 60, the five-point star every 72, a triangle every 120,
+# a heart only all the way round.
+SYMMETRY = {"circle": 1, "square": 90, "diamond": 90, "hexagon": 60,
+            "flower": 60, "star": 72, "triangle": 120, "heart": 360}
+# Smallest offset from a look-alike position a seven year old will notice.
+NOTICEABLE = 30
+
+
+def perceived_turn(c):
+    r = c.get("rotation", 0) % 360
+    sym = SYMMETRY[c["kind"]]
+    if sym == 1:
+        return 0
+    off = r % sym
+    if min(off, sym - off) <= NOTICEABLE and not (c["kind"] in ("triangle", "heart")
+                                                  and r in (90, 180, 270)):
+        return 0
+    return r
+
+
 def sig(c):
-    return (c["kind"], c["color"], c.get("rotation", 0), c.get("n", 1),
+    return (c["kind"], c["color"], perceived_turn(c), c.get("n", 1),
             c.get("size", 1))
 
 
@@ -90,7 +112,7 @@ def infer_relation(a, b):
         ops.append(("n", b.get("n", 1) / a.get("n", 1)))
     if a.get("size", 1) != b.get("size", 1):
         ops.append(("size", b.get("size", 1) - a.get("size", 1)))
-    if a.get("rotation", 0) != b.get("rotation", 0):
+    if perceived_turn(a) != perceived_turn(b):
         ops.append(("rotation", b.get("rotation", 0) - a.get("rotation", 0)))
     return ops
 
@@ -147,14 +169,15 @@ def grade(qid, q):
         # the kit's helper, so the two readings stay independent.
         cells = pic["cells"]
         picks = set()
+        read = lambda c, pr: perceived_turn(c) if pr == "rotation" else c.get(pr, 0)
         for prop in ("kind", "color", "rotation"):
             seen = {}
             for c in cells:
-                seen.setdefault(c.get(prop, 0), []).append(c)
+                seen.setdefault(read(c, prop), []).append(c)
             if len(seen) == 2 and any(len(v) == 1 for v in seen.values()):
                 odd_val = [k for k, v in seen.items() if len(v) == 1][0]
                 picks.add(next(i for i, c in enumerate(cells)
-                               if c.get(prop, 0) == odd_val))
+                               if read(c, prop) == odd_val))
         if picks != {stored}:
             bad(qid, f"reading each property gives {sorted(picks)}, stored {stored}")
 

@@ -5666,113 +5666,30 @@
             "rotation": 0
            },
            {
-            "kind": "circle",
-            "color": "accent",
-            "rotation": 0
-           },
-           {
-            "kind": "square",
-            "color": "primary",
-            "rotation": 0
-           },
-           {
             "kind": "heart",
             "color": "accent",
-            "rotation": 90
-           },
-           {
-            "kind": "hexagon",
-            "color": "primary",
             "rotation": 0
-           }
-          ]
-         },
-         "answer": {
-          "type": "int",
-          "value": 3
-         }
-        },
-        {
-         "shape": "oddOneOut",
-         "prompt": "Tap the one that does not belong.",
-         "hint": "Decide what they share first.",
-         "pic": {
-          "kind": "oddOneOut",
-          "cells": [
+           },
            {
             "kind": "star",
-            "color": "accent",
-            "rotation": 90
-           },
-           {
-            "kind": "diamond",
             "color": "primary",
-            "rotation": 90
-           },
-           {
-            "kind": "heart",
-            "color": "primary",
-            "rotation": 90
-           },
-           {
-            "kind": "flower",
-            "color": "accent",
             "rotation": 0
-           },
-           {
-            "kind": "circle",
-            "color": "primary",
-            "rotation": 90
-           }
-          ]
-         },
-         "answer": {
-          "type": "int",
-          "value": 3
-         }
-        },
-        {
-         "shape": "oddOneOut",
-         "prompt": "Tap the one that does not belong.",
-         "hint": "Decide what they share first.",
-         "pic": {
-          "kind": "oddOneOut",
-          "cells": [
-           {
-            "kind": "square",
-            "color": "primary",
-            "rotation": 45
            },
            {
             "kind": "triangle",
             "color": "accent",
-            "rotation": 45
-           },
-           {
-            "kind": "hexagon",
-            "color": "primary",
-            "rotation": 45
-           },
-           {
-            "kind": "diamond",
-            "color": "accent",
             "rotation": 0
            },
            {
-            "kind": "star",
+            "kind": "heart",
             "color": "primary",
-            "rotation": 45
-           },
-           {
-            "kind": "flower",
-            "color": "accent",
-            "rotation": 45
+            "rotation": 90
            }
           ]
          },
          "answer": {
           "type": "int",
-          "value": 3
+          "value": 4
          }
         },
         {
@@ -5785,25 +5702,25 @@
            {
             "kind": "heart",
             "color": "primary",
-            "rotation": 0
+            "rotation": 90
            },
            {
-            "kind": "star",
+            "kind": "triangle",
             "color": "accent",
-            "rotation": 0
+            "rotation": 90
+           },
+           {
+            "kind": "heart",
+            "color": "accent",
+            "rotation": 90
            },
            {
             "kind": "triangle",
             "color": "primary",
-            "rotation": 0
+            "rotation": 90
            },
            {
-            "kind": "hexagon",
-            "color": "accent",
-            "rotation": 180
-           },
-           {
-            "kind": "circle",
+            "kind": "star",
             "color": "primary",
             "rotation": 0
            }
@@ -5811,7 +5728,7 @@
          },
          "answer": {
           "type": "int",
-          "value": 3
+          "value": 4
          }
         },
         {
@@ -5822,17 +5739,22 @@
           "kind": "oddOneOut",
           "cells": [
            {
-            "kind": "flower",
-            "color": "accent",
-            "rotation": 180
-           },
-           {
-            "kind": "square",
+            "kind": "triangle",
             "color": "primary",
             "rotation": 180
            },
            {
-            "kind": "diamond",
+            "kind": "triangle",
+            "color": "accent",
+            "rotation": 180
+           },
+           {
+            "kind": "heart",
+            "color": "primary",
+            "rotation": 180
+           },
+           {
+            "kind": "heart",
             "color": "accent",
             "rotation": 180
            },
@@ -5842,9 +5764,48 @@
             "rotation": 0
            },
            {
+            "kind": "star",
+            "color": "primary",
+            "rotation": 180
+           }
+          ]
+         },
+         "answer": {
+          "type": "int",
+          "value": 4
+         }
+        },
+        {
+         "shape": "oddOneOut",
+         "prompt": "Tap the one that does not belong.",
+         "hint": "Decide what they share first.",
+         "pic": {
+          "kind": "oddOneOut",
+          "cells": [
+           {
             "kind": "heart",
             "color": "accent",
-            "rotation": 180
+            "rotation": 0
+           },
+           {
+            "kind": "triangle",
+            "color": "primary",
+            "rotation": 0
+           },
+           {
+            "kind": "star",
+            "color": "accent",
+            "rotation": 0
+           },
+           {
+            "kind": "triangle",
+            "color": "primary",
+            "rotation": 270
+           },
+           {
+            "kind": "heart",
+            "color": "primary",
+            "rotation": 0
            }
           ]
          },
@@ -5861,79 +5822,118 @@
           "kind": "oddOneOut",
           "cells": [
            {
-            "kind": "circle",
-            "color": "primary",
-            "rotation": 90
-           },
-           {
-            "kind": "hexagon",
+            "kind": "triangle",
             "color": "accent",
-            "rotation": 90
+            "rotation": 0
            },
            {
-            "kind": "star",
+            "kind": "heart",
+            "color": "primary",
+            "rotation": 0
+           },
+           {
+            "kind": "triangle",
             "color": "primary",
             "rotation": 0
            },
            {
             "kind": "heart",
             "color": "accent",
-            "rotation": 90
+            "rotation": 0
            },
            {
-            "kind": "square",
+            "kind": "star",
             "color": "primary",
-            "rotation": 90
+            "rotation": 180
+           }
+          ]
+         },
+         "answer": {
+          "type": "int",
+          "value": 4
+         }
+        },
+        {
+         "shape": "oddOneOut",
+         "prompt": "Tap the one that does not belong.",
+         "hint": "Decide what they share first.",
+         "pic": {
+          "kind": "oddOneOut",
+          "cells": [
+           {
+            "kind": "heart",
+            "color": "primary",
+            "rotation": 270
            },
            {
-            "kind": "flower",
+            "kind": "triangle",
             "color": "accent",
-            "rotation": 90
+            "rotation": 270
+           },
+           {
+            "kind": "heart",
+            "color": "accent",
+            "rotation": 270
+           },
+           {
+            "kind": "triangle",
+            "color": "primary",
+            "rotation": 270
+           },
+           {
+            "kind": "heart",
+            "color": "primary",
+            "rotation": 0
+           },
+           {
+            "kind": "triangle",
+            "color": "primary",
+            "rotation": 270
+           }
+          ]
+         },
+         "answer": {
+          "type": "int",
+          "value": 4
+         }
+        },
+        {
+         "shape": "oddOneOut",
+         "prompt": "Tap the one that does not belong.",
+         "hint": "Decide what they share first.",
+         "pic": {
+          "kind": "oddOneOut",
+          "cells": [
+           {
+            "kind": "triangle",
+            "color": "primary",
+            "rotation": 0
+           },
+           {
+            "kind": "heart",
+            "color": "accent",
+            "rotation": 0
+           },
+           {
+            "kind": "triangle",
+            "color": "accent",
+            "rotation": 180
+           },
+           {
+            "kind": "heart",
+            "color": "primary",
+            "rotation": 0
+           },
+           {
+            "kind": "star",
+            "color": "accent",
+            "rotation": 0
            }
           ]
          },
          "answer": {
           "type": "int",
           "value": 2
-         }
-        },
-        {
-         "shape": "oddOneOut",
-         "prompt": "Tap the one that does not belong.",
-         "hint": "Decide what they share first.",
-         "pic": {
-          "kind": "oddOneOut",
-          "cells": [
-           {
-            "kind": "diamond",
-            "color": "accent",
-            "rotation": 0
-           },
-           {
-            "kind": "triangle",
-            "color": "primary",
-            "rotation": 0
-           },
-           {
-            "kind": "hexagon",
-            "color": "accent",
-            "rotation": 0
-           },
-           {
-            "kind": "square",
-            "color": "primary",
-            "rotation": 45
-           },
-           {
-            "kind": "circle",
-            "color": "accent",
-            "rotation": 0
-           }
-          ]
-         },
-         "answer": {
-          "type": "int",
-          "value": 3
          }
         }
        ],
@@ -6063,29 +6063,29 @@
           "kind": "oddOneOut",
           "cells": [
            {
-            "kind": "star",
-            "color": "primary",
-            "rotation": 180
-           },
-           {
-            "kind": "circle",
+            "kind": "heart",
             "color": "accent",
-            "rotation": 180
+            "rotation": 90
            },
            {
             "kind": "triangle",
             "color": "primary",
-            "rotation": 180
+            "rotation": 90
            },
            {
-            "kind": "flower",
+            "kind": "heart",
+            "color": "primary",
+            "rotation": 90
+           },
+           {
+            "kind": "triangle",
             "color": "accent",
             "rotation": 0
            },
            {
-            "kind": "diamond",
-            "color": "primary",
-            "rotation": 180
+            "kind": "triangle",
+            "color": "accent",
+            "rotation": 90
            }
           ]
          },
@@ -7916,21 +7916,21 @@
          "pic": {
           "kind": "analogy",
           "a": {
-           "kind": "hexagon",
+           "kind": "triangle",
            "color": "primary",
            "rotation": 0,
            "n": 1,
            "size": 1
           },
           "b": {
-           "kind": "hexagon",
+           "kind": "triangle",
            "color": "primary",
            "rotation": 90,
            "n": 1,
            "size": 1
           },
           "c": {
-           "kind": "flower",
+           "kind": "heart",
            "color": "primary",
            "rotation": 0,
            "n": 1,
@@ -7939,34 +7939,34 @@
          },
          "answer": {
           "type": "int",
-          "value": 3
+          "value": 0
          },
          "optionCells": [
           {
-           "kind": "flower",
+           "kind": "heart",
+           "color": "primary",
+           "rotation": 90,
+           "n": 1,
+           "size": 1
+          },
+          {
+           "kind": "heart",
            "color": "primary",
            "rotation": 0,
            "n": 1,
            "size": 1
           },
           {
-           "kind": "hexagon",
+           "kind": "triangle",
            "color": "primary",
            "rotation": 90,
            "n": 1,
            "size": 1
           },
           {
-           "kind": "flower",
+           "kind": "heart",
            "color": "primary",
            "rotation": 180,
-           "n": 1,
-           "size": 1
-          },
-          {
-           "kind": "flower",
-           "color": "primary",
-           "rotation": 90,
            "n": 1,
            "size": 1
           }
@@ -8392,21 +8392,21 @@
          "pic": {
           "kind": "analogy",
           "a": {
-           "kind": "flower",
+           "kind": "triangle",
            "color": "primary",
            "rotation": 0,
            "n": 1,
            "size": 1
           },
           "b": {
-           "kind": "flower",
+           "kind": "triangle",
            "color": "accent",
            "rotation": 90,
            "n": 1,
            "size": 1
           },
           "c": {
-           "kind": "diamond",
+           "kind": "heart",
            "color": "primary",
            "rotation": 0,
            "n": 1,
@@ -8415,34 +8415,34 @@
          },
          "answer": {
           "type": "int",
-          "value": 1
+          "value": 2
          },
          "optionCells": [
           {
-           "kind": "diamond",
+           "kind": "heart",
+           "color": "primary",
+           "rotation": 90,
+           "n": 1,
+           "size": 1
+          },
+          {
+           "kind": "heart",
            "color": "primary",
            "rotation": 0,
            "n": 1,
            "size": 1
           },
           {
-           "kind": "diamond",
+           "kind": "heart",
            "color": "accent",
            "rotation": 90,
            "n": 1,
            "size": 1
           },
           {
-           "kind": "diamond",
+           "kind": "heart",
            "color": "accent",
            "rotation": 0,
-           "n": 1,
-           "size": 1
-          },
-          {
-           "kind": "diamond",
-           "color": "primary",
-           "rotation": 90,
            "n": 1,
            "size": 1
           }
@@ -8518,21 +8518,21 @@
          "pic": {
           "kind": "analogy",
           "a": {
-           "kind": "square",
+           "kind": "heart",
            "color": "primary",
            "rotation": 0,
            "n": 1,
            "size": 1
           },
           "b": {
-           "kind": "square",
+           "kind": "heart",
            "color": "primary",
            "rotation": 90,
            "n": 1,
            "size": 2
           },
           "c": {
-           "kind": "star",
+           "kind": "triangle",
            "color": "primary",
            "rotation": 0,
            "n": 1,
@@ -8541,36 +8541,36 @@
          },
          "answer": {
           "type": "int",
-          "value": 3
+          "value": 0
          },
          "optionCells": [
           {
-           "kind": "star",
+           "kind": "triangle",
+           "color": "primary",
+           "rotation": 90,
+           "n": 1,
+           "size": 2
+          },
+          {
+           "kind": "triangle",
            "color": "primary",
            "rotation": 0,
            "n": 1,
            "size": 2
           },
           {
-           "kind": "star",
+           "kind": "triangle",
            "color": "primary",
            "rotation": 90,
            "n": 1,
            "size": 1
           },
           {
-           "kind": "star",
+           "kind": "triangle",
            "color": "primary",
            "rotation": 0,
            "n": 1,
            "size": 1
-          },
-          {
-           "kind": "star",
-           "color": "primary",
-           "rotation": 90,
-           "n": 1,
-           "size": 2
           }
          ]
         },
@@ -8698,22 +8698,22 @@
          "pic": {
           "kind": "analogy",
           "a": {
-           "kind": "diamond",
-           "color": "primary",
+           "kind": "heart",
+           "color": "accent",
            "rotation": 0,
            "n": 1,
            "size": 1
           },
           "b": {
-           "kind": "diamond",
-           "color": "primary",
+           "kind": "heart",
+           "color": "accent",
            "rotation": 90,
            "n": 2,
            "size": 1
           },
           "c": {
-           "kind": "flower",
-           "color": "primary",
+           "kind": "triangle",
+           "color": "accent",
            "rotation": 0,
            "n": 1,
            "size": 1
@@ -8721,34 +8721,34 @@
          },
          "answer": {
           "type": "int",
-          "value": 2
+          "value": 0
          },
          "optionCells": [
           {
-           "kind": "flower",
-           "color": "primary",
-           "rotation": 0,
+           "kind": "triangle",
+           "color": "accent",
+           "rotation": 90,
            "n": 2,
            "size": 1
           },
           {
-           "kind": "flower",
-           "color": "primary",
-           "rotation": 0,
+           "kind": "triangle",
+           "color": "accent",
+           "rotation": 90,
            "n": 1,
            "size": 1
           },
           {
-           "kind": "flower",
-           "color": "primary",
-           "rotation": 90,
+           "kind": "triangle",
+           "color": "accent",
+           "rotation": 0,
            "n": 2,
            "size": 1
           },
           {
-           "kind": "flower",
-           "color": "primary",
-           "rotation": 90,
+           "kind": "triangle",
+           "color": "accent",
+           "rotation": 0,
            "n": 1,
            "size": 1
           }
@@ -8901,7 +8901,7 @@
            "size": 1
           },
           "c": {
-           "kind": "square",
+           "kind": "heart",
            "color": "primary",
            "rotation": 90,
            "n": 1,
@@ -8910,11 +8910,18 @@
          },
          "answer": {
           "type": "int",
-          "value": 2
+          "value": 3
          },
          "optionCells": [
           {
-           "kind": "square",
+           "kind": "heart",
+           "color": "primary",
+           "rotation": 90,
+           "n": 1,
+           "size": 1
+          },
+          {
+           "kind": "heart",
            "color": "primary",
            "rotation": 0,
            "n": 1,
@@ -8928,16 +8935,9 @@
            "size": 1
           },
           {
-           "kind": "square",
+           "kind": "heart",
            "color": "primary",
            "rotation": 180,
-           "n": 1,
-           "size": 1
-          },
-          {
-           "kind": "square",
-           "color": "primary",
-           "rotation": 90,
            "n": 1,
            "size": 1
           }
@@ -9281,21 +9281,21 @@
          "pic": {
           "kind": "analogy",
           "a": {
-           "kind": "diamond",
+           "kind": "triangle",
            "color": "primary",
            "rotation": 0,
            "n": 1,
            "size": 1
           },
           "b": {
-           "kind": "diamond",
+           "kind": "triangle",
            "color": "primary",
            "rotation": 90,
-           "n": 2,
+           "n": 3,
            "size": 1
           },
           "c": {
-           "kind": "square",
+           "kind": "heart",
            "color": "primary",
            "rotation": 0,
            "n": 1,
@@ -9308,31 +9308,31 @@
          },
          "optionCells": [
           {
-           "kind": "square",
+           "kind": "heart",
            "color": "primary",
            "rotation": 0,
-           "n": 2,
+           "n": 3,
            "size": 1
           },
           {
-           "kind": "square",
+           "kind": "heart",
            "color": "primary",
            "rotation": 90,
            "n": 1,
            "size": 1
           },
           {
-           "kind": "square",
+           "kind": "heart",
            "color": "primary",
            "rotation": 0,
            "n": 1,
            "size": 1
           },
           {
-           "kind": "square",
+           "kind": "heart",
            "color": "primary",
            "rotation": 90,
-           "n": 2,
+           "n": 3,
            "size": 1
           }
          ]
@@ -9470,22 +9470,22 @@
          "pic": {
           "kind": "analogy",
           "a": {
-           "kind": "flower",
+           "kind": "heart",
            "color": "primary",
            "rotation": 0,
            "n": 1,
            "size": 1
           },
           "b": {
-           "kind": "flower",
+           "kind": "heart",
            "color": "primary",
            "rotation": 90,
            "n": 1,
            "size": 2
           },
           "c": {
-           "kind": "circle",
-           "color": "primary",
+           "kind": "triangle",
+           "color": "accent",
            "rotation": 0,
            "n": 1,
            "size": 1
@@ -9497,29 +9497,29 @@
          },
          "optionCells": [
           {
-           "kind": "circle",
-           "color": "primary",
+           "kind": "triangle",
+           "color": "accent",
            "rotation": 90,
            "n": 1,
            "size": 2
           },
           {
-           "kind": "circle",
-           "color": "primary",
+           "kind": "triangle",
+           "color": "accent",
            "rotation": 90,
            "n": 1,
            "size": 1
           },
           {
-           "kind": "circle",
-           "color": "primary",
+           "kind": "triangle",
+           "color": "accent",
            "rotation": 0,
            "n": 1,
            "size": 2
           },
           {
-           "kind": "circle",
-           "color": "primary",
+           "kind": "triangle",
+           "color": "accent",
            "rotation": 0,
            "n": 1,
            "size": 1
@@ -17143,21 +17143,21 @@
          "pic": {
           "kind": "analogy",
           "a": {
-           "kind": "hexagon",
+           "kind": "heart",
            "color": "primary",
            "rotation": 0,
            "n": 1,
            "size": 1
           },
           "b": {
-           "kind": "hexagon",
+           "kind": "heart",
            "color": "primary",
            "rotation": 90,
            "n": 1,
            "size": 1
           },
           "c": {
-           "kind": "square",
+           "kind": "triangle",
            "color": "primary",
            "rotation": 0,
            "n": 1,
@@ -17166,34 +17166,34 @@
          },
          "answer": {
           "type": "int",
-          "value": 1
+          "value": 2
          },
          "optionCells": [
           {
-           "kind": "square",
+           "kind": "heart",
+           "color": "primary",
+           "rotation": 90,
+           "n": 1,
+           "size": 1
+          },
+          {
+           "kind": "triangle",
            "color": "primary",
            "rotation": 180,
            "n": 1,
            "size": 1
           },
           {
-           "kind": "square",
+           "kind": "triangle",
            "color": "primary",
            "rotation": 90,
            "n": 1,
            "size": 1
           },
           {
-           "kind": "square",
+           "kind": "triangle",
            "color": "primary",
            "rotation": 0,
-           "n": 1,
-           "size": 1
-          },
-          {
-           "kind": "hexagon",
-           "color": "primary",
-           "rotation": 90,
            "n": 1,
            "size": 1
           }
@@ -17631,27 +17631,27 @@
            {
             "kind": "heart",
             "color": "primary",
-            "rotation": 90
+            "rotation": 180
            },
            {
             "kind": "star",
             "color": "accent",
-            "rotation": 90
+            "rotation": 180
            },
            {
-            "kind": "circle",
+            "kind": "triangle",
             "color": "primary",
-            "rotation": 90
+            "rotation": 180
            },
            {
-            "kind": "square",
+            "kind": "heart",
             "color": "accent",
             "rotation": 0
            },
            {
-            "kind": "flower",
-            "color": "primary",
-            "rotation": 90
+            "kind": "triangle",
+            "color": "accent",
+            "rotation": 180
            }
           ]
          },
@@ -17871,15 +17871,15 @@
          "pic": {
           "kind": "analogy",
           "a": {
-           "kind": "flower",
-           "color": "primary",
+           "kind": "triangle",
+           "color": "accent",
            "rotation": 0,
            "n": 1,
            "size": 1
           },
           "b": {
-           "kind": "flower",
-           "color": "primary",
+           "kind": "triangle",
+           "color": "accent",
            "rotation": 90,
            "n": 3,
            "size": 1
@@ -17894,19 +17894,12 @@
          },
          "answer": {
           "type": "int",
-          "value": 1
+          "value": 0
          },
          "optionCells": [
           {
            "kind": "heart",
            "color": "primary",
-           "rotation": 0,
-           "n": 1,
-           "size": 1
-          },
-          {
-           "kind": "heart",
-           "color": "primary",
            "rotation": 90,
            "n": 3,
            "size": 1
@@ -17923,6 +17916,13 @@
            "color": "primary",
            "rotation": 0,
            "n": 3,
+           "size": 1
+          },
+          {
+           "kind": "heart",
+           "color": "primary",
+           "rotation": 0,
+           "n": 1,
            "size": 1
           }
          ]

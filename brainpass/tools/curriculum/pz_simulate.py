@@ -26,7 +26,7 @@ import json, os, sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 CUR = os.path.join(HERE, "..", "..", "assets", "curriculum")
 
-from puzzles_kit import odd_readings
+from puzzles_kit import odd_readings, looks
 
 FAILS = []
 
@@ -70,9 +70,7 @@ def check_words(qid, q):
 
 
 def _same(a, b):
-    k = lambda c: (c["kind"], c["color"], c.get("rotation", 0),
-                   c.get("n", 1), c.get("size", 1))
-    return k(a) == k(b)
+    return looks(a) == looks(b)
 
 
 def check_question(qid, q):

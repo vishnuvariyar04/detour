@@ -40,11 +40,37 @@ def cell(kind, color=PRIMARY, rotation=0):
     return {"kind": kind, "color": color, "rotation": rotation}
 
 
+# Which turns a child can actually SEE, from the geometry Glyphs.kt draws (the
+# review wall draws the same shapes). A turn is only a difference if the drawing
+# changes:
+#   circle            any turn looks identical
+#   square, diamond   four-fold: a quarter turn looks identical, and an eighth
+#                     turn makes one look like the other
+#   hexagon, flower   six-fold: a half turn looks identical, a quarter turn is a
+#                     30-degree nudge nobody can judge at this size
+#   star              five points: upside down is obvious, but a quarter turn
+#                     leaves a point 18 degrees off vertical -- it looks upright
+#   triangle, heart   every quarter turn is plainly different
+# The first draft compared the rotation NUMBER, so it happily offered a square
+# turned 90 degrees and an unturned square as two different answers. They are
+# the same picture.
+VISIBLE_TURNS = {TRIANGLE: {90, 180, 270}, HEART: {90, 180, 270}, STAR: {180}}
+
+
+def seen_rotation(c):
+    """The rotation as a child perceives it: 0 whenever the turn does not show."""
+    r = c.get("rotation", 0) % 360
+    return r if r in VISIBLE_TURNS.get(c["kind"], ()) else 0
+
+
+def looks(c):
+    """Everything a child can see about one drawn shape."""
+    return (c["kind"], c["color"], seen_rotation(c), c.get("n", 1),
+            c.get("size", 1))
+
+
 def _same(a, b):
-    return ((a["kind"], a["color"], a.get("rotation", 0), a.get("n", 1),
-             a.get("size", 1)) ==
-            (b["kind"], b["color"], b.get("rotation", 0), b.get("n", 1),
-             b.get("size", 1)))
+    return looks(a) == looks(b)
 
 
 def _seed(prompt, pic):
@@ -243,8 +269,7 @@ def odd_one_out(prompt, cells, hint=None):
     one property it is not a fair question and this refuses it.
     """
     def sig(c):
-        return (c["kind"], c["color"], c.get("rotation", 0),
-                c.get("n", 1), c.get("size", 1))
+        return looks(c)
 
     counts = {}
     for c in cells:
@@ -269,7 +294,8 @@ def odd_readings(cells):
     """
     out = []
     for prop in ("kind", "color", "rotation"):
-        vals = [c.get(prop, 0) for c in cells]
+        vals = [seen_rotation(c) if prop == "rotation" else c.get(prop, 0)
+                for c in cells]
         counts = {}
         for v in vals:
             counts[v] = counts.get(v, 0) + 1
@@ -292,7 +318,7 @@ def odd_by(prompt, cells, prop, hint=None):
 
     Exactly one cell may differ on [prop], and every other cell must agree on it.
     """
-    vals = [c[prop] for c in cells]
+    vals = [seen_rotation(c) if prop == "rotation" else c[prop] for c in cells]
     counts = {}
     for v in vals:
         counts[v] = counts.get(v, 0) + 1
