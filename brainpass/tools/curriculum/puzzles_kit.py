@@ -106,6 +106,17 @@ def _options(q, field):
 
 # ============================================================ 1. number thinking
 
+def no_carry(a, b):
+    """38 + 27 written as 55: the ones added, the ten carried from them dropped."""
+    return (a // 10 + b // 10) * 10 + (a % 10 + b % 10) % 10
+
+
+def digit_sub(a, b):
+    """63 - 38 written as 35: in each column the smaller digit taken from the
+    bigger, whichever number it belongs to. The most common borrowing mistake."""
+    return abs(a // 10 - b // 10) * 10 + abs(a % 10 - b % 10)
+
+
 def equation(prompt, left, op, right, result, hide, hint=None):
     """A number sentence with one box empty: 8 + ? = 15."""
     val = {"+": left + right, "-": left - right}[op]
@@ -115,11 +126,13 @@ def equation(prompt, left, op, right, result, hide, hint=None):
         raise ValueError("numbers must stay between 0 and 100")
     ans = {"left": left, "right": right, "result": result}[hide]
     if op == "+":
-        mistakes = {"left": [result + right, result], "right": [result + left, result],
-                    "result": [abs(left - right), left]}[hide]
+        mistakes = {"left": [digit_sub(result, right), result + right, result],
+                    "right": [digit_sub(result, left), result + left, result],
+                    "result": [no_carry(left, right), abs(left - right), left]}[hide]
     else:
-        mistakes = {"left": [result - right, result], "right": [left + result, result],
-                    "result": [left + right, right]}[hide]
+        mistakes = {"left": [no_carry(result, right), result - right, result],
+                    "right": [digit_sub(left, result), left + result, result],
+                    "result": [digit_sub(left, right), left + right, right]}[hide]
     pic = {"kind": "equation", "left": left, "op": op, "right": right, "result": result,
            "hide": hide}
     return _q("equation", prompt, hint or "What number makes both sides the same?",
@@ -173,29 +186,29 @@ def _he(name):
 STORY = {
     # change: something is added or taken away
     "join": lambda n, t, a, b: ([f"{n} has {a} {t}.", f"{_he(n)} gets {b} more.", "How many now?"],
-                                a + b, [a - b, b, a + b + 1]),
+                                a + b, [no_carry(a, b), a - b, a + b + 10]),
     "leave": lambda n, t, a, b: ([f"{n} has {a} {t}.", f"{_he(n)} gives away {b}.", "How many are left?"],
-                                 a - b, [a + b, b, a - b - 1]),
+                                 a - b, [digit_sub(a, b), a + b, a - b - 10]),
     "gain": lambda n, t, a, b: ([f"{n} had {a} {t}.", f"Now {_he(n).lower()} has {b}.",
                                  "How many did " + _he(n).lower() + " get?"],
-                                b - a, [a + b, b, a]),
+                                b - a, [digit_sub(b, a), a + b, b]),
     # combine: two parts make a whole
     "total": lambda n, t, a, b: ([f"{n} has {a} red {t}.", f"{_he(n)} has {b} blue {t}.",
                                   f"How many {t} in all?"],
-                                 a + b, [a - b, a, b]),
+                                 a + b, [no_carry(a, b), abs(a - b), a + b + 10]),
     "part": lambda n, t, a, b: ([f"There are {a} {t}.", f"{b} of them are big.",
                                  "How many are not big?"],
-                                a - b, [a + b, b, a]),
+                                a - b, [digit_sub(a, b), a + b, b]),
     # compare
     "more": lambda n, t, a, b, m: ([f"{n} has {a} {t}.", f"{m} has {b} more than {n}.",
                                     f"How many does {m} have?"],
-                                   a + b, [a - b, b, a]),
+                                   a + b, [a - b, no_carry(a, b), b]),
     "fewer": lambda n, t, a, b, m: ([f"{n} has {a} {t}.", f"{m} has {b} fewer.",
                                      f"How many does {m} have?"],
-                                    a - b, [a + b, b, a]),
+                                    a - b, [a + b, digit_sub(a, b), b]),
     "diff": lambda n, t, a, b, m: ([f"{n} has {a} {t}.", f"{m} has {b} {t}.",
                                     f"How many more does {n} have?"],
-                                   a - b, [a + b, a, b]),
+                                   a - b, [digit_sub(a, b), a + b, b]),
     # equal groups
     "groups": lambda n, t, a, b: ([f"There are {a} bags.", f"Each bag has {b} {t}.",
                                    f"How many {t} in all?"],
@@ -205,20 +218,44 @@ STORY = {
                                  a // b, [a - b, b, a // b + 1]),
     "legs": lambda n, t, a, b: ([f"{a} {t} are playing.", f"Each has {b} legs.",
                                  "How many legs in all?"],
-                                a * b, [a + b, a, a * b + 1]),
+                                a * b, [a + b, a * b - b, a * b + b]),
+}
+
+# Two-step stories: the step up for "a little harder" without leaving what a
+# Class 3 child is taught. Each wrong option is the child who did only one step,
+# or turned one of the two steps the wrong way.
+STORY2 = {
+    "joinleave": lambda n, t, a, b, c: ([f"{n} has {a} {t}.", f"{_he(n)} gets {b}, then gives away {c}.",
+                                         "How many are left?"],
+                                        a + b - c, [a + b + c, a + b, a - b + c]),
+    "leavejoin": lambda n, t, a, b, c: ([f"{n} has {a} {t}.", f"{_he(n)} gives away {b}, then gets {c}.",
+                                         "How many now?"],
+                                        a - b + c, [a - b - c, a + b + c, a - b]),
+    "groupsleave": lambda n, t, a, b, c: ([f"There are {a} bags of {b} {t}.", f"{c} {t} are eaten.",
+                                           "How many are left?"],
+                                          a * b - c, [a * b + c, a + b - c, a * b]),
+    "twototal": lambda n, t, a, b, c, m: ([f"{n} has {a} red and {b} blue {t}.", f"{m} has {c} {t}.",
+                                           f"How many {t} in all?"],
+                                          a + b + c, [a + b, b + c, a + b + c - 10]),
 }
 
 
-def story(prompt, schema, name, thing, a, b, other=None, hint=None):
-    fn = STORY[schema]
-    lines, ans, mistakes = fn(name, thing, a, b, other) if schema in ("more", "fewer", "diff") \
-        else fn(name, thing, a, b)
+def story(prompt, schema, name, thing, a, b, other=None, c=None, hint=None):
+    if schema in STORY2:
+        fn = STORY2[schema]
+        lines, ans, mistakes = fn(name, thing, a, b, c, other) if schema == "twototal" \
+            else fn(name, thing, a, b, c)
+    else:
+        fn = STORY[schema]
+        lines, ans, mistakes = fn(name, thing, a, b, other) if schema in ("more", "fewer", "diff") \
+            else fn(name, thing, a, b)
     if schema == "share" and a % b:
         raise ValueError("a fair share must come out even")
     if ans < 0 or ans > 100:
         raise ValueError(f"the answer {ans} is out of range for seven")
     return _q("story", prompt, hint or "Is something joining, leaving, or being compared?",
-              {"kind": "card", "lines": lines, "schema": schema, "nums": [a, b]},
+              {"kind": "card", "lines": lines, "schema": schema,
+               "nums": [a, b] if c is None else [a, b, c]},
               {"type": "number", "value": ans}, **_numbers(ans, mistakes))
 
 
@@ -230,8 +267,8 @@ def bars(prompt, top_name, top, low_name, low, hide, hint=None):
     ans = {"top": top, "low": low, "diff": diff}[hide]
     shown = {"top": None if hide == "top" else top, "low": None if hide == "low" else low,
              "diff": None if hide == "diff" else diff}
-    mistakes = {"top": [low - diff, low, diff], "low": [top + diff, top, diff],
-                "diff": [top + low, top, low]}[hide]
+    mistakes = {"top": [no_carry(low, diff), low - diff, low], "low": [digit_sub(top, diff), top + diff, diff],
+                "diff": [digit_sub(top, low), top + low, low]}[hide]
     return _q("bars", prompt, hint or "The longer bar is the shorter bar plus the gap.",
               {"kind": "bars", "names": [top_name, low_name], "values": [top, low],
                "shown": shown, "hide": hide},
@@ -645,7 +682,7 @@ def number_analogy(prompt, rule, k, examples, ask, hint=None):
     pairs = [[x, f(x, k)] for x in examples]
     fitting = set()
     for r2, g in NUM_RULES.items():
-        for k2 in range(1, 11):
+        for k2 in range(1, 31):
             if all(g(x, k2) == y for x, y in pairs):
                 fitting.add(g(ask, k2))
     if len(fitting) != 1:
@@ -875,13 +912,20 @@ def clock(prompt, h, m, form, delta=0, hint=None):
     return _options(q, "optionsText")
 
 
-def combos(prompt, name, a, a_noun, b, b_noun, hint=None):
-    """3 tops and 2 skirts: how many different outfits."""
-    if not (2 <= a <= 4 and 2 <= b <= 4):
-        raise ValueError("keep to 2 to 4 of each")
-    lines = [f"{name} has {a} {a_noun} and {b} {b_noun}.",
-             f"{_he(name)} picks one of each.", "How many different ways?"]
-    ans = a * b
+def combos(prompt, name, a, a_noun, b, b_noun, c=None, c_noun=None, hint=None):
+    """3 tops and 2 skirts: how many different outfits. With [c], three things."""
+    if c is None:
+        if not (2 <= a <= 5 and 2 <= b <= 5):
+            raise ValueError("keep to 2 to 5 of each")
+        lines = [f"{name} has {a} {a_noun} and {b} {b_noun}.",
+                 f"{_he(name)} picks one of each.", "How many different ways?"]
+        ans, mistakes, nums = a * b, [a + b, a * b + 1, a * b - 1], [a, b]
+    else:
+        if not all(2 <= v <= 3 for v in (a, b, c)):
+            raise ValueError("three things: keep to 2 or 3 of each")
+        lines = [f"{name} has {a} {a_noun}, {b} {b_noun}, {c} {c_noun}.",
+                 f"{_he(name)} picks one of each.", "How many different ways?"]
+        ans, mistakes, nums = a * b * c, [a + b + c, a * b, a * b + c], [a, b, c]
     return _q("combos", prompt, hint or "Take one of the first. How many can go with it?",
-              {"kind": "card", "lines": lines, "nums": [a, b]},
-              {"type": "number", "value": ans}, **_numbers(ans, [a + b, ans + 1, max(a, b)]))
+              {"kind": "card", "lines": lines, "nums": nums},
+              {"type": "number", "value": ans}, **_numbers(ans, mistakes))

@@ -99,29 +99,42 @@ def grade(qid, q):
         n = nums_in(text)
         if n != p["nums"]:
             return bad(qid, f"the story shows {n} but was built from {p['nums']}")
-        x, y = n
-        if "gets" in text and "more" in text:
-            want = x + y
-        elif "gives away" in text:
-            want = x - y
-        elif " had " in text and "Now" in text:
-            want = y - x
-        elif "red" in text and "blue" in text:
-            want = x + y
-        elif "of them are big" in text:
-            want = x - y
-        elif "more than" in text:
-            want = x + y
-        elif "fewer" in text:
-            want = x - y
-        elif "How many more does" in text:
-            want = x - y
-        elif "Each bag has" in text or "Each has" in text:
-            want = x * y
-        elif "shared equally" in text:
-            want = x // y if x % y == 0 else None
+        if len(n) == 3:
+            x, y, z = n
+            if re.search(r"gets \d+, then gives away \d+", text):
+                want = x + y - z
+            elif re.search(r"gives away \d+, then gets \d+", text):
+                want = x - y + z
+            elif "bags of" in text and "are eaten" in text:
+                want = x * y - z
+            elif "red and" in text and "blue" in text:
+                want = x + y + z
+            else:
+                return bad(qid, "cannot tell what the two-step story is doing")
         else:
-            return bad(qid, "cannot tell what the story is doing")
+            x, y = n
+            if "gets" in text and "more" in text:
+                want = x + y
+            elif "gives away" in text:
+                want = x - y
+            elif " had " in text and "Now" in text:
+                want = y - x
+            elif "red" in text and "blue" in text:
+                want = x + y
+            elif "of them are big" in text:
+                want = x - y
+            elif "more than" in text:
+                want = x + y
+            elif "fewer" in text:
+                want = x - y
+            elif "How many more does" in text:
+                want = x - y
+            elif "Each bag has" in text or "Each has" in text:
+                want = x * y
+            elif "shared equally" in text:
+                want = x // y if x % y == 0 else None
+            else:
+                return bad(qid, "cannot tell what the story is doing")
         if want != a:
             bad(qid, f"reading the story gives {want}, stored {a}")
 
@@ -323,7 +336,7 @@ def grade(qid, q):
         pairs = [pp for pp in p["pairs"] if pp[1] is not None]
         ask = p["pairs"][-1][0]
         preds = set()
-        for k in range(1, 13):
+        for k in range(1, 31):
             for f in (lambda v, k=k: v + k, lambda v, k=k: v - k, lambda v, k=k: v * k):
                 if all(f(u) == w for u, w in pairs):
                     preds.add(f(ask))
@@ -407,8 +420,8 @@ def grade(qid, q):
         pick(f"{hour} o'clock" if t.minute == 0 else f"half past {hour}")
 
     elif sh == "combos":
-        x, y = nums_in(lines[0])
-        ways = len(list(itertools.product(range(x), range(y))))
+        counts = nums_in(lines[0])
+        ways = len(list(itertools.product(*[range(k) for k in counts])))
         if ways != a:
             bad(qid, f"listing every pair gives {ways}, stored {a}")
 

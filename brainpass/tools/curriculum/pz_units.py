@@ -60,42 +60,42 @@ def face(n):
 # ---- 1.1 Missing numbers ----------------------------------------------------
 
 S111 = [
-    equation(P_BOX, 8, "+", 7, 15, "right"),
-    equation(P_BOX, 9, "+", 5, 14, "left"),
-    equation(P_BOX, 6, "+", 8, 14, "result"),
-    equation(P_BOX, 7, "+", 9, 16, "right"),
-    equation(P_BOX, 12, "+", 6, 18, "left"),
-    riddle(P_RID, [("add", 4)], 12),
-    riddle(P_RID, [("take", 5)], 9),
+    equation(P_BOX, 27, "+", 18, 45, "right"),
+    equation(P_BOX, 36, "+", 29, 65, "result"),
+    equation(P_BOX, 48, "+", 25, 73, "left"),
+    equation(P_BOX, 19, "+", 57, 76, "right"),
+    equation(P_BOX, 64, "+", 28, 92, "result"),
+    riddle(P_RID, [("add", 17), ("double",)], 50),
+    riddle(P_RID, [("double",), ("add", 15)], 39),
 ]
 
 S112 = [
-    equation(P_BOX, 15, "-", 6, 9, "right"),
-    equation(P_BOX, 17, "-", 8, 9, "left"),
-    equation(P_BOX, 30, "+", 40, 70, "right"),
-    equation(P_BOX, 50, "-", 20, 30, "result"),
-    equation(P_BOX, 13, "-", 7, 6, "result"),
-    riddle(P_RID, [("double",)], 14),
-    riddle(P_RID, [("half",)], 8),
+    equation(P_BOX, 52, "-", 27, 25, "right"),
+    equation(P_BOX, 71, "-", 38, 33, "result"),
+    equation(P_BOX, 45, "-", 19, 26, "left"),
+    equation(P_BOX, 90, "-", 46, 44, "right"),
+    equation(P_BOX, 63, "-", 35, 28, "result"),
+    riddle(P_RID, [("take", 9), ("half",)], 17),
+    riddle(P_RID, [("half",), ("take", 8)], 14),
 ]
 
 S113 = [
-    equation(P_BOX, 24, "+", 6, 30, "right"),
-    equation(P_BOX, 45, "-", 5, 40, "right"),
-    equation(P_BOX, 36, "+", 4, 40, "left"),
-    equation(P_BOX, 60, "-", 25, 35, "left"),
-    riddle(P_RID, [("add", 3), ("double",)], 16),
-    riddle(P_RID, [("double",), ("take", 4)], 10),
-    riddle(P_RID, [("take", 2), ("half",)], 6),
+    riddle(P_RID, [("add", 25), ("half",)], 30),
+    riddle(P_RID, [("double",), ("take", 13)], 41),
+    riddle(P_RID, [("take", 16), ("double",)], 58),
+    equation(P_BOX, 38, "+", 47, 85, "left"),
+    equation(P_BOX, 100, "-", 57, 43, "right"),
+    equation(P_BOX, 29, "+", 34, 63, "right"),
+    riddle(P_RID, [("half",), ("add", 19)], 42),
 ]
 
 S114 = [
-    equation(P_BOX, 19, "-", 11, 8, "right"),
-    riddle(P_RID, [("add", 10)], 25),
-    equation(P_BOX, 27, "+", 13, 40, "result"),
-    riddle(P_RID, [("half",), ("add", 5)], 11),
-    equation(P_BOX, 80, "-", 35, 45, "left"),
-    riddle(P_RID, [("double",), ("add", 6)], 20),
+    equation(P_BOX, 84, "-", 49, 35, "left"),
+    riddle(P_RID, [("add", 14), ("double",)], 76),
+    equation(P_BOX, 56, "+", 37, 93, "result"),
+    riddle(P_RID, [("double",), ("take", 27)], 45),
+    equation(P_BOX, 72, "-", 45, 27, "right"),
+    riddle(P_RID, [("take", 11), ("half",)], 25),
 ]
 
 # ---- 1.2 Story sums ---------------------------------------------------------
@@ -103,83 +103,83 @@ S114 = [
 # then combine and compare, then equal groups and fair shares.
 
 S121 = [
-    story(P_STORY, "join", "Riya", "marbles", 8, 5),
-    story(P_STORY, "leave", "Kabir", "kites", 12, 4),
-    story(P_STORY, "join", "Om", "stickers", 15, 7),
-    story(P_STORY, "leave", "Meera", "sweets", 20, 6),
-    story(P_STORY, "gain", "Aman", "shells", 9, 16),
-    story(P_STORY, "leave", "Tara", "balloons", 11, 9),
-    bars(P_BAR, "Ravi", 14, "Asha", 9, "diff"),
+    story(P_STORY, "join", "Riya", "marbles", 38, 27),
+    story(P_STORY, "leave", "Kabir", "kites", 52, 18),
+    story(P_STORY, "joinleave", "Om", "stickers", 24, 19, c=15),
+    story(P_STORY, "leave", "Meera", "sweets", 70, 34),
+    story(P_STORY, "gain", "Aman", "shells", 29, 56),
+    story(P_STORY, "leavejoin", "Tara", "balloons", 45, 17, c=26),
+    bars(P_BAR, "Ravi", 63, "Asha", 38, "diff"),
 ]
 
 S122 = [
-    story(P_STORY, "total", "Diya", "balls", 7, 8),
-    story(P_STORY, "part", "Neha", "fish", 18, 7),
-    story(P_STORY, "more", "Veer", "pencils", 9, 4, "Isha"),
-    story(P_STORY, "fewer", "Priya", "books", 16, 5, "Rohan"),
-    story(P_STORY, "diff", "Sahil", "cards", 17, 9, "Zoya"),
-    story(P_STORY, "total", "Yash", "cars", 12, 9),
-    bars(P_BAR, "Lila", 20, "Karan", 13, "diff"),
+    story(P_STORY, "total", "Diya", "balls", 27, 36),
+    story(P_STORY, "part", "Neha", "fish", 61, 27),
+    story(P_STORY, "more", "Veer", "pencils", 46, 28, "Isha"),
+    story(P_STORY, "fewer", "Priya", "books", 83, 47, "Rohan"),
+    story(P_STORY, "diff", "Sahil", "cards", 92, 58, "Zoya"),
+    story(P_STORY, "twototal", "Yash", "cars", 18, 25, "Anya", c=29),
+    bars(P_BAR, "Lila", 75, "Karan", 49, "diff"),
 ]
 
 S123 = [
-    story(P_STORY, "groups", "", "apples", 3, 4),
-    story(P_STORY, "legs", "", "hens", 5, 2),
-    story(P_STORY, "share", "", "mangoes", 12, 3),
-    story(P_STORY, "groups", "", "toffees", 5, 10),
-    story(P_STORY, "share", "", "pencils", 20, 5),
-    bars(P_BAR, "Mia", 25, "Dev", 18, "low"),
-    bars(P_BAR, "Anya", 30, "Raj", 22, "top"),
+    story(P_STORY, "groups", "", "apples", 6, 5),
+    story(P_STORY, "legs", "", "dogs", 9, 4),
+    story(P_STORY, "share", "", "mangoes", 32, 4),
+    story(P_STORY, "groupsleave", "", "toffees", 4, 10, c=13),
+    story(P_STORY, "share", "", "pencils", 45, 5),
+    bars(P_BAR, "Mia", 81, "Dev", 57, "low"),
+    bars(P_BAR, "Nina", 94, "Raj", 66, "top"),
 ]
 
 S124 = [
-    story(P_STORY, "gain", "Pooja", "beads", 14, 21),
-    story(P_STORY, "fewer", "Nikhil", "stamps", 25, 8, "Sara"),
-    story(P_STORY, "legs", "", "cows", 4, 4),
-    bars(P_BAR, "Kavya", 40, "Ali", 26, "diff"),
-    story(P_STORY, "share", "", "biscuits", 18, 2),
-    story(P_STORY, "more", "Rani", "shells", 23, 9, "Tom"),
+    story(P_STORY, "gain", "Pooja", "beads", 37, 64),
+    story(P_STORY, "fewer", "Nikhil", "stamps", 72, 36, "Sara"),
+    story(P_STORY, "legs", "", "spiders", 5, 8),
+    bars(P_BAR, "Kavya", 90, "Ali", 62, "diff"),
+    story(P_STORY, "groupsleave", "", "biscuits", 5, 6, c=12),
+    story(P_STORY, "joinleave", "Rani", "shells", 47, 36, c=28),
 ]
 
 # ---- 1.3 Number patterns ----------------------------------------------------
 
 S131 = [
-    series(P_MISS, [2, 4, 6, 8, 10, 12], 5),
-    series(P_MISS, [5, 10, 15, 20, 25, 30], 5),
-    series(P_MISS, [10, 20, 30, 40, 50, 60], 3),
-    series(P_MISS, [20, 18, 16, 14, 12, 10], 4),
-    series(P_MISS, [3, 5, 7, 9, 11, 13], 2),
-    series_rule(P_RULE, [4, 6, 8, 10, 12], [("add", 2), ("add", 4), ("double",), ("grow",)]),
-    series_rule(P_RULE, [25, 20, 15, 10, 5], [("take", 5), ("take", 4), ("add", 5), ("take", 10)]),
+    series(P_MISS, [7, 13, 19, 25, 31, 37], 5),
+    series(P_MISS, [4, 12, 20, 28, 36, 44], 3),
+    series(P_MISS, [9, 18, 27, 36, 45, 54], 4),
+    series(P_MISS, [95, 88, 81, 74, 67, 60], 5),
+    series(P_MISS, [11, 17, 23, 29, 35, 41], 2),
+    series_rule(P_RULE, [5, 12, 19, 26, 33], [("add", 7), ("add", 6), ("add", 8), ("double",)]),
+    series_rule(P_RULE, [80, 72, 64, 56, 48], [("take", 8), ("take", 9), ("take", 7), ("add", 8)]),
 ]
 
 S132 = [
-    series(P_MISS, [3, 6, 9, 12, 15, 18], 5),
-    series(P_MISS, [4, 8, 12, 16, 20, 24], 2),
-    series(P_MISS, [30, 27, 24, 21, 18, 15], 5),
-    series(P_MISS, [50, 45, 40, 35, 30, 25], 1),
-    series(P_MISS, [1, 4, 7, 10, 13, 16], 4),
-    series_rule(P_RULE, [2, 5, 8, 11, 14], [("add", 3), ("add", 2), ("grow",), ("double",)]),
-    series_rule(P_RULE, [40, 36, 32, 28, 24], [("take", 4), ("take", 2), ("take", 6), ("add", 4)]),
+    series(P_MISS, [3, 12, 21, 30, 39, 48], 4),
+    series(P_MISS, [100, 91, 82, 73, 64, 55], 2),
+    series(P_MISS, [14, 22, 30, 38, 46, 54], 5),
+    series(P_MISS, [66, 59, 52, 45, 38, 31], 4),
+    series(P_MISS, [23, 38, 53, 68, 83, 98], 3),
+    series_rule(P_RULE, [6, 15, 24, 33, 42], [("add", 9), ("add", 8), ("add", 6), ("grow",)]),
+    series_rule(P_RULE, [90, 84, 78, 72, 66], [("take", 6), ("take", 4), ("take", 8), ("take", 5)]),
 ]
 
 S133 = [
-    series(P_MISS, [1, 2, 4, 7, 11, 16], 5),
-    series(P_MISS, [1, 2, 4, 8, 16, 32], 5),
-    series(P_MISS, [2, 3, 5, 8, 12, 17], 4),
-    series(P_MISS, [3, 6, 12, 24, 48], 3),
-    series(P_MISS, [10, 11, 13, 16, 20, 25], 3),
-    series_rule(P_RULE, [1, 2, 4, 8, 16], [("double",), ("add", 1), ("grow",), ("add", 2)]),
-    series_rule(P_RULE, [5, 6, 8, 11, 15], [("grow",), ("add", 1), ("double",), ("add", 3)]),
+    series(P_MISS, [2, 3, 5, 8, 12, 17, 23], 6),
+    series(P_MISS, [3, 6, 12, 24, 48, 96], 5),
+    series(P_MISS, [10, 12, 15, 19, 24, 30], 4),
+    series(P_MISS, [5, 10, 20, 40, 80], 2),
+    series(P_MISS, [20, 21, 23, 26, 30, 35], 3),
+    series_rule(P_RULE, [4, 8, 16, 32, 64], [("double",), ("add", 4), ("grow",), ("add", 8)]),
+    series_rule(P_RULE, [15, 16, 18, 21, 25], [("grow",), ("add", 1), ("add", 3), ("double",)]),
 ]
 
 S134 = [
-    series(P_MISS, [6, 12, 18, 24, 30, 36], 4),
-    series(P_MISS, [5, 10, 20, 40, 80], 4),
-    series_rule(P_RULE, [7, 14, 21, 28, 35], [("add", 7), ("double",), ("add", 6), ("grow",)]),
-    series(P_MISS, [45, 40, 35, 30, 25, 20], 3),
-    series(P_MISS, [4, 5, 7, 10, 14, 19], 5),
-    series(P_MISS, [90, 80, 70, 60, 50, 40], 5),
+    series(P_MISS, [8, 15, 22, 29, 36, 43], 4),
+    series(P_MISS, [6, 12, 24, 48, 96], 3),
+    series_rule(P_RULE, [13, 21, 29, 37, 45], [("add", 8), ("add", 7), ("add", 9), ("grow",)]),
+    series(P_MISS, [99, 92, 85, 78, 71, 64], 3),
+    series(P_MISS, [30, 31, 33, 36, 40, 45], 5),
+    series(P_MISS, [18, 27, 36, 45, 54, 63], 1),
 ]
 
 
@@ -427,8 +427,8 @@ S321 = [
     word_analogy(P_AN, "baby", "cat", "duck"),
     word_analogy(P_AN, "home", "bird", "bee"),
     word_analogy(P_AN, "home", "dog", "horse"),
-    number_analogy(P_NAN, "add", 3, [2, 5], 7),
-    number_analogy(P_NAN, "times", 2, [3, 4], 6),
+    number_analogy(P_NAN, "add", 17, [8, 15], 26),
+    number_analogy(P_NAN, "times", 4, [3, 5], 7),
 ]
 
 S322 = [
@@ -437,8 +437,8 @@ S322 = [
     word_analogy(P_AN, "opposite", "happy", "fast"),
     word_analogy(P_AN, "sense", "eye", "ear"),
     word_analogy(P_AN, "sense", "nose", "tongue"),
-    number_analogy(P_NAN, "take", 4, [9, 12], 15),
-    number_analogy(P_NAN, "add", 10, [5, 12], 23),
+    number_analogy(P_NAN, "take", 9, [25, 40], 63),
+    number_analogy(P_NAN, "times", 3, [6, 9], 8),
 ]
 
 S323 = [
@@ -446,18 +446,18 @@ S323 = [
     word_analogy(P_AN, "work", "farmer", "cook"),
     word_analogy(P_AN, "colour", "grass", "banana"),
     word_analogy(P_AN, "colour", "snow", "coal"),
-    number_analogy(P_NAN, "times", 3, [2, 4], 5),
-    number_analogy(P_NAN, "times", 10, [3, 5], 4),
-    number_analogy(P_NAN, "take", 2, [10, 7], 18),
+    number_analogy(P_NAN, "times", 5, [4, 7], 9),
+    number_analogy(P_NAN, "add", 25, [12, 30], 47),
+    number_analogy(P_NAN, "take", 15, [40, 62], 81),
 ]
 
 S324 = [
     word_analogy(P_AN, "baby", "lion", "frog"),
     word_analogy(P_AN, "opposite", "wet", "full"),
-    number_analogy(P_NAN, "add", 6, [4, 9], 14),
+    number_analogy(P_NAN, "times", 6, [2, 5], 8),
     word_analogy(P_AN, "home", "spider", "rabbit"),
     word_analogy(P_AN, "work", "pilot", "doctor"),
-    number_analogy(P_NAN, "times", 5, [2, 3], 6),
+    number_analogy(P_NAN, "add", 19, [21, 36], 54),
 ]
 
 # ---- 3.3 Letter and number codes --------------------------------------------
@@ -593,11 +593,11 @@ S424 = [
 # then every kind of puzzle in the skill, shuffled.
 
 S431 = [
-    combos(P_WAYS, "Riya", 3, "tops", 2, "skirts"),
-    combos(P_WAYS, "Om", 2, "caps", 4, "shirts"),
-    combos(P_WAYS, "Zoya", 3, "breads", 3, "fillings"),
-    combos(P_WAYS, "Kabir", 4, "cones", 3, "flavours"),
-    story(P_STORY, "join", "Isha", "shells", 26, 8),
+    combos(P_WAYS, "Riya", 4, "tops", 3, "skirts"),
+    combos(P_WAYS, "Om", 5, "caps", 2, "shirts"),
+    combos(P_WAYS, "Zoya", 2, "breads", 3, "fillings", 2, "drinks"),
+    combos(P_WAYS, "Kabir", 3, "cones", 5, "flavours"),
+    story(P_STORY, "leavejoin", "Isha", "shells", 63, 28, c=17),
     rank("Tap who is the fastest.", "fast", ["Dev", "Sara", "Tom"],
          [("Sara", "Tom", "more"), ("Dev", "Sara", "less")], "top"),
     relation(rel("Kavya", "Nikhil"), [("Kavya", "wife", "Aman"), ("Aman", "father", "Nikhil")],
@@ -605,9 +605,9 @@ S431 = [
 ]
 
 S432 = [
-    combos(P_WAYS, "Neha", 2, "hairbands", 2, "clips"),
-    combos(P_WAYS, "Arjun", 4, "shirts", 4, "shorts"),
-    equation(P_BOX, 16, "-", 9, 7, "right"),
+    combos(P_WAYS, "Neha", 3, "hairbands", 2, "clips", 3, "bangles"),
+    combos(P_WAYS, "Arjun", 4, "shirts", 5, "shorts"),
+    equation(P_BOX, 81, "-", 26, 55, "left"),
     queue_calc(P_CLUE, "total", 4, 7, "Mia"),
     turns(face("Sahil"), "Sahil", "West", ["left"]),
     word_analogy(P_AN, "colour", "tomato", "sky"),
@@ -615,12 +615,12 @@ S432 = [
 ]
 
 S433 = [
-    series(P_MISS, [8, 10, 12, 14, 16, 18], 1),
+    series(P_MISS, [12, 19, 26, 33, 40, 47], 1),
     odd_word(P_ODD, ["guava", "cherry", "bus", "apple"]),
     weekday(P_DAY, "after", "Tuesday", 5),
-    riddle(P_RID, [("add", 7)], 20),
+    riddle(P_RID, [("add", 28), ("half",)], 35),
     queue_who("Tap who is 2nd from the back.", ["Veer", "Anu", "Raj", "Rani"], 2, "back"),
-    number_analogy(P_NAN, "add", 5, [1, 6], 10),
+    number_analogy(P_NAN, "times", 10, [7, 4], 9),
     shelf("Tap two places left of the circle.", ["heart", "square", "circle", "star", "triangle"], "circle", "left", 2),
 ]
 
@@ -628,7 +628,7 @@ S434 = [
     relation_who("Tap Nina's aunt.",
                  [("Asha", "sister", "Karan"), ("Karan", "father", "Nina"), ("Rohan", "brother", "Nina")],
                  "Nina", "aunt"),
-    story(P_STORY, "groups", "", "pencils", 4, 5),
+    story(P_STORY, "groups", "", "pencils", 7, 5),
     rank("Tap who is the second oldest.", "old", ["Ali", "Lila", "Yash", "Priya"],
          [("Lila", "Ali", "more"), ("Yash", "Ali", "less"), ("Priya", "Yash", "less")], "second"),
     letter_code(P_CODE, "LOG", "SIP", ("shift", 1)),
