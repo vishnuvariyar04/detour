@@ -616,11 +616,12 @@ P_FILL = "Tap how many more cubes fill the dotted shape."
 P_FRONT = "Tap what you see from the FRONT."
 P_RIGHT = "Tap what you see from the RIGHT."
 
-M = [STAR, HEART, CIRCLE, SQUARE, TRIANGLE, DIAMOND, HEXAGON, FLOWER]
+# Only shapes that stay distinct when drawn small; see CLEAR_GLYPHS in the kit.
+M = _K.CLEAR_GLYPHS
 
 
 def marks(k):
-    return [M[(k + i * 3) % 8] for i in range(6)]
+    return [M[(k + i * 5) % 6] for i in range(6)]
 
 
 def net_q(net, k, straight):

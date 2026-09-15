@@ -677,6 +677,266 @@ function drawCode(c,pic,x,y,w){
   if(hasTotal) text(c,"= "+pic.total,sx+row.length*sw+sw/2,top+36,20,K.text,900,"center");
   return 64+76;
 }
+// ---- band d: Reasoning ---------------------------------------------------
+// Every height returned here is the same number rs_simulate.py uses to check
+// that a question fits on the card. Change one and change the other.
+function ordinalJS(n){
+  const t=n%100; if(t>=10&&t<=20) return n+"th";
+  return n+({1:"st",2:"nd",3:"rd"}[n%10]||"th");
+}
+function fitSize(c,s,maxW,size,min,weight){
+  let z=size;
+  c.font=`${weight||900} ${z}px Nunito, sans-serif`;
+  while(z>min && c.measureText(String(s)).width>maxW){
+    z-=1; c.font=`${weight||900} ${z}px Nunito, sans-serif`;
+  }
+  return z;
+}
+function lineBreaks(c,s,maxW,size,weight){
+  c.font=`${weight||700} ${size}px Nunito, sans-serif`;
+  const out=[]; let line="";
+  String(s||"").split(" ").forEach(function(w){
+    const t=line?line+" "+w:w;
+    if(c.measureText(t).width>maxW && line){ out.push(line); line=w; }
+    else line=t;
+  });
+  if(line) out.push(line);
+  return out;
+}
+function drawSequence(c,p,x,y,w){
+  const t=p.terms||[], n=t.length||1, gap=6;
+  const box=Math.min(56,(w-gap*(n-1))/n), tot=box*n+gap*(n-1), ox=x+(w-tot)/2;
+  t.forEach(function(v,i){
+    const bx=ox+i*(box+gap), hole=(v===null||v===undefined);
+    rrect(c,bx,y+4,box,44,12,K.ledge);
+    rrect(c,bx,y,box,44,12,hole?"#F1ECFF":K.surface,hole?K.primary:K.line,hole?2:1.5);
+    const label=hole?"?":String(v);
+    const z=fitSize(c,label,box-6,20,11,900);
+    text(c,label,bx+box/2,y+22,z,hole?K.primary:K.text,900,"center");
+    if(p.askPosition||p.askValue)
+      text(c,ordinalJS(i+1),bx+box/2,y+56,10,K.muted,700,"center");
+  });
+  if(p.askPosition){
+    text(c,`${ordinalJS(p.askPosition)} number  =  ?`,x+w/2,y+84,18,K.primary,900,"center");
+    return 102;
+  }
+  if(p.askValue!==undefined){
+    text(c,`?  position  =  ${p.askValue}`,x+w/2,y+84,18,K.primary,900,"center");
+    return 102;
+  }
+  return 64;
+}
+function clueCard(c,lines,x,y,w){
+  const rows=[]; (lines||[]).forEach(function(l){ lineBreaks(c,l,w-28,15,700).forEach(function(r){rows.push(r);}); });
+  const h=28+22*rows.length;
+  rrect(c,x,y,w,h,16,"#FFFCEF","#F2E3B3",1.5);
+  rows.forEach(function(r,i){ text(c,r,x+14,y+14+11+i*22,15,K.text,700); });
+  return h;
+}
+function drawClues(c,p,x,y,w){ return clueCard(c,p.lines,x,y,w); }
+function drawDeduce(c,p,x,y,w){
+  const h=clueCard(c,p.lines,x,y,w);
+  if((p.people||[]).length!==3) return h;
+  const gy=y+h+10, lw=84, cw=(w-lw)/3;
+  (p.things||[]).forEach(function(t,i){
+    const label=((t+" "+(p.noun||"")).trim());
+    const z=fitSize(c,label,cw-6,12,9,800);
+    text(c,label,x+lw+i*cw+cw/2,gy+12,z,K.muted,800,"center");
+  });
+  p.people.forEach(function(n,r){
+    const ry=gy+24+r*26;
+    text(c,n,x+6,ry+13,13,K.text,800);
+    for(let i=0;i<3;i++) rrect(c,x+lw+i*cw+3,ry+2,cw-6,22,6,K.surface,K.line,1.2);
+  });
+  return h+112;
+}
+function bulbRow(c,values,on,x,y,w,labels){
+  const n=values.length, cell=w/n, r=Math.min(cell*0.3,20);
+  values.forEach(function(v,i){
+    const cx=x+i*cell+cell/2;
+    if(labels) text(c,String(v),cx,y+12,13,K.muted,800,"center");
+    const cy=y+(labels?44:r+4), lit=on&&on[i];
+    if(lit){ c.fillStyle="rgba(253,199,3,0.28)"; c.beginPath(); c.arc(cx,cy,r+6,0,7); c.fill(); }
+    c.fillStyle=lit?K.accent:"#E4E6EF"; c.beginPath(); c.arc(cx,cy,r,0,7); c.fill();
+    c.lineWidth=1.5; c.strokeStyle=lit?K.accentLedge:K.ledge; c.stroke();
+  });
+}
+function drawBulbs(c,p,x,y,w){
+  if(p.kind==="binaryAsk"){
+    text(c,String(p.target),x+w/2,y+26,34,K.primary,900,"center");
+    bulbRow(c,p.values,null,x,y+62,w,true);
+    return 150;
+  }
+  bulbRow(c,p.values,p.on,x,y,w,true);
+  if(p.askPlus) text(c,"Now add one to this number",x+w/2,y+96,13,K.muted,700,"center");
+  return 118;
+}
+function drawShift(c,p,x,y,w){
+  const A="ABCDEFGHIJKLMNOPQRSTUVWXYZ", bw=w/13;
+  for(let i=0;i<26;i++){
+    const col=i%13, row=Math.floor(i/13), bx=x+col*bw, by=y+row*46;
+    rrect(c,bx+1,by,bw-2,42,6,K.surface,K.line,1);
+    text(c,A[i],bx+bw/2,by+12,12,K.text,800,"center");
+    text(c,A[(i+p.shift)%26],bx+bw/2,by+31,12,K.primary,900,"center");
+  }
+  const label=p.mode==="encode"?"Word":"Code";
+  const wy=y+100, word=String(p.word), lw=38, gap=6;
+  const cellw=Math.min(40,(w-lw-gap*word.length)/word.length);
+  text(c,label,x,wy+20,13,K.muted,800);
+  for(let i=0;i<word.length;i++){
+    const bx=x+lw+i*(cellw+gap);
+    rrect(c,bx,wy,cellw,40,10,p.mode==="encode"?K.surface:"#F1ECFF",K.primary,1.5);
+    text(c,word[i],bx+cellw/2,wy+20,20,p.mode==="encode"?K.text:K.primary,900,"center");
+  }
+  return 150;
+}
+function drawSymbols(c,p,x,y,w){
+  const key=p.key||[], per=5, cw=w/per, rows=Math.ceil(key.length/per);
+  key.forEach(function(k,i){
+    const cx=x+(i%per)*cw+cw/2, cy=y+20+Math.floor(i/per)*40;
+    glyph(c,k.glyph,cx-14,cy,10,COLOR(k.color),LEDGE(k.color));
+    text(c,"= "+k.letter,cx+12,cy,15,K.text,900,"center");
+  });
+  const wy=y+rows*40+12, word=p.word||[], sz=46, gap=8;
+  const tot=word.length*sz+(word.length-1)*gap, ox=x+(w-tot)/2;
+  word.forEach(function(g,i){
+    const bx=ox+i*(sz+gap);
+    rrect(c,bx,wy,sz,sz,12,"#F1ECFF",K.primary,1.5);
+    glyph(c,g.glyph,bx+sz/2,wy+sz/2,14,COLOR(g.color),LEDGE(g.color));
+  });
+  return rows*40+12+54;
+}
+function drawLetters(c,p,x,y,w){
+  const items=p.codes?p.codes.map(String):String(p.word).split("");
+  const sz=48, gap=p.codes?18:8, tot=items.length*sz+(items.length-1)*gap, ox=x+(w-tot)/2;
+  items.forEach(function(v,i){
+    const bx=ox+i*(sz+gap);
+    rrect(c,bx,y+6,sz,sz,12,K.surface,K.primary,1.5);
+    text(c,v,bx+sz/2,y+30,22,K.text,900,"center");
+    if(p.codes&&i<items.length-1) text(c,"-",bx+sz+gap/2,y+30,20,K.muted,900,"center");
+  });
+  return 70;
+}
+function netCells(c,cells,x,y,w,h,maxSize,marks,target,fill){
+  const cols=Math.max.apply(null,cells.map(function(q){return q[0];}))+1;
+  const rows=Math.max.apply(null,cells.map(function(q){return q[1];}))+1;
+  const size=Math.min(maxSize,w/cols,h/rows), ox=x+(w-cols*size)/2, oy=y+(h-rows*size)/2;
+  cells.forEach(function(q,i){
+    const bx=ox+q[0]*size, by=oy+q[1]*size, hit=marks&&marks[i]===target;
+    rrect(c,bx+1,by+1,size-2,size-2,5,hit?"#FFF3C4":(fill||K.surface),K.primary,1.5);
+    if(marks) glyph(c,marks[i],bx+size/2,by+size/2,size*0.27,K.primary,K.primaryLedge);
+  });
+  return rows*size;
+}
+function drawNet(c,p,x,y,w){
+  const cols=Math.max.apply(null,p.cells.map(function(q){return q[0];}))+1;
+  const rows=Math.max.apply(null,p.cells.map(function(q){return q[1];}))+1;
+  const size=Math.min(46,w/cols,150/rows);
+  netCells(c,p.cells,x,y,w,rows*size,46,p.marks,p.target);
+  return rows*size+8;
+}
+function isoCube(c,cx,cy,s,top,front,right){
+  const a=s*0.866, b=s*0.5;
+  const faces=[
+    [[cx,cy-s],[cx+a,cy-b],[cx,cy],[cx-a,cy-b],"#EFE9FF",top],
+    [[cx-a,cy-b],[cx,cy],[cx,cy+s],[cx-a,cy+b],"#C9B6F8",front],
+    [[cx,cy],[cx+a,cy-b],[cx+a,cy+b],[cx,cy+s],"#9F82EE",right]];
+  faces.forEach(function(f){
+    c.beginPath(); c.moveTo(f[0][0],f[0][1]);
+    for(let i=1;i<4;i++) c.lineTo(f[i][0],f[i][1]);
+    c.closePath(); c.fillStyle=f[4]; c.fill();
+    c.lineWidth=1.5; c.strokeStyle=K.primaryLedge; c.stroke();
+    const mx=(f[0][0]+f[1][0]+f[2][0]+f[3][0])/4, my=(f[0][1]+f[1][1]+f[2][1]+f[3][1])/4;
+    text(c,String(f[5]),mx,my,17,K.text,900,"center");
+  });
+}
+function drawRoll(c,p,x,y,w){
+  const cell=38, gw=p.w*cell, gh=p.h*cell;
+  for(let r=0;r<p.h;r++) for(let q=0;q<p.w;q++)
+    rrect(c,x+q*cell+1,y+r*cell+1,cell-2,cell-2,6,(q+r)%2?K.tileAlt:K.tile,K.line,1);
+  let cx=p.start[0], cy=p.start[1];
+  const ctr=function(q,r){return [x+q*cell+cell/2,y+r*cell+cell/2];};
+  const D={right:[1,0],left:[-1,0],up:[0,-1],down:[0,1]};
+  let s0=ctr(cx,cy);
+  c.fillStyle=K.primary; c.beginPath(); c.arc(s0[0],s0[1],7,0,7); c.fill();
+  p.moves.forEach(function(m){
+    const a=ctr(cx,cy); cx+=D[m][0]; cy+=D[m][1]; const b=ctr(cx,cy);
+    c.strokeStyle=K.primary; c.lineWidth=3; c.beginPath();
+    c.moveTo(a[0],a[1]); c.lineTo(b[0]-(b[0]-a[0])*0.3,b[1]-(b[1]-a[1])*0.3); c.stroke();
+    arrow(c,(a[0]+b[0])/2+(b[0]-a[0])*0.18,(a[1]+b[1])/2+(b[1]-a[1])*0.18,6,m,K.primary);
+  });
+  const dx=x+gw+(w-gw)/2, dy=y+46;
+  isoCube(c,dx,dy,32,p.top,p.front,p.right);
+  text(c,"front",dx-22,dy+44,11,K.muted,800,"center");
+  text(c,"right",dx+22,dy+44,11,K.muted,800,"center");
+  return Math.max(gh,104)+10;
+}
+function drawStack(c,p,x,y,w){
+  const hs=p.heights, d=hs.length, wd=hs[0].length, s=24, a=s*0.866, b=s*0.5;
+  const top=p.full?p.full[2]:Math.max.apply(null,hs.map(function(r){return Math.max.apply(null,r);}));
+  const ox=x+(w-(wd+d)*a)/2+d*a, oy=y+8+top*s;
+  const P=function(X,Y,Z){return [ox+(X-Y)*a, oy+(X+Y)*b-Z*s];};
+  const poly=function(pts,fill){
+    c.beginPath(); c.moveTo(pts[0][0],pts[0][1]);
+    for(let i=1;i<pts.length;i++) c.lineTo(pts[i][0],pts[i][1]);
+    c.closePath(); c.fillStyle=fill; c.fill(); c.lineWidth=1; c.strokeStyle=K.primaryLedge; c.stroke();
+  };
+  const cubes=[];
+  for(let Y=0;Y<d;Y++) for(let X=0;X<wd;X++) for(let Z=0;Z<hs[Y][X];Z++) cubes.push([X,Y,Z]);
+  cubes.sort(function(m,n){return (m[0]+m[1])-(n[0]+n[1]) || m[2]-n[2];});
+  cubes.forEach(function(q){
+    const X=q[0],Y=q[1],Z=q[2];
+    poly([P(X,Y,Z+1),P(X+1,Y,Z+1),P(X+1,Y+1,Z+1),P(X,Y+1,Z+1)],"#EFE9FF");
+    poly([P(X,Y+1,Z),P(X+1,Y+1,Z),P(X+1,Y+1,Z+1),P(X,Y+1,Z+1)],"#C9B6F8");
+    poly([P(X+1,Y,Z),P(X+1,Y+1,Z),P(X+1,Y+1,Z+1),P(X+1,Y,Z+1)],"#9F82EE");
+  });
+  if(p.full){
+    const fw=p.full[0], fd=p.full[1], fh=p.full[2];
+    c.save(); c.setLineDash([5,4]); c.strokeStyle=K.muted; c.lineWidth=1.5;
+    [[P(0,0,fh),P(fw,0,fh)],[P(fw,0,fh),P(fw,fd,fh)],[P(fw,fd,fh),P(0,fd,fh)],[P(0,fd,fh),P(0,0,fh)],
+     [P(0,fd,0),P(fw,fd,0)],[P(fw,fd,0),P(fw,0,0)],
+     [P(0,fd,0),P(0,fd,fh)],[P(fw,fd,0),P(fw,fd,fh)],[P(fw,0,0),P(fw,0,fh)]].forEach(function(e){
+      c.beginPath(); c.moveTo(e[0][0],e[0][1]); c.lineTo(e[1][0],e[1][1]); c.stroke();
+    });
+    c.restore();
+  }
+  if(p.side){
+    const f=P(wd/2,d,0), r=P(wd,d/2,0);
+    text(c,"FRONT",f[0]-16,f[1]+16,11,p.side==="front"?K.primary:K.muted,900,"center");
+    text(c,"RIGHT",r[0]+18,r[1]+16,11,p.side==="right"?K.primary:K.muted,900,"center");
+  }
+  return (wd+d)*b+top*s+30;
+}
+function bitOptions(c,rows,values,x,y,w){
+  rows.forEach(function(bits,i){
+    const oy=y+i*60;
+    rrect(c,x,oy+4,w,50,14,K.ledge); rrect(c,x,oy,w,50,14,K.surface,K.line,1.5);
+    bulbRow(c,values||bits.map(function(){return 0;}),bits,x+24,oy+4,w-48,false);
+  });
+  return rows.length*60;
+}
+function netOptions(c,nets,x,y,w){
+  const cw=(w-10)/2, ch=124;
+  nets.forEach(function(net,i){
+    const bx=x+(i%2)*(cw+10), by=y+Math.floor(i/2)*(ch+18);
+    rrect(c,bx,by+4,cw,ch,14,K.ledge); rrect(c,bx,by,cw,ch,14,K.surface,K.line,1.5);
+    netCells(c,net,bx+10,by+10,cw-20,ch-20,26,null,null,"#EFE9FF");
+  });
+  return 2*132+10;
+}
+function viewOptions(c,views,x,y,w){
+  const gap=10, cw=(w-gap*3)/4, ch=94;
+  views.forEach(function(v,i){
+    const bx=x+i*(cw+gap);
+    rrect(c,bx,y+4,cw,ch,14,K.ledge); rrect(c,bx,y,cw,ch,14,K.surface,K.line,1.5);
+    const n=v.length, mh=Math.max(3,Math.max.apply(null,v));
+    const sz=Math.min((cw-14)/n,(ch-14)/mh), ox=bx+(cw-n*sz)/2, base=y+ch-7;
+    v.forEach(function(hgt,col){
+      for(let z=0;z<hgt;z++) rrect(c,ox+col*sz+0.5,base-(z+1)*sz+0.5,sz-1,sz-1,2,"#C9B6F8",K.primaryLedge,1);
+    });
+  });
+  return 104;
+}
 function drawFraction(c,pic,x,y,w){
   const h=176, two=(pic.otherSlices||0)>0;
   const r=Math.min(72,two?w/4.6:w/2.6), cy=y+h/2;
@@ -913,6 +1173,22 @@ function render(cv,q){
       case "analogy":      put(drawAnalogy(c,pic,M,y,CW)); break;
       case "codeRead":
       case "codePick":     put(drawCode(c,pic,M,y,CW)); break;
+      case "sequence": case "nthTerm": case "termPosition": case "seqRule":
+                           put(drawSequence(c,pic,M,y,CW)); break;
+      case "ifThen": case "claim":
+                           put(drawClues(c,pic,M,y,CW)); break;
+      case "deduce":       put(drawDeduce(c,pic,M,y,CW)); break;
+      case "binaryRead": case "binaryPick":
+                           put(drawBulbs(c,pic,M,y,CW)); break;
+      case "cipher": case "cipherWrite":
+                           put(drawShift(c,pic,M,y,CW)); break;
+      case "symbolCode":   put(drawSymbols(c,pic,M,y,CW)); break;
+      case "letterCode": case "letterSum":
+                           put(drawLetters(c,pic,M,y,CW)); break;
+      case "netFace":      put(drawNet(c,pic,M,y,CW)); break;
+      case "roll":         put(drawRoll(c,pic,M,y,CW)); break;
+      case "stackCount": case "stackFill": case "stackView":
+                           put(drawStack(c,pic,M,y,CW)); break;
       case "sizeOrder":    put(drawSize(c,pic,M,y,CW)); break;
       case "fraction":     put(drawFraction(c,pic,M,y,CW)); break;
     }
@@ -954,6 +1230,9 @@ function render(cv,q){
       ? "Fill every box, then run it. Steps can be used again."
       : "Tap the steps to fill the boxes, then run it."});
   }
+  else if(q.optionBits&&q.optionBits.length) y+=bitOptions(c,q.optionBits,pic&&pic.values,M,y,CW)+8;
+  else if(q.optionNets&&q.optionNets.length) y+=netOptions(c,q.optionNets,M,y,CW)+8;
+  else if(q.optionViews&&q.optionViews.length) y+=viewOptions(c,q.optionViews,M,y,CW)+8;
   else if(q.choices&&q.choices.length) y+=numberKeys(c,q.choices,M,y,CW)+8;
   else if(q.optionCells&&q.optionCells.length) y+=cellOptions(c,q.optionCells,M,y,CW)+8;
   else if(sh==="balance") y+=textOptions(c,["Left","Right","Same"],M,y,CW)+8;
@@ -995,6 +1274,10 @@ function answerWords(q){
       if(t) return `“${t}”`;
       const o=q.options&&q.options[v];
       if(o) return `option ${v+1}: ${o.map(word).join(" · ")}`;
+      if(q.optionBits) return `bulbs ${q.optionBits[v].map(b=>b?"●":"○").join(" ")}`;
+      if(q.optionNets) return `net ${v+1}`;
+      if(q.optionViews) return `view ${v+1} (heights ${q.optionViews[v].join(", ")})`;
+      if(q.optionCells) return `the ${q.optionCells[v].kind}`;
       return `option ${v+1}`;
     }
     case "order":  return Array.isArray(v)?v.map(word).join(" · "):String(v);

@@ -191,6 +191,21 @@ def check_matches(qid, q):
             bad(qid, "prompt asks about a different person")
 
 
+SMALL_UNCLEAR = {"hexagon", "flower"}
+
+
+def check_glyphs(qid, q):
+    """Nets and symbol keys draw shapes at about 20px, where a flower reads as a
+    hexagon and a hexagon as a circle. Neither may appear in them."""
+    p = q.get("pic") or {}
+    used = set(p.get("marks") or [])
+    used |= {k["glyph"] for k in p.get("key") or []}
+    used |= {g["glyph"] for g in p.get("word") or [] if isinstance(g, dict)}
+    used |= {c["kind"] for c in q.get("optionCells") or []}
+    if used & SMALL_UNCLEAR:
+        bad(qid, f"draws {sorted(used & SMALL_UNCLEAR)} small, where it is easy to misread")
+
+
 def check_answerable(qid, q):
     a = q["answer"]
     if a["type"] == "number":
@@ -263,6 +278,7 @@ def main():
                     items.append((qid, q))
                     check_render(qid, q)
                     check_answerable(qid, q)
+                    check_glyphs(qid, q)
                     check_words(qid, q)
                     check_matches(qid, q)
                     check_fit(qid, q)

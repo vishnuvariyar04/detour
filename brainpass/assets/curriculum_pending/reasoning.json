@@ -7966,7 +7966,7 @@
             "letter": "O"
            },
            {
-            "glyph": "flower",
+            "glyph": "star",
             "color": "primary",
             "letter": "T"
            }
@@ -7981,7 +7981,7 @@
             "color": "primary"
            },
            {
-            "glyph": "flower",
+            "glyph": "star",
             "color": "primary"
            }
           ]
@@ -8015,22 +8015,22 @@
             "letter": "G"
            },
            {
-            "glyph": "hexagon",
-            "color": "primary",
-            "letter": "I"
-           },
-           {
             "glyph": "square",
             "color": "accent",
-            "letter": "L"
+            "letter": "I"
            },
            {
             "glyph": "circle",
             "color": "primary",
-            "letter": "O"
+            "letter": "L"
            },
            {
             "glyph": "triangle",
+            "color": "accent",
+            "letter": "O"
+           },
+           {
+            "glyph": "heart",
             "color": "accent",
             "letter": "T"
            }
@@ -8041,8 +8041,8 @@
             "color": "accent"
            },
            {
-            "glyph": "circle",
-            "color": "primary"
+            "glyph": "triangle",
+            "color": "accent"
            },
            {
             "glyph": "diamond",
@@ -8153,8 +8153,8 @@
             "letter": "P"
            },
            {
-            "glyph": "hexagon",
-            "color": "accent",
+            "glyph": "triangle",
+            "color": "primary",
             "letter": "T"
            }
           ],
@@ -8202,28 +8202,28 @@
             "letter": "D"
            },
            {
-            "glyph": "flower",
-            "color": "primary",
-            "letter": "F"
-           },
-           {
             "glyph": "square",
             "color": "accent",
-            "letter": "G"
+            "letter": "F"
            },
            {
             "glyph": "triangle",
             "color": "accent",
-            "letter": "L"
-           },
-           {
-            "glyph": "hexagon",
-            "color": "accent",
-            "letter": "O"
+            "letter": "G"
            },
            {
             "glyph": "star",
             "color": "primary",
+            "letter": "L"
+           },
+           {
+            "glyph": "diamond",
+            "color": "accent",
+            "letter": "O"
+           },
+           {
+            "glyph": "heart",
+            "color": "accent",
             "letter": "X"
            }
           ],
@@ -8233,12 +8233,12 @@
             "color": "primary"
            },
            {
-            "glyph": "hexagon",
+            "glyph": "diamond",
             "color": "accent"
            },
            {
-            "glyph": "star",
-            "color": "primary"
+            "glyph": "heart",
+            "color": "accent"
            }
           ]
          },
@@ -8261,53 +8261,53 @@
           "kind": "symbols",
           "key": [
            {
-            "glyph": "flower",
+            "glyph": "triangle",
             "color": "accent",
             "letter": "B"
            },
            {
-            "glyph": "triangle",
-            "color": "accent",
+            "glyph": "heart",
+            "color": "primary",
             "letter": "D"
            },
            {
-            "glyph": "heart",
+            "glyph": "square",
             "color": "primary",
             "letter": "E"
            },
            {
             "glyph": "square",
-            "color": "primary",
-            "letter": "H"
-           },
-           {
-            "glyph": "square",
             "color": "accent",
-            "letter": "N"
+            "letter": "H"
            },
            {
             "glyph": "heart",
             "color": "accent",
-            "letter": "R"
+            "letter": "N"
            },
            {
             "glyph": "star",
             "color": "primary",
+            "letter": "R"
+           },
+           {
+            "glyph": "circle",
+            "color": "accent",
             "letter": "T"
            }
           ],
           "word": [
            {
-            "glyph": "heart",
-            "color": "accent"
+            "glyph": "star",
+            "color": "primary"
+           },
+           {
+            "glyph": "square",
+            "color": "primary"
            },
            {
             "glyph": "heart",
             "color": "primary"
-           },
-           {
-            "glyph": "triangle",
-            "color": "accent"
            }
           ]
          },
@@ -8362,37 +8362,37 @@
            "letter": "B"
           },
           {
-           "glyph": "flower",
+           "glyph": "diamond",
            "color": "accent",
            "letter": "C"
           },
           {
-           "glyph": "diamond",
-           "color": "accent",
+           "glyph": "circle",
+           "color": "primary",
            "letter": "H"
           },
           {
-           "glyph": "hexagon",
+           "glyph": "circle",
            "color": "accent",
            "letter": "O"
           },
           {
-           "glyph": "circle",
+           "glyph": "star",
            "color": "primary",
            "letter": "T"
           }
          ],
          "word": [
           {
-           "glyph": "diamond",
-           "color": "accent"
+           "glyph": "circle",
+           "color": "primary"
           },
           {
            "glyph": "triangle",
            "color": "primary"
           },
           {
-           "glyph": "circle",
+           "glyph": "star",
            "color": "primary"
           }
          ],
@@ -8692,17 +8692,17 @@
             "letter": "H"
            },
            {
-            "glyph": "hexagon",
-            "color": "primary",
+            "glyph": "star",
+            "color": "accent",
             "letter": "N"
            },
            {
-            "glyph": "flower",
-            "color": "primary",
+            "glyph": "square",
+            "color": "accent",
             "letter": "P"
            },
            {
-            "glyph": "star",
+            "glyph": "circle",
             "color": "accent",
             "letter": "T"
            }
@@ -8717,8 +8717,8 @@
             "color": "accent"
            },
            {
-            "glyph": "hexagon",
-            "color": "primary"
+            "glyph": "star",
+            "color": "accent"
            }
           ]
          },
@@ -8756,18 +8756,18 @@
             "letter": "O"
            },
            {
-            "glyph": "flower",
-            "color": "accent",
+            "glyph": "star",
+            "color": "primary",
             "letter": "P"
            },
            {
-            "glyph": "hexagon",
-            "color": "primary",
+            "glyph": "heart",
+            "color": "accent",
             "letter": "T"
            },
            {
-            "glyph": "star",
-            "color": "primary",
+            "glyph": "triangle",
+            "color": "accent",
             "letter": "U"
            }
           ],
@@ -8777,12 +8777,12 @@
             "color": "primary"
            },
            {
-            "glyph": "star",
-            "color": "primary"
+            "glyph": "triangle",
+            "color": "accent"
            },
            {
-            "glyph": "flower",
-            "color": "accent"
+            "glyph": "star",
+            "color": "primary"
            }
           ]
          },
@@ -8885,8 +8885,8 @@
             "letter": "P"
            },
            {
-            "glyph": "hexagon",
-            "color": "accent",
+            "glyph": "heart",
+            "color": "primary",
             "letter": "T"
            }
           ],
@@ -8900,8 +8900,8 @@
             "color": "accent"
            },
            {
-            "glyph": "hexagon",
-            "color": "accent"
+            "glyph": "heart",
+            "color": "primary"
            }
           ]
          },
@@ -8968,58 +8968,58 @@
           "kind": "symbols",
           "key": [
            {
-            "glyph": "hexagon",
-            "color": "primary",
+            "glyph": "triangle",
+            "color": "accent",
             "letter": "A"
            },
            {
-            "glyph": "triangle",
+            "glyph": "diamond",
             "color": "accent",
             "letter": "F"
            },
            {
-            "glyph": "diamond",
-            "color": "accent",
-            "letter": "H"
-           },
-           {
             "glyph": "triangle",
             "color": "primary",
-            "letter": "M"
+            "letter": "H"
            },
            {
             "glyph": "circle",
             "color": "primary",
-            "letter": "O"
+            "letter": "M"
            },
            {
             "glyph": "diamond",
             "color": "primary",
-            "letter": "T"
+            "letter": "O"
            },
            {
             "glyph": "star",
+            "color": "accent",
+            "letter": "T"
+           },
+           {
+            "glyph": "square",
             "color": "accent",
             "letter": "W"
            },
            {
             "glyph": "square",
-            "color": "accent",
+            "color": "primary",
             "letter": "X"
            }
           ],
           "word": [
            {
-            "glyph": "star",
+            "glyph": "square",
             "color": "accent"
            },
            {
-            "glyph": "hexagon",
-            "color": "primary"
+            "glyph": "triangle",
+            "color": "accent"
            },
            {
             "glyph": "square",
-            "color": "accent"
+            "color": "primary"
            }
           ]
          },
@@ -9089,11 +9089,11 @@
           ],
           "marks": [
            "star",
-           "square",
-           "hexagon",
-           "heart",
+           "diamond",
            "triangle",
-           "flower"
+           "square",
+           "circle",
+           "heart"
           ],
           "target": "star"
          },
@@ -9103,17 +9103,17 @@
          },
          "optionCells": [
           {
-           "kind": "hexagon",
+           "kind": "triangle",
+           "color": "primary",
+           "rotation": 0
+          },
+          {
+           "kind": "circle",
            "color": "primary",
            "rotation": 0
           },
           {
            "kind": "heart",
-           "color": "primary",
-           "rotation": 0
-          },
-          {
-           "kind": "triangle",
            "color": "primary",
            "rotation": 0
           },
@@ -9126,7 +9126,7 @@
         },
         {
          "shape": "netFace",
-         "prompt": "Fold it into a cube. Tap the face opposite the flower.",
+         "prompt": "Fold it into a cube. Tap the face opposite the diamond.",
          "hint": "Pick one square to be the bottom and fold the rest up around it.",
          "pic": {
           "kind": "net",
@@ -9158,13 +9158,13 @@
           ],
           "marks": [
            "heart",
-           "triangle",
-           "flower",
-           "circle",
+           "star",
            "diamond",
-           "star"
+           "triangle",
+           "square",
+           "circle"
           ],
-          "target": "flower"
+          "target": "diamond"
          },
          "answer": {
           "type": "option",
@@ -9172,12 +9172,17 @@
          },
          "optionCells": [
           {
-           "kind": "circle",
+           "kind": "triangle",
            "color": "primary",
            "rotation": 0
           },
           {
-           "kind": "diamond",
+           "kind": "square",
+           "color": "primary",
+           "rotation": 0
+          },
+          {
+           "kind": "circle",
            "color": "primary",
            "rotation": 0
           },
@@ -9185,17 +9190,12 @@
            "kind": "heart",
            "color": "primary",
            "rotation": 0
-          },
-          {
-           "kind": "star",
-           "color": "primary",
-           "rotation": 0
           }
          ]
         },
         {
          "shape": "netFace",
-         "prompt": "Fold it into a cube. Tap the face opposite the square.",
+         "prompt": "Fold it into a cube. Tap the face opposite the diamond.",
          "hint": "Pick one square to be the bottom and fold the rest up around it.",
          "pic": {
           "kind": "net",
@@ -9227,13 +9227,13 @@
           ],
           "marks": [
            "circle",
-           "diamond",
+           "heart",
            "star",
-           "square",
-           "hexagon",
-           "heart"
+           "diamond",
+           "triangle",
+           "square"
           ],
-          "target": "square"
+          "target": "diamond"
          },
          "answer": {
           "type": "option",
@@ -9241,7 +9241,12 @@
          },
          "optionCells": [
           {
-           "kind": "hexagon",
+           "kind": "circle",
+           "color": "primary",
+           "rotation": 0
+          },
+          {
+           "kind": "star",
            "color": "primary",
            "rotation": 0
           },
@@ -9251,12 +9256,7 @@
            "rotation": 0
           },
           {
-           "kind": "diamond",
-           "color": "primary",
-           "rotation": 0
-          },
-          {
-           "kind": "star",
+           "kind": "triangle",
            "color": "primary",
            "rotation": 0
           }
@@ -9264,7 +9264,7 @@
         },
         {
          "shape": "netFace",
-         "prompt": "Fold it into a cube. Tap the face opposite the flower.",
+         "prompt": "Fold it into a cube. Tap the face opposite the diamond.",
          "hint": "Pick one square to be the bottom and fold the rest up around it.",
          "pic": {
           "kind": "net",
@@ -9296,13 +9296,13 @@
           ],
           "marks": [
            "square",
-           "hexagon",
+           "circle",
            "heart",
-           "triangle",
-           "flower",
-           "circle"
+           "star",
+           "diamond",
+           "triangle"
           ],
-          "target": "flower"
+          "target": "diamond"
          },
          "answer": {
           "type": "option",
@@ -9310,17 +9310,17 @@
          },
          "optionCells": [
           {
-           "kind": "circle",
-           "color": "primary",
-           "rotation": 0
-          },
-          {
-           "kind": "hexagon",
-           "color": "primary",
-           "rotation": 0
-          },
-          {
            "kind": "square",
+           "color": "primary",
+           "rotation": 0
+          },
+          {
+           "kind": "star",
+           "color": "primary",
+           "rotation": 0
+          },
+          {
+           "kind": "triangle",
            "color": "primary",
            "rotation": 0
           },
@@ -9365,11 +9365,11 @@
           ],
           "marks": [
            "triangle",
-           "flower",
+           "square",
            "circle",
-           "diamond",
+           "heart",
            "star",
-           "square"
+           "diamond"
           ],
           "target": "star"
          },
@@ -9384,17 +9384,17 @@
            "rotation": 0
           },
           {
-           "kind": "flower",
-           "color": "primary",
-           "rotation": 0
-          },
-          {
-           "kind": "diamond",
-           "color": "primary",
-           "rotation": 0
-          },
-          {
            "kind": "square",
+           "color": "primary",
+           "rotation": 0
+          },
+          {
+           "kind": "circle",
+           "color": "primary",
+           "rotation": 0
+          },
+          {
+           "kind": "heart",
            "color": "primary",
            "rotation": 0
           }
@@ -9434,11 +9434,11 @@
           ],
           "marks": [
            "diamond",
-           "star",
+           "triangle",
            "square",
-           "hexagon",
+           "circle",
            "heart",
-           "triangle"
+           "star"
           ],
           "target": "square"
          },
@@ -9453,17 +9453,17 @@
            "rotation": 0
           },
           {
+           "kind": "star",
+           "color": "primary",
+           "rotation": 0
+          },
+          {
            "kind": "triangle",
            "color": "primary",
            "rotation": 0
           },
           {
-           "kind": "heart",
-           "color": "primary",
-           "rotation": 0
-          },
-          {
-           "kind": "hexagon",
+           "kind": "circle",
            "color": "primary",
            "rotation": 0
           }
@@ -9619,11 +9619,11 @@
          ],
          "marks": [
           "square",
-          "hexagon",
+          "circle",
           "heart",
-          "triangle",
-          "flower",
-          "circle"
+          "star",
+          "diamond",
+          "triangle"
          ],
          "pair": [
           0,
@@ -9640,7 +9640,7 @@
        "questions": [
         {
          "shape": "netFace",
-         "prompt": "Fold it into a cube. Tap the face opposite the hexagon.",
+         "prompt": "Fold it into a cube. Tap the face opposite the star.",
          "hint": "Pick one square to be the bottom and fold the rest up around it.",
          "pic": {
           "kind": "net",
@@ -9671,14 +9671,14 @@
            ]
           ],
           "marks": [
-           "hexagon",
-           "heart",
+           "star",
+           "diamond",
            "triangle",
-           "flower",
+           "square",
            "circle",
-           "diamond"
+           "heart"
           ],
-          "target": "hexagon"
+          "target": "star"
          },
          "answer": {
           "type": "option",
@@ -9686,17 +9686,7 @@
          },
          "optionCells": [
           {
-           "kind": "heart",
-           "color": "primary",
-           "rotation": 0
-          },
-          {
            "kind": "circle",
-           "color": "primary",
-           "rotation": 0
-          },
-          {
-           "kind": "flower",
            "color": "primary",
            "rotation": 0
           },
@@ -9704,12 +9694,22 @@
            "kind": "diamond",
            "color": "primary",
            "rotation": 0
+          },
+          {
+           "kind": "square",
+           "color": "primary",
+           "rotation": 0
+          },
+          {
+           "kind": "heart",
+           "color": "primary",
+           "rotation": 0
           }
          ]
         },
         {
          "shape": "netFace",
-         "prompt": "Fold it into a cube. Tap the face opposite the hexagon.",
+         "prompt": "Fold it into a cube. Tap the face opposite the circle.",
          "hint": "Pick one square to be the bottom and fold the rest up around it.",
          "pic": {
           "kind": "net",
@@ -9740,14 +9740,14 @@
            ]
           ],
           "marks": [
-           "flower",
-           "circle",
-           "diamond",
+           "heart",
            "star",
+           "diamond",
+           "triangle",
            "square",
-           "hexagon"
+           "circle"
           ],
-          "target": "hexagon"
+          "target": "circle"
          },
          "answer": {
           "type": "option",
@@ -9755,7 +9755,7 @@
          },
          "optionCells": [
           {
-           "kind": "star",
+           "kind": "triangle",
            "color": "primary",
            "rotation": 0
           },
@@ -9765,12 +9765,12 @@
            "rotation": 0
           },
           {
-           "kind": "circle",
+           "kind": "square",
            "color": "primary",
            "rotation": 0
           },
           {
-           "kind": "flower",
+           "kind": "heart",
            "color": "primary",
            "rotation": 0
           }
@@ -9778,7 +9778,7 @@
         },
         {
          "shape": "netFace",
-         "prompt": "Fold it into a cube. Tap the face opposite the diamond.",
+         "prompt": "Fold it into a cube. Tap the face opposite the square.",
          "hint": "Pick one square to be the bottom and fold the rest up around it.",
          "pic": {
           "kind": "net",
@@ -9810,13 +9810,13 @@
           ],
           "marks": [
            "heart",
-           "triangle",
-           "flower",
-           "circle",
+           "star",
            "diamond",
-           "star"
+           "triangle",
+           "square",
+           "circle"
           ],
-          "target": "diamond"
+          "target": "square"
          },
          "answer": {
           "type": "option",
@@ -9829,86 +9829,17 @@
            "rotation": 0
           },
           {
-           "kind": "flower",
-           "color": "primary",
-           "rotation": 0
-          },
-          {
            "kind": "circle",
            "color": "primary",
            "rotation": 0
           },
           {
-           "kind": "star",
-           "color": "primary",
-           "rotation": 0
-          }
-         ]
-        },
-        {
-         "shape": "netFace",
-         "prompt": "Fold it into a cube. Tap the face opposite the hexagon.",
-         "hint": "Pick one square to be the bottom and fold the rest up around it.",
-         "pic": {
-          "kind": "net",
-          "cells": [
-           [
-            0,
-            2
-           ],
-           [
-            1,
-            1
-           ],
-           [
-            1,
-            2
-           ],
-           [
-            1,
-            3
-           ],
-           [
-            2,
-            0
-           ],
-           [
-            2,
-            1
-           ]
-          ],
-          "marks": [
-           "circle",
-           "diamond",
-           "star",
-           "square",
-           "hexagon",
-           "heart"
-          ],
-          "target": "hexagon"
-         },
-         "answer": {
-          "type": "option",
-          "value": 1
-         },
-         "optionCells": [
-          {
-           "kind": "circle",
+           "kind": "triangle",
            "color": "primary",
            "rotation": 0
           },
           {
            "kind": "star",
-           "color": "primary",
-           "rotation": 0
-          },
-          {
-           "kind": "diamond",
-           "color": "primary",
-           "rotation": 0
-          },
-          {
-           "kind": "square",
            "color": "primary",
            "rotation": 0
           }
@@ -9923,6 +9854,75 @@
           "cells": [
            [
             0,
+            2
+           ],
+           [
+            1,
+            1
+           ],
+           [
+            1,
+            2
+           ],
+           [
+            1,
+            3
+           ],
+           [
+            2,
+            0
+           ],
+           [
+            2,
+            1
+           ]
+          ],
+          "marks": [
+           "circle",
+           "heart",
+           "star",
+           "diamond",
+           "triangle",
+           "square"
+          ],
+          "target": "triangle"
+         },
+         "answer": {
+          "type": "option",
+          "value": 1
+         },
+         "optionCells": [
+          {
+           "kind": "heart",
+           "color": "primary",
+           "rotation": 0
+          },
+          {
+           "kind": "star",
+           "color": "primary",
+           "rotation": 0
+          },
+          {
+           "kind": "diamond",
+           "color": "primary",
+           "rotation": 0
+          },
+          {
+           "kind": "circle",
+           "color": "primary",
+           "rotation": 0
+          }
+         ]
+        },
+        {
+         "shape": "netFace",
+         "prompt": "Fold it into a cube. Tap the face opposite the star.",
+         "hint": "Pick one square to be the bottom and fold the rest up around it.",
+         "pic": {
+          "kind": "net",
+          "cells": [
+           [
+            0,
             0
            ],
            [
@@ -9948,13 +9948,13 @@
           ],
           "marks": [
            "square",
-           "hexagon",
+           "circle",
            "heart",
-           "triangle",
-           "flower",
-           "circle"
+           "star",
+           "diamond",
+           "triangle"
           ],
-          "target": "triangle"
+          "target": "star"
          },
          "answer": {
           "type": "option",
@@ -9962,12 +9962,12 @@
          },
          "optionCells": [
           {
-           "kind": "circle",
+           "kind": "triangle",
            "color": "primary",
            "rotation": 0
           },
           {
-           "kind": "hexagon",
+           "kind": "diamond",
            "color": "primary",
            "rotation": 0
           },
@@ -9977,7 +9977,7 @@
            "rotation": 0
           },
           {
-           "kind": "flower",
+           "kind": "circle",
            "color": "primary",
            "rotation": 0
           }
@@ -9985,7 +9985,7 @@
         },
         {
          "shape": "netFace",
-         "prompt": "Fold it into a cube. Tap the face opposite the flower.",
+         "prompt": "Fold it into a cube. Tap the face opposite the square.",
          "hint": "Pick one square to be the bottom and fold the rest up around it.",
          "pic": {
           "kind": "net",
@@ -10017,13 +10017,13 @@
           ],
           "marks": [
            "triangle",
-           "flower",
+           "square",
            "circle",
-           "diamond",
+           "heart",
            "star",
-           "square"
+           "diamond"
           ],
-          "target": "flower"
+          "target": "square"
          },
          "answer": {
           "type": "option",
@@ -10202,11 +10202,11 @@
          ],
          "marks": [
           "diamond",
-          "star",
+          "triangle",
           "square",
-          "hexagon",
+          "circle",
           "heart",
-          "triangle"
+          "star"
          ],
          "pair": [
           0,
@@ -11073,11 +11073,11 @@
          ],
          "marks": [
           "heart",
-          "triangle",
-          "flower",
-          "circle",
+          "star",
           "diamond",
-          "star"
+          "triangle",
+          "square",
+          "circle"
          ],
          "clash": [
           1,
@@ -11094,7 +11094,7 @@
        "questions": [
         {
          "shape": "netFace",
-         "prompt": "Fold it into a cube. Tap the face opposite the triangle.",
+         "prompt": "Fold it into a cube. Tap the face opposite the star.",
          "hint": "Pick one square to be the bottom and fold the rest up around it.",
          "pic": {
           "kind": "net",
@@ -11126,13 +11126,13 @@
           ],
           "marks": [
            "diamond",
-           "star",
+           "triangle",
            "square",
-           "hexagon",
+           "circle",
            "heart",
-           "triangle"
+           "star"
           ],
-          "target": "triangle"
+          "target": "star"
          },
          "answer": {
           "type": "option",
@@ -11140,22 +11140,22 @@
          },
          "optionCells": [
           {
-           "kind": "star",
-           "color": "primary",
-           "rotation": 0
-          },
-          {
-           "kind": "diamond",
-           "color": "primary",
-           "rotation": 0
-          },
-          {
-           "kind": "square",
+           "kind": "triangle",
            "color": "primary",
            "rotation": 0
           },
           {
            "kind": "heart",
+           "color": "primary",
+           "rotation": 0
+          },
+          {
+           "kind": "circle",
+           "color": "primary",
+           "rotation": 0
+          },
+          {
+           "kind": "square",
            "color": "primary",
            "rotation": 0
           }
@@ -11280,7 +11280,7 @@
         },
         {
          "shape": "netFace",
-         "prompt": "Fold it into a cube. Tap the face opposite the hexagon.",
+         "prompt": "Fold it into a cube. Tap the face opposite the star.",
          "hint": "Pick one square to be the bottom and fold the rest up around it.",
          "pic": {
           "kind": "net",
@@ -11311,14 +11311,14 @@
            ]
           ],
           "marks": [
-           "hexagon",
-           "heart",
+           "star",
+           "diamond",
            "triangle",
-           "flower",
+           "square",
            "circle",
-           "diamond"
+           "heart"
           ],
-          "target": "hexagon"
+          "target": "star"
          },
          "answer": {
           "type": "option",
@@ -11326,22 +11326,22 @@
          },
          "optionCells": [
           {
-           "kind": "circle",
-           "color": "primary",
-           "rotation": 0
-          },
-          {
            "kind": "diamond",
            "color": "primary",
            "rotation": 0
           },
           {
-           "kind": "triangle",
+           "kind": "heart",
            "color": "primary",
            "rotation": 0
           },
           {
-           "kind": "flower",
+           "kind": "square",
+           "color": "primary",
+           "rotation": 0
+          },
+          {
+           "kind": "triangle",
            "color": "primary",
            "rotation": 0
           }
@@ -11497,12 +11497,12 @@
            ]
           ],
           "marks": [
-           "flower",
-           "circle",
-           "diamond",
+           "heart",
            "star",
+           "diamond",
+           "triangle",
            "square",
-           "hexagon"
+           "circle"
           ],
           "target": "square"
          },
@@ -11517,17 +11517,17 @@
            "rotation": 0
           },
           {
-           "kind": "hexagon",
-           "color": "primary",
-           "rotation": 0
-          },
-          {
-           "kind": "circle",
+           "kind": "triangle",
            "color": "primary",
            "rotation": 0
           },
           {
            "kind": "star",
+           "color": "primary",
+           "rotation": 0
+          },
+          {
+           "kind": "heart",
            "color": "primary",
            "rotation": 0
           }
@@ -12237,11 +12237,11 @@
           ],
           "marks": [
            "star",
-           "square",
-           "hexagon",
-           "heart",
+           "diamond",
            "triangle",
-           "flower"
+           "square",
+           "circle",
+           "heart"
           ],
           "target": "star"
          },
@@ -12251,22 +12251,22 @@
          },
          "optionCells": [
           {
-           "kind": "hexagon",
-           "color": "primary",
-           "rotation": 0
-          },
-          {
-           "kind": "square",
-           "color": "primary",
-           "rotation": 0
-          },
-          {
-           "kind": "flower",
+           "kind": "diamond",
            "color": "primary",
            "rotation": 0
           },
           {
            "kind": "heart",
+           "color": "primary",
+           "rotation": 0
+          },
+          {
+           "kind": "circle",
+           "color": "primary",
+           "rotation": 0
+          },
+          {
+           "kind": "square",
            "color": "primary",
            "rotation": 0
           }
@@ -12470,11 +12470,11 @@
           ],
           "marks": [
            "circle",
-           "diamond",
+           "heart",
            "star",
-           "square",
-           "hexagon",
-           "heart"
+           "diamond",
+           "triangle",
+           "square"
           ],
           "target": "circle"
          },
@@ -12484,22 +12484,22 @@
          },
          "optionCells": [
           {
-           "kind": "heart",
-           "color": "primary",
-           "rotation": 0
-          },
-          {
-           "kind": "star",
-           "color": "primary",
-           "rotation": 0
-          },
-          {
            "kind": "square",
            "color": "primary",
            "rotation": 0
           },
           {
+           "kind": "triangle",
+           "color": "primary",
+           "rotation": 0
+          },
+          {
            "kind": "diamond",
+           "color": "primary",
+           "rotation": 0
+          },
+          {
+           "kind": "star",
            "color": "primary",
            "rotation": 0
           }

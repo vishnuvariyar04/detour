@@ -23,9 +23,26 @@ what a band-c child sees if nothing better exists.
 | Band | Ages | Skill | Stops | Questions | Status |
 |---|---|---|---|---|---|
 | a | 5–6 | Number Sense | 48 | 324 | shipped |
-| **b** | **7–8** | **Puzzles & Logic** | 48 | 324 | **to build** |
+| **b** | **7–8** | **Puzzles & Logic** | 48 | 324 | **authored; needs its 2 views** |
 | c | 9–10 | Think Like a Coder | 48 | 324 | shipped |
-| **d** | **11** | **Reasoning** | 48 | 324 | **to build** |
+| **d** | **11–12** | **Reasoning** | 48 | 324 | **authored; needs its views** |
+
+> **Status, 2026-09-15 (branch `bands-b-and-d`).** Both new skills are authored
+> and every gate is green: band b through `pz_simulate.py` / `pz_grade.py`, band d
+> through `rs_simulate.py` / `rs_grade.py`. Neither has its Kotlin views yet, and
+> the two are held back differently for a reason worth knowing:
+>
+> - **Band b** is in `assets/curriculum/`, with its 16 stops that use `analogy`,
+>   `codeRead` or `codePick` emitted `authored: false`. A band-b child already
+>   plays the other 32 stops.
+> - **Band d** is in `assets/curriculum_pending/`, which pubspec does not bundle.
+>   Every band-d question needs a new view, and the gate serves the most advanced
+>   skill a child's band has reached — so in `assets/curriculum` it would switch
+>   every eleven year old from Think Like a Coder, which works, to a skill with no
+>   playable stop. Move it across once its views exist.
+>
+> Band d's Space section replaced "cross-sections" with "stacks of cubes": a slice
+> through a curved solid can be neither drawn nor graded exactly.
 
 Band b and band d children currently fall through to the older random-question
 engine (`Questions.kt`), which has no ladder, no roadmap and no progress. That

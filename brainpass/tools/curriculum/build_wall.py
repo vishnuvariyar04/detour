@@ -33,11 +33,21 @@ OUT = os.environ.get("NUPO_OUT", os.path.join(HERE, "..", "..", "build", "wall")
 KEEP = ("shape", "prompt", "hint", "pic", "visual", "truth", "choices",
         "optionCells", "optionsText", "options", "caption", "kind",
         "criterion", "blocks", "slots", "reusable", "varName", "traceOf",
-        "gapRow", "expr", "state", "answer")
+        "gapRow", "expr", "state", "answer",
+        # band d's drawn answers
+        "optionBits", "optionNets", "optionViews")
 
 SKILLS = [("coder", "Think Like a Coder", "think_like_a_coder.json"),
           ("number", "Number Sense", "number_sense.json"),
-          ("puzzles", "Puzzles & Logic", "puzzles_and_logic.json")]
+          ("puzzles", "Puzzles & Logic", "puzzles_and_logic.json"),
+          # Band d is not bundled with the app yet (see rs_emit.py), but it is
+          # exactly what needs reviewing, so the wall reads it from where it waits.
+          ("reasoning", "Reasoning", os.path.join("..", "curriculum_pending",
+                                                  "reasoning.json"))]
+
+# NUPO_SKILLS=reasoning builds a wall of just those skills, for reviewing one
+# band on its own without scrolling past the other 972 questions.
+ONLY = [x for x in os.environ.get("NUPO_SKILLS", "").split(",") if x]
 
 
 def nupo_b64():
@@ -70,13 +80,16 @@ def screen_key(q):
     same question, however they were authored."""
     return json.dumps([q.get("prompt"), q.get("pic"), q.get("visual"),
                        q.get("optionsText"), q.get("options"),
-                       q.get("optionCells")], sort_keys=True)
+                       q.get("optionCells"), q.get("optionBits"),
+                       q.get("optionNets"), q.get("optionViews")], sort_keys=True)
 
 
 def main():
     skills, prompts, screens = [], Counter(), Counter()
     raw = []
     for sid, name, fn in SKILLS:
+        if ONLY and sid not in ONLY:
+            continue
         d = load(fn)
         units = []
         for sec in d["sections"]:

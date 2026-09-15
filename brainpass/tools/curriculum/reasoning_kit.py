@@ -677,7 +677,12 @@ def cipher_encode(prompt, plain, shift, hint=None):
     return _rotate(q, ["optionsText"], _seed(prompt, plain, shift))
 
 
-SYMBOLS = [(g, c) for c in (PRIMARY, ACCENT) for g in GLYPHS]
+# Six shapes that stay distinct at the 20px a key or a net draws them. Seen on
+# the review wall: at that size the six-petal flower reads as a hexagon, and a
+# hexagon is not far from a circle. Two such shapes in one key would be a symbol
+# code with two answers for anyone whose eyes do not catch the difference.
+CLEAR_GLYPHS = [STAR, HEART, CIRCLE, SQUARE, TRIANGLE, DIAMOND]
+SYMBOLS = [(g, c) for c in (PRIMARY, ACCENT) for g in CLEAR_GLYPHS]
 
 
 def symbol_decode(prompt, plain, hint=None):
