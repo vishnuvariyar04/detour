@@ -10,7 +10,7 @@ every family that fits agrees on the answer. That last check is also the
 fairness check -- a pattern two different rules explain is a pattern with two
 right answers.
 """
-import itertools, json, os, sys
+import itertools, json, math, os, sys
 from fractions import Fraction as F
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -282,6 +282,210 @@ def roll3d(top, front, right, moves):
     return face[(0, 0, 1)]
 
 
+
+# ============================================================ band d additions
+# Each of these is written without looking at reasoning_kit.py's version.
+
+def kk_says_true(claim, kinds, people):
+    t = claim[0]
+    if t == "is":
+        return kinds[claim[1]] == (claim[2] == "truth-teller")
+    if t == "same":
+        return kinds[claim[1]] == kinds[claim[2]]
+    if t == "diff":
+        return kinds[claim[1]] != kinds[claim[2]]
+    if t == "both":
+        return all(kinds[q] == (claim[1] == "truth-teller") for q in people)
+    if t == "one_liar":
+        return not all(kinds[q] for q in people)
+    raise ValueError(t)
+
+
+def atbash_ord(w):
+    return "".join(chr(155 - ord(ch)) for ch in w)       # 'A' + 'Z' == 155
+
+
+def shift_ord(w, k):
+    return "".join(chr((ord(ch) - 65 + k) % 26 + 65) for ch in w)
+
+
+def signed_perm_rotations():
+    """All 3x3 signed permutation matrices with determinant +1: the 24 turns."""
+    out = []
+    for perm in itertools.permutations(range(3)):
+        for signs in itertools.product((1, -1), repeat=3):
+            m = [[0] * 3 for _ in range(3)]
+            for r in range(3):
+                m[r][perm[r]] = signs[r]
+            det = (m[0][0] * (m[1][1] * m[2][2] - m[1][2] * m[2][1])
+                   - m[0][1] * (m[1][0] * m[2][2] - m[1][2] * m[2][0])
+                   + m[0][2] * (m[1][0] * m[2][1] - m[1][1] * m[2][0]))
+            if det == 1:
+                out.append(m)
+    return out
+
+
+TURNS24 = signed_perm_rotations()
+
+
+def shape_key(cells):
+    def placed(pts):
+        lo = [min(p[i] for p in pts) for i in range(3)]
+        return tuple(sorted(tuple(p[i] - lo[i] for i in range(3)) for p in pts))
+    return min(placed([tuple(sum(m[r][c] * p[c] for c in range(3)) for r in range(3)) for p in cells])
+               for m in TURNS24)
+
+
+# the six named turns of a marked cube, as rotations of outward normals
+# (x to the right, y towards you, z up)
+TURN_NORMALS = {
+    "left": lambda x, y, z: (-z, y, x),
+    "right": lambda x, y, z: (z, y, -x),
+    "away": lambda x, y, z: (x, -z, y),
+    "toward": lambda x, y, z: (x, z, -y),
+    "spinR": lambda x, y, z: (-y, x, z),
+    "spinL": lambda x, y, z: (y, -x, z),
+}
+
+
+def turned_face(marks, moves, ask):
+    faces = {(0, 0, 1): marks[0], (0, 1, 0): marks[1], (1, 0, 0): marks[2]}
+    for m in moves:
+        faces = {TURN_NORMALS[m](*n): v for n, v in faces.items()}
+    want = {"T": (0, 0, 1), "F": (0, 1, 0), "R": (1, 0, 0)}[ask]
+    return faces.get(want)
+
+
+# ---- cross-sections, from the geometry --------------------------------------
+R3 = 3 ** 0.5
+HEXPTS = [(0.5 + 0.5 * math.cos(math.radians(60 * i)), 0.5 + 0.5 * math.sin(math.radians(60 * i)))
+          for i in range(6)]
+TRIPTS = [(0.0, 0.0), (1.0, 0.0), (0.5, R3 / 2)]
+
+
+def prism(base, h=1.0):
+    verts = [(x, y, 0.0) for x, y in base] + [(x, y, h) for x, y in base]
+    n = len(base)
+    edges = [(i, (i + 1) % n) for i in range(n)] + [(n + i, n + (i + 1) % n) for i in range(n)] + \
+            [(i, n + i) for i in range(n)]
+    return verts, edges
+
+
+POLYHEDRA = {
+    "cube": prism([(0, 0), (1, 0), (1, 1), (0, 1)]),
+    "cuboid": prism([(0, 0), (2, 0), (2, 1), (0, 1)]),
+    "triprism": prism(TRIPTS),
+    "hexprism": prism(HEXPTS),
+    "pyramid": ([(0, 0, 0), (1, 0, 0), (1, 1, 0), (0, 1, 0), (0.5, 0.5, 1)],
+                [(0, 1), (1, 2), (2, 3), (3, 0), (0, 4), (1, 4), (2, 4), (3, 4)]),
+}
+
+
+def dot(a, b):
+    return sum(x * y for x, y in zip(a, b))
+
+
+def sub(a, b):
+    return tuple(x - y for x, y in zip(a, b))
+
+
+def cut_polygon(verts, edges, p0, n):
+    pts = []
+    for i, j in edges:
+        a, b = verts[i], verts[j]
+        da, db = dot(sub(a, p0), n), dot(sub(b, p0), n)
+        if abs(da) < 1e-9:
+            pts.append(a)
+        if abs(db) < 1e-9:
+            pts.append(b)
+        if da * db < -1e-18:
+            t = da / (da - db)
+            pts.append(tuple(a[k] + t * (b[k] - a[k]) for k in range(3)))
+    uniq = []
+    for q in pts:
+        if all(sum((q[k] - u[k]) ** 2 for k in range(3)) > 1e-12 for u in uniq):
+            uniq.append(q)
+    return uniq
+
+
+def classify_polygon(pts, n):
+    if len(pts) < 3:
+        return None
+    ln = math.sqrt(dot(n, n))
+    nn = tuple(x / ln for x in n)
+    helper = (1, 0, 0) if abs(nn[0]) < 0.9 else (0, 1, 0)
+    u = (helper[1] * nn[2] - helper[2] * nn[1], helper[2] * nn[0] - helper[0] * nn[2],
+         helper[0] * nn[1] - helper[1] * nn[0])
+    lu = math.sqrt(dot(u, u)); u = tuple(x / lu for x in u)
+    v = (nn[1] * u[2] - nn[2] * u[1], nn[2] * u[0] - nn[0] * u[2], nn[0] * u[1] - nn[1] * u[0])
+    flat = [(dot(q, u), dot(q, v)) for q in pts]
+    cx = sum(q[0] for q in flat) / len(flat); cy = sum(q[1] for q in flat) / len(flat)
+    flat.sort(key=lambda q: math.atan2(q[1] - cy, q[0] - cx))
+    k = len(flat)
+    sides = [math.dist(flat[i], flat[(i + 1) % k]) for i in range(k)]
+    if k == 3:
+        return "triangle"
+    if k == 4:
+        def ang(i):
+            a, b, c = flat[i - 1], flat[i], flat[(i + 1) % 4]
+            return (a[0] - b[0]) * (c[0] - b[0]) + (a[1] - b[1]) * (c[1] - b[1])
+        if all(abs(ang(i)) < 1e-6 for i in range(4)):
+            return "square" if max(sides) - min(sides) < 1e-6 else "rectangle"
+        return "quadrilateral"
+    if k == 6:
+        return "hexagon"
+    return f"{k}-gon"
+
+
+def curved_section(solid, p0, n):
+    nx, ny, nz = n
+    if solid == "sphere":
+        c = (0.5, 0.5, 0.5)
+        d = abs(dot(sub(c, p0), n)) / math.sqrt(dot(n, n))
+        return "circle" if d < 0.5 else None
+    if solid == "cylinder":
+        if abs(nx) < 1e-12 and abs(ny) < 1e-12:
+            return "circle" if 0 < p0[2] < 1 else None
+        if abs(nz) < 1e-12:
+            d = abs(nx * (0.5 - p0[0]) + ny * (0.5 - p0[1])) / math.hypot(nx, ny)
+            return "rectangle" if d < 0.5 else None
+        for i in range(360):
+            th = math.radians(i)
+            x, y = 0.5 + 0.5 * math.cos(th), 0.5 + 0.5 * math.sin(th)
+            z = p0[2] - (nx * (x - p0[0]) + ny * (y - p0[1])) / nz
+            if not 0 < z < 1:
+                return None
+        return "oval"
+    if solid == "cone":
+        apex = (0.5, 0.5, 1.0)
+        if abs(nx) < 1e-12 and abs(ny) < 1e-12:
+            return "circle" if 0 < p0[2] < 1 else None
+        if abs(nz) < 1e-12:
+            return "triangle" if abs(dot(sub(apex, p0), n)) < 1e-9 else None
+        for i in range(360):
+            th = math.radians(i)
+            base = (0.5 + 0.5 * math.cos(th), 0.5 + 0.5 * math.sin(th), 0.0)
+            d = sub(base, apex)
+            den = dot(d, n)
+            if abs(den) < 1e-12:
+                return None
+            t = dot(sub(p0, apex), n) / den
+            if not 0 < t < 1:
+                return None
+        return "oval"
+    raise ValueError(solid)
+
+
+def section_of(pic):
+    solid, p0, n = pic["solid"], tuple(pic["point"]), tuple(pic["normal"])
+    if solid in POLYHEDRA:
+        verts, edges = POLYHEDRA[solid]
+        return classify_polygon(cut_polygon(verts, edges, p0, n), n)
+    return curved_section(solid, p0, n)
+
+
+GRADER_SIDES = {"triangle": 3, "square": 4, "rectangle": 4, "hexagon": 6}
+
 # ============================================================ grading
 
 def grade(qid, q):
@@ -387,6 +591,69 @@ def grade(qid, q):
         if got != a:
             bad(qid, f"rolling gives {got} on top, stored {a}")
 
+    elif sh == "knights":
+        people = p["people"]
+        sols = []
+        for bits in itertools.product([True, False], repeat=len(people)):
+            kinds = dict(zip(people, bits))
+            if all(kk_says_true(c, kinds, people) == kinds[sp] for sp, c in p["says"]):
+                sols.append(kinds)
+        if not sols:
+            return bad(qid, "nobody could say these things")
+        seen = {k[p["ask"]] for k in sols}
+        want = 2 if len(seen) == 2 else (0 if seen.pop() else 1)
+        if want != a:
+            bad(qid, f"the statements give option {want}, stored {a}")
+
+    elif sh in ("mirrorCode", "mirrorWrite"):
+        want = atbash_ord(p["word"])
+        if [i for i, o in enumerate(opts) if o == want] != [a]:
+            bad(qid, f"the back-to-front alphabet gives {want}, stored option {a}")
+
+    elif sh == "crackCode":
+        ex, code = p["example"]
+        rules = [("shift", k) for k in range(1, 26) if shift_ord(ex, k) == code]
+        if atbash_ord(ex) == code:
+            rules.append(("atbash", 0))
+        if len(rules) != 1:
+            return bad(qid, f"the example fits {len(rules)} rules")
+        kind, k = rules[0]
+        if p["mode"] == "encode":
+            want = atbash_ord(p["word"]) if kind == "atbash" else shift_ord(p["word"], k)
+        else:
+            want = atbash_ord(p["word"]) if kind == "atbash" else shift_ord(p["word"], -k)
+        if [i for i, o in enumerate(opts) if o == want] != [a]:
+            bad(qid, f"the rule from the example gives {want}, stored option {a}")
+
+    elif sh == "sameShape":
+        tk = shape_key([tuple(c) for c in p["cubes"]])
+        hits = [i for i, o in enumerate(q["optionCubes"]) if shape_key([tuple(c) for c in o]) == tk]
+        if hits != [a]:
+            bad(qid, f"options that are the target turned: {hits}, stored {a}")
+
+    elif sh == "cubeTurn":
+        want = turned_face(p["marks"], p["moves"], p["ask"])
+        if want is None:
+            return bad(qid, "the asked face was never shown")
+        if [i for i, o in enumerate(q["optionCells"]) if o["kind"] == want] != [a]:
+            bad(qid, f"turning puts the {want} there, stored option {a}")
+
+    elif sh == "sectionShape":
+        got = section_of(p)
+        if got is None or [i for i, o in enumerate(q["optionShapes"]) if o == got] != [a]:
+            bad(qid, f"the geometry gives {got}, stored option {a}")
+
+    elif sh == "sectionSides":
+        got = section_of(p)
+        if GRADER_SIDES.get(got) != a:
+            bad(qid, f"the geometry gives a {got}, stored {a} sides")
+
+    elif sh == "sectionWhich":
+        want = next(w for w in ("circle", "oval", "square", "rectangle", "triangle", "hexagon")
+                    if w in q["prompt"])
+        hits = [i for i, o in enumerate(q["optionSections"]) if section_of(o) == want]
+        if hits != [a]:
+            bad(qid, f"cuts that really make a {want}: {hits}, stored {a}")
     elif sh in ("stackCount", "stackFill", "stackView"):
         hs = p["heights"]
         d, w = len(hs), len(hs[0])
@@ -440,6 +707,12 @@ def self_test():
     nets = {free(list(sh)) for sh in shapes if fold3d(sh)}
     if len(nets) != 11:
         sys.exit(f"fold3d finds {len(nets)} cube nets; there are 11. Grader is wrong.")
+    if len(TURNS24) != 24:
+        sys.exit("the grader does not find 24 rotations. Grader is wrong.")
+    if section_of({"solid": "cube", "point": [0.5, 0.5, 0.5], "normal": [1, 1, 1]}) != "hexagon":
+        sys.exit("the grader does not find the hexagon in a cube. Grader is wrong.")
+    if section_of({"solid": "cube", "point": [1, 0, 0], "normal": [1, 1, 1]}) != "triangle":
+        sys.exit("the grader does not find the corner triangle of a cube. Grader is wrong.")
     if roll3d(1, 2, 3, ["right"] * 4) != 1:
         sys.exit("roll3d does not return to the start after four rolls. Grader is wrong.")
 

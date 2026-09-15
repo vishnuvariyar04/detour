@@ -28,6 +28,8 @@ from reasoning_kit import (
     cipher_decode, cipher_encode, symbol_decode, letter_code, letter_sum,
     net_face, net_pick, fold, OPPOSITE, dice,
     stack_count, stack_fill, stack_view,
+    knights, mirror_decode, mirror_encode, crack,
+    polycube_pick, cube_turn, section_shape, section_sides, section_which,
 )
 
 
@@ -210,6 +212,7 @@ S134 = [
 # Logic: what follows, what only seems to follow, and who has what.
 
 P_IF = "Read the clues. Tap what must be true."
+P_KK = lambda p: f"Read what they say. Tap what {p} is."
 P_CLAIM = "Is this always, sometimes or never true? Tap one."
 P_WHO = lambda x: f"Read the clues. Tap who has the {x}."
 P_WHAT = lambda p: f"Read the clues. Tap what {p} has."
@@ -240,20 +243,16 @@ S212 = [
 ]
 
 S213 = [
-    if_then(P_IF, [("star", True, "purple", True), ("purple", True, "big", True)],
-            [("star", True)], "big"),
-    if_then(P_IF, [("spots", True, "shiny", True), ("shiny", True, "stripe", False)],
-            [("spots", True)], "stripe"),
-    if_then(P_IF, [("big", True, "star", True), ("star", True, "purple", True)],
-            [("purple", False)], "big"),
-    if_then(P_IF, [("stripe", True, "spots", True), ("spots", True, "shiny", True)],
-            [("shiny", True)], "stripe"),
-    if_then(P_IF, [("purple", True, "big", False), ("big", False, "star", True)],
-            [("star", False)], "purple"),
-    if_then(P_IF, [("shiny", True, "star", True), ("star", True, "spots", True)],
-            [("shiny", False)], "spots"),
-    if_then(P_IF, [("big", False, "stripe", True), ("stripe", True, "purple", True)],
-            [("big", False)], "purple"),
+    knights(P_KK("Asha"), ["Asha", "Ravi"], [("Asha", ("one_liar",))], "Asha"),
+    knights(P_KK("Omar"), ["Kabir", "Omar"],
+            [("Kabir", ("same", "Kabir", "Omar")), ("Omar", ("diff", "Kabir", "Omar"))], "Omar"),
+    knights(P_KK("Zoya"), ["Zoya", "Dev"], [("Zoya", ("both", "liar"))], "Zoya"),
+    knights(P_KK("Neha"), ["Neha", "Imran"], [("Neha", ("diff", "Neha", "Imran"))], "Neha"),
+    knights(P_KK("Tara"), ["Tara", "Arjun"],
+            [("Tara", ("is", "Arjun", "liar")), ("Arjun", ("is", "Tara", "liar"))], "Tara"),
+    knights(P_KK("Joy"), ["Isha", "Joy"], [("Isha", ("same", "Isha", "Joy"))], "Joy"),
+    knights(P_KK("Priya"), ["Priya", "Sam"],
+            [("Priya", ("is", "Sam", "truth-teller")), ("Sam", ("diff", "Priya", "Sam"))], "Priya"),
 ]
 
 S214 = [
@@ -264,8 +263,8 @@ S214 = [
     if_then(P_IF, [("big", True, "spots", True), ("spots", True, "purple", True)],
             [("purple", True)], "big"),
     claim(P_CLAIM, {"a": "odd", "op": "plus", "b": "odd", "is": "even"}),
-    if_then(P_IF, [("stripe", False, "shiny", True), ("shiny", True, "big", True)],
-            [("big", False)], "stripe"),
+    knights(P_KK("Anu"), ["Rohan", "Anu"],
+            [("Rohan", ("one_liar",)), ("Anu", ("is", "Rohan", "liar"))], "Anu"),
     claim(P_CLAIM, {"a": "even", "op": "is", "is": "m4"}),
 ]
 
@@ -435,6 +434,8 @@ P_ENCODE = "Use the key to write this word in code. Tap it."
 P_SYM = "Swap each symbol for its letter. Tap the word."
 P_A1 = "A is 1, B is 2 and so on. Tap the word."
 P_SUM = lambda w: f"A is 1, B is 2 and so on. Add up {w}. Tap it."
+P_CRACK_E = "Use the same code. Tap how the word is written."
+P_CRACK_D = "Use the same code. Tap what the word means."
 
 # ---- 3.1 Binary ------------------------------------------------------------
 
@@ -523,7 +524,9 @@ S324 = [
     cipher_encode(P_ENCODE, "CLOUD", 13),
 ]
 
-# ---- 3.3 Symbol and number codes -------------------------------------------
+# ---- 3.3 Substitution ------------------------------------------------------
+# Each letter swapped for another thing by a fixed key: a symbol, a number, the
+# back-to-front alphabet, or a rule worked out from an example with no key shown.
 
 S331 = [
     symbol_decode(P_SYM, "CAT"),
@@ -536,32 +539,32 @@ S331 = [
 ]
 
 S332 = [
-    letter_code(P_A1, "HAT"),
-    letter_code(P_A1, "BED"),
-    letter_code(P_A1, "FIG"),
-    letter_code(P_A1, "JAM"),
-    letter_code(P_A1, "KEY"),
-    letter_sum(P_SUM("CAB"), "CAB"),
-    letter_sum(P_SUM("BED"), "BED"),
+    mirror_decode(P_DECODE, "SUN"),
+    mirror_decode(P_DECODE, "KITE"),
+    mirror_decode(P_DECODE, "FISH"),
+    mirror_decode(P_DECODE, "MOON"),
+    mirror_encode(P_ENCODE, "CUP"),
+    mirror_encode(P_ENCODE, "STAR"),
+    mirror_encode(P_ENCODE, "BELL"),
 ]
 
 S333 = [
-    letter_sum(P_SUM("DOG"), "DOG"),
-    letter_sum(P_SUM("FISH"), "FISH"),
-    letter_sum(P_SUM("CAKE"), "CAKE"),
-    letter_sum(P_SUM("STAR"), "STAR"),
-    letter_sum(P_SUM("BOOK"), "BOOK"),
-    symbol_decode(P_SYM, "HEN"),
-    symbol_decode(P_SYM, "CUP"),
+    crack(P_CRACK_E, "CAT", "DOG", ("shift", 1), "encode"),
+    crack(P_CRACK_E, "SUN", "BED", ("atbash",), "encode"),
+    crack(P_CRACK_D, "HAT", "FIG", ("shift", 2), "decode"),
+    crack(P_CRACK_E, "MAP", "BUS", ("shift", 3), "encode"),
+    crack(P_CRACK_D, "TEN", "JAM", ("atbash",), "decode"),
+    crack(P_CRACK_E, "FISH", "KING", ("shift", 25), "encode"),
+    crack(P_CRACK_D, "BOOK", "LAMP", ("shift", 4), "decode"),
 ]
 
 S334 = [
-    letter_sum(P_SUM("MANGO"), "MANGO"),
-    letter_code(P_A1, "TIGER"),
-    symbol_decode(P_SYM, "NET"),
     letter_code(P_A1, "ZEBRA"),
-    letter_sum(P_SUM("ZOO"), "ZOO"),
+    mirror_encode(P_ENCODE, "QUEEN"),
+    crack(P_CRACK_E, "WIND", "SNOW", ("shift", 5), "encode"),
     symbol_decode(P_SYM, "WAX"),
+    mirror_decode(P_DECODE, "TRUCK"),
+    crack(P_CRACK_D, "LAKE", "SHIP", ("atbash",), "decode"),
 ]
 
 
@@ -614,6 +617,14 @@ P_ROLL = "The dice rolls along the arrows. Tap the top number."
 P_COUNT = "Count every cube, even hidden ones. Tap the number."
 P_FILL = "Tap how many more cubes fill the dotted shape."
 P_FRONT = "Tap what you see from the FRONT."
+P_SAME = "Which picture is the same shape, turned? Tap it."
+P_TURN = lambda side: f"Follow the turn. Tap what is {side}."
+P_TURNS = lambda side: f"Follow both turns. Tap what is {side}."
+P_CUT = "Cut along the yellow plane. Tap the shape of the cut."
+P_SIDES = "Cut along the yellow plane. How many sides? Tap it."
+P_WHICH = lambda s: f"Which cut makes {'an' if s[0] in 'aeiou' else 'a'} {s}? Tap it."
+PC4 = _K.all_polycubes(4)
+PC5 = _K.all_polycubes(5)
 P_RIGHT = "Tap what you see from the RIGHT."
 
 # Only shapes that stay distinct when drawn small; see CLEAR_GLYPHS in the kit.
@@ -689,48 +700,7 @@ S414 = [
     dice(P_ROLL, 1, 2, 3, ["right", "down"], 4, 3, [0, 0]),
 ]
 
-# ---- 4.2 Rolling a dice ----------------------------------------------------
-
-S421 = [
-    dice(P_ROLL, 1, 2, 3, ["right"], 4, 3, [0, 1]),
-    dice(P_ROLL, 2, 6, 4, ["up"], 4, 3, [1, 2]),
-    dice(P_ROLL, 5, 4, 1, ["left"], 4, 3, [3, 1]),
-    dice(P_ROLL, 3, 1, 2, ["down"], 4, 3, [2, 0]),
-    dice(P_ROLL, 6, 5, 3, ["right", "right"], 4, 3, [0, 2]),
-    dice(P_ROLL, 4, 2, 6, ["up", "right"], 4, 3, [0, 2]),
-    dice(P_ROLL, 1, 5, 4, ["down", "left"], 4, 3, [3, 0]),
-]
-
-S422 = [
-    dice(P_ROLL, 3, 6, 2, ["right", "right", "down"], 5, 3, [0, 0]),
-    dice(P_ROLL, 5, 3, 6, ["up", "left", "left"], 5, 3, [3, 2]),
-    dice(P_ROLL, 2, 4, 1, ["right", "up", "right"], 5, 3, [0, 2]),
-    dice(P_ROLL, 6, 3, 5, ["down", "down", "right"], 5, 3, [1, 0]),
-    dice(P_ROLL, 1, 3, 5, ["left", "up", "up"], 5, 3, [4, 2]),
-    dice(P_ROLL, 4, 1, 5, ["right", "down", "right"], 5, 3, [1, 0]),
-    dice(P_ROLL, 2, 1, 3, ["up", "up", "left"], 5, 3, [2, 2]),
-]
-
-S423 = [
-    dice(P_ROLL, 1, 2, 3, ["right", "down", "right", "down"], 5, 4, [0, 0]),
-    dice(P_ROLL, 6, 4, 5, ["up", "right", "up", "right"], 5, 4, [0, 3]),
-    dice(P_ROLL, 3, 5, 1, ["left", "left", "down", "right"], 5, 4, [3, 1]),
-    dice(P_ROLL, 5, 1, 3, ["down", "right", "right", "up"], 5, 4, [1, 0]),
-    net_q(turn(NETS[3], 2), 0, False),
-    dice(P_ROLL, 2, 3, 6, ["right", "up", "left", "up"], 5, 4, [1, 3]),
-    dice(P_ROLL, 4, 6, 2, ["down", "down", "left", "left"], 5, 4, [3, 0]),
-]
-
-S424 = [
-    dice(P_ROLL, 1, 3, 2, ["right", "right", "down", "down", "left"], 5, 4, [0, 0]),
-    dice(P_ROLL, 6, 2, 3, ["up", "right", "right", "up", "right"], 5, 4, [0, 3]),
-    net_q(turn(NETS[1], 3), 2, False),
-    dice(P_ROLL, 5, 6, 4, ["left", "down", "left", "down", "right"], 5, 4, [3, 0]),
-    dice(P_ROLL, 3, 2, 1, ["down", "right", "up", "right", "down"], 5, 4, [0, 1]),
-    dice(P_ROLL, 2, 6, 3, ["right", "down", "right", "down", "right"], 5, 4, [0, 1]),
-]
-
-# ---- 4.3 Stacks of cubes ---------------------------------------------------
+# ---- stacks used by 4.2's views ---------------------------------------------
 # Rows run back to front, columns left to right, and every stack steps DOWN
 # towards you, so each column's top is in view and a count has one answer.
 
@@ -751,43 +721,98 @@ H = {
     14: [[4, 4, 3, 2], [3, 2, 2, 1]],
 }
 
-S431 = [
-    stack_count(P_COUNT, H[1]),
-    stack_count(P_COUNT, H[2]),
-    stack_count(P_COUNT, H[3]),
-    stack_count(P_COUNT, H[4]),
-    stack_count(P_COUNT, H[5]),
-    stack_count(P_COUNT, H[13]),
-    stack_view(P_FRONT, H[8], "front"),
+# ---- 4.2 Rotating in 3D ----------------------------------------------------
+# A shape turned, a marked cube tipped over, a dice rolled, and the view from
+# another side (the source spine's "perspective"). The mirror image is always
+# offered where a shape has one: it is the classic wrong answer, and no turn
+# makes it match.
+
+S421 = [
+    polycube_pick(P_SAME, PC4[5], [PC4[2], PC4[7], PC4[1]], "a"),
+    polycube_pick(P_SAME, PC4[6], [PC4[1], PC4[2], PC4[7]], "b"),
+    polycube_pick(P_SAME, PC5[7], [PC5[11], PC5[13], PC5[9]], "c"),
+    polycube_pick(P_SAME, PC5[9], [PC5[7], PC5[15], PC5[19]], "d"),
+    polycube_pick(P_SAME, PC5[11], [PC5[13], PC5[16], PC5[7]], "e"),
+    polycube_pick(P_SAME, PC5[20], [PC5[18], PC5[19], PC5[23]], "f"),
+    polycube_pick(P_SAME, PC5[25], [PC5[26], PC5[27], PC5[13]], "g"),
 ]
 
-S432 = [
-    stack_fill(P_FILL, H[1], (3, 2, 3)),
-    stack_fill(P_FILL, H[2], (3, 2, 2)),
-    stack_fill(P_FILL, H[5], (2, 3, 3)),
-    stack_fill(P_FILL, H[11], (2, 3, 2)),
-    stack_fill(P_FILL, H[13], (3, 2, 3)),
-    stack_count(P_COUNT, H[6]),
-    stack_count(P_COUNT, H[7]),
+S422 = [
+    cube_turn(P_TURN("on top"), (STAR, HEART, CIRCLE), ["away"], "T"),
+    cube_turn(P_TURN("on top"), (SQUARE, TRIANGLE, DIAMOND), ["left"], "T"),
+    cube_turn(P_TURN("at the front"), (HEART, CIRCLE, STAR), ["spinR"], "F"),
+    cube_turn(P_TURN("at the front"), (DIAMOND, STAR, SQUARE), ["toward"], "F"),
+    cube_turn(P_TURN("on the right"), (TRIANGLE, SQUARE, HEART), ["right"], "R"),
+    dice(P_ROLL, 1, 2, 3, ["right"], 4, 3, [0, 1]),
+    dice(P_ROLL, 3, 6, 2, ["right", "right", "down"], 5, 3, [0, 0]),
 ]
 
-S433 = [
+S423 = [
     stack_view(P_FRONT, H[3], "front"),
     stack_view(P_RIGHT, H[4], "right"),
     stack_view(P_RIGHT, H[6], "right"),
     stack_view(P_FRONT, H[9], "front"),
-    stack_view(P_RIGHT, H[10], "right"),
-    stack_fill(P_FILL, H[8], (3, 2, 4)),
-    stack_fill(P_FILL, H[12], (3, 3, 4)),
+    stack_count(P_COUNT, H[1]),
+    stack_count(P_COUNT, H[5]),
+    polycube_pick(P_SAME, PC5[15], [PC5[16], PC5[11], PC5[19]], "h"),
+]
+
+S424 = [
+    polycube_pick(P_SAME, PC5[16], [PC5[15], PC5[25], PC5[13]], "i"),
+    cube_turn(P_TURNS("on top"), (CIRCLE, DIAMOND, TRIANGLE), ["left", "away"], "T"),
+    stack_view(P_FRONT, H[12], "front"),
+    cube_turn(P_TURNS("at the front"), (HEART, SQUARE, DIAMOND), ["away", "spinR"], "F"),
+    dice(P_ROLL, 6, 2, 3, ["up", "right", "right", "up", "right"], 5, 4, [0, 3]),
+    cube_turn(P_TURNS("on the right"), (SQUARE, STAR, CIRCLE), ["right", "toward"], "R"),
+]
+
+
+# ---- 4.3 Cross-sections -----------------------------------------------------
+# Cut a solid along the yellow plane and name the cut face. Every one of the
+# twenty-two cuts is used once as a question; rs_grade.py computes each cut
+# face from the geometry instead of trusting the table in the kit.
+
+S431 = [
+    section_shape(P_CUT, "cube", "across"),
+    section_shape(P_CUT, "cuboid", "short"),
+    section_shape(P_CUT, "cylinder", "across"),
+    section_shape(P_CUT, "cylinder", "down"),
+    section_shape(P_CUT, "triprism", "across"),
+    section_shape(P_CUT, "hexprism", "down"),
+    section_sides(P_SIDES, "hexprism", "across"),
+]
+
+S432 = [
+    section_shape(P_CUT, "cone", "across"),
+    section_shape(P_CUT, "cone", "down"),
+    section_shape(P_CUT, "pyramid", "across"),
+    section_shape(P_CUT, "pyramid", "down"),
+    section_shape(P_CUT, "sphere", "across"),
+    section_which(P_WHICH("triangle"), "triangle",
+                  [("cone", "down"), ("cylinder", "down"), ("sphere", "across"), ("cuboid", "across")]),
+    section_sides(P_SIDES, "cube", "down"),
+]
+
+S433 = [
+    section_shape(P_CUT, "cube", "diagonal"),
+    section_shape(P_CUT, "cube", "corner"),
+    section_shape(P_CUT, "cube", "middle"),
+    section_shape(P_CUT, "cylinder", "slant"),
+    section_shape(P_CUT, "cone", "slant"),
+    section_shape(P_CUT, "sphere", "slant"),
+    section_which(P_WHICH("circle"), "circle",
+                  [("sphere", "slant"), ("cylinder", "slant"), ("cone", "down"), ("cuboid", "short")]),
 ]
 
 # The last stop in the skill: one question from every section.
 S434 = [
-    stack_count(P_COUNT, H[14]),
-    stack_view(P_FRONT, H[12], "front"),
-    nth_term(P_NTH(100), 9, 6, 5, 100),
-    dice(P_ROLL, 4, 5, 6, ["up", "left", "up", "left", "down"], 5, 4, [4, 3]),
-    if_then(P_IF, [("shiny", True, "big", True), ("big", True, "spots", False)],
-            [("spots", True)], "shiny"),
-    cipher_decode(P_DECODE, "PLANT", 8),
+    section_which(P_WHICH("square"), "square",
+                  [("cuboid", "short"), ("cuboid", "long"), ("cone", "across"), ("triprism", "down")]),
+    section_shape(P_CUT, "cuboid", "long"),
+    section_which(P_WHICH("oval"), "oval",
+                  [("cylinder", "slant"), ("sphere", "slant"), ("cylinder", "across"), ("cone", "down")]),
+    section_sides(P_SIDES, "triprism", "down"),
+    section_which(P_WHICH("hexagon"), "hexagon",
+                  [("cube", "middle"), ("cube", "diagonal"), ("pyramid", "across"), ("triprism", "across")]),
+    section_shape(P_CUT, "cuboid", "across"),
 ]

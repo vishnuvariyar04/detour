@@ -38,11 +38,11 @@ SECTIONS = [
 ]
 
 UNITS = {
-    "1.1": "Find the rule", "1.2": "The nth term",
-    "1.3": "Squares, cubes and second differences",
-    "2.1": "If and then", "2.2": "Always, sometimes, never", "2.3": "Who has what",
-    "3.1": "Binary", "3.2": "Shift codes", "3.3": "Symbol and number codes",
-    "4.1": "Cube nets", "4.2": "Rolling a dice", "4.3": "Stacks of cubes",
+    "1.1": "The next term", "1.2": "The nth term",
+    "1.3": "Squares, cubes, second differences",
+    "2.1": "If and then", "2.2": "Always, sometimes, never", "2.3": "Deduction grids",
+    "3.1": "Binary", "3.2": "Shift ciphers", "3.3": "Substitution",
+    "4.1": "3D nets", "4.2": "Rotating in 3D", "4.3": "Cross-sections",
 }
 
 # (title, teach line). None on a boss: both shipped skills leave all twelve of
@@ -51,7 +51,7 @@ TITLES = {
     "1.1.1": ("Big steps", "Find the step between two numbers, then check it works for every pair."),
     "1.1.2": ("Below zero", "A pattern can carry on past zero. The step stays the same."),
     "1.1.3": ("Times patterns", "Some patterns multiply. Check every step, not just the first."),
-    "1.1.4": ("Find the rule", None),
+    "1.1.4": ("The next term", None),
     "1.2.1": ("The 10th number", "The 10th number is the 1st number plus 9 steps."),
     "1.2.2": ("Far along", "No need to write them all out. Count the steps, then multiply."),
     "1.2.3": ("Which position?", "Take away the 1st number, divide by the step, then add 1."),
@@ -62,7 +62,7 @@ TITLES = {
     "1.3.4": ("Squares and cubes", None),
     "2.1.1": ("What must be true", "If the first part is true, the second part must be true too."),
     "2.1.2": ("When you cannot tell", "A rule only works one way. Do not run it backwards."),
-    "2.1.3": ("Chains of rules", "One rule can lead to the next. Follow them in order."),
+    "2.1.3": ("Truth-tellers and liars", "Pretend they tell the truth. If that cannot work, they are lying."),
     "2.1.4": ("If and then", None),
     "2.2.1": ("Odd and even", "One example that fails means it is not always true."),
     "2.2.2": ("Multiples", "A multiple of 5 always ends in 5 or 0."),
@@ -71,7 +71,7 @@ TITLES = {
     "2.3.1": ("Three friends", "Each person has exactly one thing, and no two have the same."),
     "2.3.2": ("Either and neither", "Neither rules out two people at once."),
     "2.3.3": ("The other way round", "Work out everything you can, then read off the answer."),
-    "2.3.4": ("Who has what", None),
+    "2.3.4": ("Deduction grids", None),
     "3.1.1": ("Reading the bulbs", "Each bulb is worth double the one on its right. Add the lit ones."),
     "3.1.2": ("More bulbs", "A new bulb on the left is worth double the one before it."),
     "3.1.3": ("Writing in bulbs", "Light the biggest bulb that fits, take it away, and repeat."),
@@ -79,23 +79,23 @@ TITLES = {
     "3.2.1": ("Decoding", "Find each coded letter on the bottom row. The real letter is above it."),
     "3.2.2": ("Wrapping round", "After Z, the alphabet starts again at A."),
     "3.2.3": ("Writing in code", "Find each letter on the top row. Its code is below it."),
-    "3.2.4": ("Shift codes", None),
+    "3.2.4": ("Shift ciphers", None),
     "3.3.1": ("Symbol keys", "Each symbol always stands for the same letter."),
-    "3.3.2": ("A is 1", "Count along the alphabet: A is 1, E is 5, J is 10."),
-    "3.3.3": ("Word sums", "Turn each letter into its number first, then add."),
-    "3.3.4": ("Codes", None),
+    "3.3.2": ("The back-to-front alphabet", "A swaps with Z and B swaps with Y. One key codes and decodes."),
+    "3.3.3": ("Crack the code", "Compare the example letter by letter to find the rule, then use it."),
+    "3.3.4": ("Substitution", None),
     "4.1.1": ("Opposite faces", "Two squares in a line with one between them end up opposite."),
     "4.1.2": ("Round the corner", "Pick one square for the bottom and fold the others up around it."),
     "4.1.3": ("Will it fold?", "A net fails if two squares fold onto the same side."),
     "4.1.4": ("Cube nets", None),
-    "4.2.1": ("One roll", "Opposite faces on a dice always add up to 7."),
-    "4.2.2": ("Three rolls", "Follow one roll at a time. Keep track of the top and the front."),
-    "4.2.3": ("Turning corners", "A roll to the right changes the top and the sides, not the front."),
-    "4.2.4": ("Rolling a dice", None),
-    "4.3.1": ("Hidden cubes", "Every cube stands on the ones below it. Count each column from the floor."),
-    "4.3.2": ("Filling the shape", "Count the whole shape, then take away the cubes already there."),
-    "4.3.3": ("Front and side", "From straight on you only see the tallest cube in each line."),
-    "4.3.4": ("Reasoning", None),
+    "4.2.1": ("Same shape, turned", "Turning keeps the shape. A mirror image never matches, however you turn it."),
+    "4.2.2": ("Turning a cube", "Follow one face at a time as the cube tips over."),
+    "4.2.3": ("From another side", "From straight on you only see the tallest cube in each line."),
+    "4.2.4": ("Rotating in 3D", None),
+    "4.3.1": ("Straight cuts", "Cut a prism straight across and the cut is the same shape as its end."),
+    "4.3.2": ("Cones, pyramids and spheres", "Cut straight across and the cut face matches the base."),
+    "4.3.3": ("Slanted cuts", "Picture the cut face lying flat, then trace round its edge."),
+    "4.3.4": ("Cross-sections", None),
 }
 
 
@@ -170,8 +170,8 @@ TEACH_PICS = {
     "1.3.3": {"kind": "sequence", "terms": [2, 5, 10, 17, 26, 37], "showSteps": True},
     "2.1.1": _worked([("big", True, "shiny", True)], [("big", True)], "shiny"),
     "2.1.2": _worked([("spots", True, "big", True)], [("big", True)], "spots"),
-    "2.1.3": _worked([("shiny", True, "stripe", True), ("stripe", True, "big", True)],
-                     [("shiny", True)], "big"),
+    "2.1.3": {"kind": "truth", "lines": K.KK_RULE + ['Om says: "We are both liars."'],
+              "conclusion": "A truth-teller could never say that. So Om is a liar."},
     "2.2.1": _claim_card({"a": "even", "op": "plus", "b": "even", "is": "even"}),
     "2.2.2": _claim_card({"a": "m10", "op": "is", "is": "m5"}),
     "2.2.3": _claim_card({"a": "sq", "op": "is", "is": "odd"}),
@@ -192,28 +192,30 @@ TEACH_PICS = {
     "3.2.2": {"kind": "shift", "shift": 3, "word": K.shift_word("XYZ", 3), "mode": "decode", "reveal": "XYZ"},
     "3.2.3": {"kind": "shift", "shift": 1, "word": "SUN", "mode": "encode", "reveal": K.shift_word("SUN", 1)},
     "3.3.1": dict(K.symbol_decode("x", "HAT")["pic"], reveal="HAT"),
-    "3.3.2": {"kind": "letters", "codes": [1, 3, 5], "reveal": "ACE"},
-    "3.3.3": {"kind": "letters", "word": "ADD", "reveal": "1 + 4 + 4 = 9"},
+    "3.3.2": {"kind": "mirrorAlpha", "word": K.atbash("BAG"), "mode": "decode", "reveal": "BAG"},
+    "3.3.3": {"kind": "example", "example": ["HEN", K.shift_word("HEN", 1)], "word": "PIG",
+              "mode": "encode", "reveal": K.shift_word("PIG", 1)},
     "4.1.1": {"kind": "net", "cells": N[0], "marks": U.marks(3), "pair": _pair(N[0], True)},
     "4.1.2": {"kind": "net", "cells": N[5], "marks": U.marks(5), "pair": _pair(N[5], False)},
     "4.1.3": {"kind": "net", "cells": U.FAKES[5], "marks": U.marks(1), "clash": _clash(U.FAKES[5])},
-    "4.2.1": {"kind": "roll", "w": 3, "h": 2, "start": [0, 0], "moves": ["right"],
-              "top": 2, "front": 3, "right": 1, "reveal": K.roll_dice(2, 3, 1, ["right"])[0]["T"]},
-    "4.2.2": {"kind": "roll", "w": 4, "h": 2, "start": [0, 1], "moves": ["right", "up", "right"],
-              "top": 6, "front": 4, "right": 2,
-              "reveal": K.roll_dice(6, 4, 2, ["right", "up", "right"])[0]["T"]},
-    "4.2.3": {"kind": "roll", "w": 4, "h": 3, "start": [0, 2], "moves": ["right", "right", "up", "left"],
-              "top": 3, "front": 5, "right": 6,
-              "reveal": K.roll_dice(3, 5, 6, ["right", "right", "up", "left"])[0]["T"]},
-    "4.3.1": {"kind": "stack", "heights": [[2, 1], [1, 1]], "reveal": 5},
-    "4.3.2": {"kind": "stack", "heights": [[2, 1], [1, 0]], "full": [2, 2, 2], "reveal": 4},
-    "4.3.3": {"kind": "stack", "heights": [[3, 2], [2, 1]], "side": "front",
+    "4.2.1": {"kind": "polycube", "cubes": [list(c) for c in U.PC4[7]],
+              "turned": [list(c) for c in K.norm3([K._apply_rot(K.ROT24[5], c) for c in U.PC4[7]])]},
+    "4.2.2": {"kind": "turnCube", "marks": [K.HEART, K.SQUARE, K.STAR], "moves": ["away"],
+              "steps": [K.TURN_WORDS["away"]], "ask": "T", "reveal": K.SQUARE},
+    "4.2.3": {"kind": "stack", "heights": [[3, 2], [2, 1]], "side": "front",
               "reveal": K.views([[3, 2], [2, 1]])[0]},
+    "4.3.1": {"kind": "section", "solid": "hexprism", "cut": "across",
+              "point": [0.5, 0.5, 0.3], "normal": [0, 0, 1], "reveal": "hexagon"},
+    "4.3.2": {"kind": "section", "solid": "pyramid", "cut": "across",
+              "point": [0.5, 0.5, 0.25], "normal": [0, 0, 1], "reveal": "square"},
+    "4.3.3": {"kind": "section", "solid": "cuboid", "cut": "slant",
+              "point": [1, 0.5, 0.5], "normal": [0.4, 0, 1], "reveal": "rectangle"},
 }
 
 
 OPTION_FIELDS = ("optionsText", "optionRules", "optionCells", "optionBits",
-                 "optionNets", "optionViews")
+                 "optionNets", "optionViews", "optionCubes", "optionShapes",
+                 "optionSections")
 
 
 def balance_slots(questions):
@@ -237,8 +239,8 @@ def balance_slots(questions):
             continue
         a = q["answer"]
         if a["type"] == "number":
-            q["choices"] = K.choices4(a["value"], pool["mistakes"], 0,
-                                      pool["lo"], k=i % 4)
+            q["choices"] = K.choices4(a["value"], pool["mistakes"], 0, pool["lo"], k=i % 4,
+                                      allowed=set(pool["allowed"]) if pool.get("allowed") else None)
             continue
         fields = [f for f in OPTION_FIELDS if q.get(f)]
         n = len(q[fields[0]])

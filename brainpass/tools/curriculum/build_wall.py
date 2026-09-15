@@ -35,7 +35,8 @@ KEEP = ("shape", "prompt", "hint", "pic", "visual", "truth", "choices",
         "criterion", "blocks", "slots", "reusable", "varName", "traceOf",
         "gapRow", "expr", "state", "answer",
         # band d's drawn answers
-        "optionBits", "optionNets", "optionViews")
+        "optionBits", "optionNets", "optionViews", "optionCubes", "optionShapes",
+        "optionSections")
 
 SKILLS = [("coder", "Think Like a Coder", "think_like_a_coder.json"),
           ("number", "Number Sense", "number_sense.json"),
@@ -81,7 +82,8 @@ def screen_key(q):
     return json.dumps([q.get("prompt"), q.get("pic"), q.get("visual"),
                        q.get("optionsText"), q.get("options"),
                        q.get("optionCells"), q.get("optionBits"),
-                       q.get("optionNets"), q.get("optionViews")], sort_keys=True)
+                       q.get("optionNets"), q.get("optionViews"), q.get("optionCubes"),
+                       q.get("optionShapes"), q.get("optionSections")], sort_keys=True)
 
 
 def main():

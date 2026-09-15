@@ -61,41 +61,54 @@ def _rotate(q, fields, seed):
     return q
 
 
-def _numbers(ans, mistakes, seed, lo=None):
+def _numbers(ans, mistakes, seed, lo=None, allowed=None):
     """Number choices, plus what emit needs to move the answer to a given slot."""
-    return {"choices": choices4(ans, mistakes, seed, lo),
-            "_pool": {"mistakes": list(mistakes), "lo": lo}}
+    return {"choices": choices4(ans, mistakes, seed, lo, allowed=allowed),
+            "_pool": {"mistakes": list(mistakes), "lo": lo,
+                      "allowed": sorted(allowed) if allowed else None}}
 
 
-def choices4(ans, mistakes, seed, lo=None, k=None):
+def choices4(ans, mistakes, seed, lo=None, k=None, allowed=None):
     """Four ascending numbers: the answer and three specific mistakes.
 
-    Real mistakes first, near misses only as padding. The answer's position in
-    the ascending row is set by the seed rather than by where the mistakes happen
-    to fall, so the row stays easy to scan and the slot is not a tell.
+    Real mistakes are placed before invented near misses, and the answer goes in
+    the slot asked for, so slots stay balanced across a question type. Where a
+    question only has a few sensible numbers at all -- the sides of a cut face
+    are 3, 4, 5, 6 or 8, never 7 or 9 -- [allowed] limits every option to that
+    set and the slot is chosen among what the set can fill.
     """
-    cands = []
+    real = []
     for m in mistakes:
         if isinstance(m, Fraction):
             if m.denominator != 1:
                 continue
             m = int(m)
-        if m != ans and m not in cands and (lo is None or m >= lo):
-            cands.append(m)
-    step = 1
-    while len(cands) < 10:
+        if m != ans and m not in real and (lo is None or m >= lo) and \
+           (allowed is None or m in allowed):
+            real.append(m)
+    want = seed % 4 if k is None else k
+    if allowed is not None:
+        rb = [c for c in real if c < ans]
+        ra = [c for c in real if c > ans]
+        feasible = [j for j in range(4) if len(rb) >= j and len(ra) >= 3 - j]
+        if not feasible:
+            raise ValueError(f"the allowed numbers cannot make four options round {ans}")
+        j = min(feasible, key=lambda f: (abs(f - want), f))
+        return sorted((rb[len(rb) - j:] if j else []) + [ans] + ra[:3 - j])
+    pad, step = [], 1
+    while len(pad) < 8:
         for c in (ans + step, ans - step):
-            if c != ans and c not in cands and (lo is None or c >= lo):
-                cands.append(c)
+            if c != ans and c not in real and c not in pad and (lo is None or c >= lo):
+                pad.append(c)
         step += 1
-    below = [c for c in cands if c < ans]
-    above = [c for c in cands if c > ans]
-    k = seed % 4 if k is None else k
-    if len(below) < k:
-        k = len(below)
-    if len(above) < 3 - k:
-        k = 3 - len(above)
-    return sorted(below[:k] + [ans] + above[:3 - k])
+    below = [c for c in real if c < ans] + [c for c in pad if c < ans]
+    above = [c for c in real if c > ans] + [c for c in pad if c > ans]
+    j = want
+    if len(below) < j:
+        j = len(below)
+    if len(above) < 3 - j:
+        j = 3 - len(above)
+    return sorted(below[:j] + [ans] + above[:3 - j])
 
 
 # ============================================================ sequences
@@ -1005,3 +1018,418 @@ def stack_view(prompt, heights, side, hint=None):
            {"kind": "stack", "heights": heights, "side": side},
            {"type": "option", "value": 0}, optionViews=opts)
     return _rotate(q, ["optionViews"], _seed(prompt, heights, side))
+
+
+# ============================================================ logic: truth-tellers and liars
+# "Knights and knaves" in the source spine. Called truth-tellers and liars here,
+# because that is what the words mean to an eleven year old; knight and knave
+# are a vocabulary test in front of a logic puzzle.
+
+KK_RULE = ["Truth-tellers always tell the truth.", "Liars always lie."]
+KINDS_TL = ("truth-teller", "liar")
+
+
+def kk_text(speaker, c):
+    t = c[0]
+    if t == "is":
+        _, p, k = c
+        return f"I am a {k}." if p == speaker else f"{p} is a {k}."
+    if t in ("same", "diff"):
+        _, a, b = c
+        word = "the same kind" if t == "same" else "different kinds"
+        return f"We are {word}." if speaker in (a, b) else f"{a} and {b} are {word}."
+    if t == "both":
+        return f"We are both {c[1]}s."
+    if t == "one_liar":
+        return "At least one of us is a liar."
+    raise ValueError(t)
+
+
+def kk_true(c, world, people):
+    t = c[0]
+    if t == "is":
+        return world[c[1]] == c[2]
+    if t == "same":
+        return world[c[1]] == world[c[2]]
+    if t == "diff":
+        return world[c[1]] != world[c[2]]
+    if t == "both":
+        return all(world[p] == c[1] for p in people)
+    if t == "one_liar":
+        return any(world[p] == "liar" for p in people)
+    raise ValueError(t)
+
+
+def kk_worlds(people, says):
+    out = []
+    for combo in itertools.product(KINDS_TL, repeat=len(people)):
+        w = dict(zip(people, combo))
+        if all(kk_true(c, w, people) == (w[s] == "truth-teller") for s, c in says):
+            out.append(w)
+    return out
+
+
+def knights(prompt, people, says, ask, hint=None):
+    """Who is telling the truth, from what they say about each other.
+
+    Every possible world is tried. "You cannot tell" is the answer only when the
+    worlds that fit disagree about [ask]; a statement that fits no world at all
+    (a liar saying "I am a liar") is refused, because it has no answer.
+    """
+    if ask not in prompt:
+        raise ValueError(f"the prompt does not ask about {ask}")
+    worlds = kk_worlds(people, says)
+    if not worlds:
+        raise ValueError("no one can say these things; there is no answer")
+    vals = {w[ask] for w in worlds}
+    ans = 2 if len(vals) > 1 else (0 if vals.pop() == "truth-teller" else 1)
+    return _q("knights", prompt, hint or "Pretend they are a truth-teller. Does it work? Then try liar.",
+              {"kind": "truth", "lines": KK_RULE + [f'{s} says: "{kk_text(s, c)}"' for s, c in says],
+               "people": people, "says": [[s, list(c)] for s, c in says], "ask": ask},
+              {"type": "option", "value": ans},
+              optionsText=[f"{ask} is a truth-teller.", f"{ask} is a liar.", CANT_TELL],
+              fixedOrder=True)
+
+
+# ============================================================ codes: substitution
+
+def atbash(w):
+    """The back-to-front alphabet: A swaps with Z, B with Y, and so on."""
+    return "".join(ALPHA[25 - ALPHA.index(ch)] for ch in w)
+
+
+def mirror_decode(prompt, plain, hint=None):
+    coded = atbash(plain)
+    opts = [plain] + _word_distractors(plain, {coded}, _seed(plain, "atbash"))
+    q = _q("mirrorCode", prompt, hint or "Find each coded letter, then read the letter it swaps with.",
+           {"kind": "mirrorAlpha", "word": coded, "mode": "decode"},
+           {"type": "option", "value": 0}, optionsText=opts)
+    return _rotate(q, ["optionsText"], _seed(prompt, plain))
+
+
+def mirror_encode(prompt, plain, hint=None):
+    right = atbash(plain)
+    wrong = []
+    for w in (shift_word(plain, 1), shift_word(right, 1), shift_word(right, -1),
+              right[::-1], shift_word(plain, -1)):
+        if w != right and w not in wrong and w != plain:
+            wrong.append(w)
+    q = _q("mirrorWrite", prompt, hint or "Find each letter, then write the letter it swaps with.",
+           {"kind": "mirrorAlpha", "word": plain, "mode": "encode"},
+           {"type": "option", "value": 0}, optionsText=[right] + wrong[:3])
+    return _rotate(q, ["optionsText"], _seed(prompt, plain))
+
+
+def _apply_rule(rule, w):
+    if rule[0] == "shift":
+        return shift_word(w, rule[1])
+    if rule[0] == "atbash":
+        return atbash(w)
+    raise ValueError(rule)
+
+
+def crack(prompt, example, ask, rule, mode, hint=None):
+    """A worked example and no key: find the rule, then use it.
+
+    The pattern cipher in the source spine. The kit refuses an example that more
+    than one rule could have made -- MN coded as NM fits both "move one on" and
+    "swap with the back-to-front letter" -- because then the child cannot know
+    which rule to carry over.
+    """
+    ex_code = _apply_rule(rule, example)
+    fits = [r for r in [("shift", k) for k in range(1, 26)] + [("atbash",)]
+            if _apply_rule(r, example) == ex_code]
+    if len(fits) != 1:
+        raise ValueError(f"the example fits {len(fits)} rules; need exactly one")
+    if mode == "encode":
+        right = _apply_rule(rule, ask)
+        shown = ask
+        others = [_apply_rule(r, ask) for r in (("shift", 1), ("shift", -1), ("atbash",),
+                                                 ("shift", 2), ("shift", 25))]
+        wrong = []
+        for w in others + [right[::-1]]:
+            if w != right and w not in wrong and w != ask:
+                wrong.append(w)
+        opts = [right] + wrong[:3]
+        if ask not in WORDS[len(ask)]:
+            raise ValueError(f"{ask} is not in the word list")
+    else:
+        if ask not in WORDS[len(ask)]:
+            raise ValueError(f"{ask} is not in the word list")
+        shown = _apply_rule(rule, ask)
+        right = ask
+        opts = [ask] + _word_distractors(ask, {shown, example}, _seed(ask, rule))
+    q = _q("crackCode", prompt, hint or "Compare the example letter by letter. What happened to each one?",
+           {"kind": "example", "example": [example, ex_code], "word": shown, "mode": mode},
+           {"type": "option", "value": 0}, optionsText=opts)
+    return _rotate(q, ["optionsText"], _seed(prompt, example, ask))
+
+
+# ============================================================ space: rotating in 3D
+
+def _rot24():
+    def rx(p): return (p[0], -p[2], p[1])
+    def ry(p): return (p[2], p[1], -p[0])
+    def rz(p): return (-p[1], p[0], p[2])
+    basis = ((1, 0, 0), (0, 1, 0), (0, 0, 1))
+    seen, frontier = {basis}, [basis]
+    while frontier:
+        b = frontier.pop()
+        for f in (rx, ry, rz):
+            nb = tuple(f(v) for v in b)
+            if nb not in seen:
+                seen.add(nb)
+                frontier.append(nb)
+    return sorted(seen)
+
+
+ROT24 = _rot24()
+
+
+def _apply_rot(b, p):
+    return tuple(sum(b[i][j] * p[i] for i in range(3)) for j in range(3))
+
+
+def norm3(cells):
+    mx = [min(c[i] for c in cells) for i in range(3)]
+    return tuple(sorted(tuple(c[i] - mx[i] for i in range(3)) for c in cells))
+
+
+def canon3(cells):
+    return min(norm3([_apply_rot(b, c) for c in cells]) for b in ROT24)
+
+
+def mirror3(cells):
+    return norm3([(-x, y, z) for x, y, z in cells])
+
+
+def all_polycubes(n):
+    shapes = {((0, 0, 0),)}
+    for _ in range(n - 1):
+        nxt = set()
+        for s in shapes:
+            ss = set(s)
+            for x, y, z in s:
+                for d in ((1, 0, 0), (-1, 0, 0), (0, 1, 0), (0, -1, 0), (0, 0, 1), (0, 0, -1)):
+                    c = (x + d[0], y + d[1], z + d[2])
+                    if c not in ss:
+                        nxt.add(canon3(list(ss | {c})))
+        shapes = nxt
+    return sorted(shapes)
+
+
+def iso_image(cells, res=6):
+    """What a stack of cubes looks like from the review wall's viewpoint.
+
+    Rasterised with a depth buffer, so a cube hidden behind another really is
+    hidden. Returns the picture (which face type shows at each point, shifted to
+    the origin) and the set of cubes that show at all. Used to prove a question
+    fair from the PICTURE, not from the cubes: no wrong option may look exactly
+    like some turn of the target, and no cube may be completely hidden.
+    """
+    cells = [tuple(c) for c in cells]
+    occ = set(cells)
+    buf = {}
+    n = res
+    for vi, (x, y, z) in enumerate(cells):
+        faces = []
+        if (x, y, z + 1) not in occ:
+            faces.append(("t", lambda u, v, x=x, y=y, z=z: (x + u, y + v, z + 1)))
+        if (x, y + 1, z) not in occ:
+            faces.append(("f", lambda u, v, x=x, y=y, z=z: (x + u, y + 1, z + v)))
+        if (x + 1, y, z) not in occ:
+            faces.append(("r", lambda u, v, x=x, y=y, z=z: (x + 1, y + u, z + v)))
+        for kind, f in faces:
+            for i in range(n):
+                for j in range(n):
+                    X, Y, Z = f((i + 0.5) / n, (j + 0.5) / n)
+                    px = round((X - Y) * n)
+                    py = round((X + Y - 2 * Z) * n)
+                    depth = X + Y + Z
+                    if (px, py) not in buf or depth > buf[(px, py)][0]:
+                        buf[(px, py)] = (depth, kind, vi)
+    mx = min(p[0] for p in buf)
+    my = min(p[1] for p in buf)
+    img = frozenset((p[0] - mx, p[1] - my, v[1]) for p, v in buf.items())
+    shown = {v[2] for v in buf.values()}
+    return img, len(shown) == len(cells)
+
+
+def polycube_pick(prompt, target, wrong_shapes, seed_word, hint=None):
+    """Which picture is the target, turned? One is; one is its mirror image if it
+    has one; the rest are different shapes with the same number of cubes."""
+    tgt = norm3(target)
+    t_img, t_all = iso_image(tgt)
+    if not t_all:
+        raise ValueError("a cube of the target is hidden in its own picture")
+    seed = _seed(prompt, tgt, seed_word)
+    order = sorted(ROT24, key=lambda b: _seed(b, seed))
+
+    def turned(cells, avoid_img=None):
+        for b in order:
+            c = norm3([_apply_rot(b, p) for p in cells])
+            img, ok = iso_image(c)
+            if ok and img != avoid_img:
+                return c, img
+        raise ValueError("no turn shows every cube")
+
+    right, r_img = turned(tgt, t_img)
+    cands = []
+    mir = mirror3(tgt)
+    if canon3(mir) != canon3(tgt):
+        cands.append(mir)
+    cands += [norm3(w) for w in wrong_shapes]
+    opts, imgs = [right], [r_img]
+    target_imgs = {iso_image(norm3([_apply_rot(b, p) for p in tgt]))[0] for b in ROT24}
+    for w in cands:
+        if len(opts) == 4:
+            break
+        if canon3(w) == canon3(tgt) or len(w) != len(tgt):
+            raise ValueError("a wrong option is the target itself, or a different size")
+        c, img = turned(w)
+        if img in target_imgs:
+            raise ValueError("a wrong option LOOKS like a turn of the target")
+        if img in imgs:
+            continue
+        opts.append(c)
+        imgs.append(img)
+    if len(opts) != 4:
+        raise ValueError("need three different wrong options")
+    q = _q("sameShape", prompt, hint or "Pick one cube in the shape and follow where its neighbours go.",
+           {"kind": "polycube", "cubes": [list(c) for c in tgt]},
+           {"type": "option", "value": 0}, optionCubes=[[list(c) for c in o] for o in opts])
+    return _rotate(q, ["optionCubes"], seed)
+
+
+TURNS = {  # new position <- old position
+    "left": {"T": "R", "L": "T", "B": "L", "R": "B", "F": "F", "K": "K"},
+    "right": {"T": "L", "R": "T", "B": "R", "L": "B", "F": "F", "K": "K"},
+    "away": {"T": "F", "K": "T", "B": "K", "F": "B", "L": "L", "R": "R"},
+    "toward": {"T": "K", "F": "T", "B": "F", "K": "B", "L": "L", "R": "R"},
+    "spinR": {"F": "R", "L": "F", "K": "L", "R": "K", "T": "T", "B": "B"},
+    "spinL": {"F": "L", "R": "F", "K": "R", "L": "K", "T": "T", "B": "B"},
+}
+TURN_WORDS = {
+    "left": "Tip it over to the left.",
+    "right": "Tip it over to the right.",
+    "away": "Tip it over, away from you.",
+    "toward": "Tip it over, towards you.",
+    "spinR": "Turn it so its right side faces you.",
+    "spinL": "Turn it so its left side faces you.",
+}
+SIDE_WORDS = {"T": "on top", "F": "at the front", "R": "on the right"}
+
+
+def cube_turn(prompt, marks, moves, ask, hint=None):
+    """A cube with a mark on each face you can see, turned once or twice.
+
+    Only the top, front and right marks are drawn, so the kit refuses a turn
+    whose asked face would have come from a side the child never saw.
+    """
+    if SIDE_WORDS[ask] not in prompt:
+        raise ValueError("the prompt asks about a different side")
+    top, front, right = marks
+    state = {"T": top, "F": front, "R": right, "B": None, "L": None, "K": None}
+    for m in moves:
+        state = {pos: state[TURNS[m][pos]] for pos in state}
+    ans = state[ask]
+    if ans is None:
+        raise ValueError("the asked face was never shown")
+    opts = [cell(m) for m in marks]
+    q = _q("cubeTurn", prompt, hint or "Say where the top goes first, then the front.",
+           {"kind": "turnCube", "marks": list(marks), "moves": list(moves),
+            "steps": [TURN_WORDS[m] for m in moves], "ask": ask},
+           {"type": "option", "value": marks.index(ans)}, optionCells=opts)
+    return q
+
+
+# ============================================================ space: cross-sections
+
+S2 = 2 ** 0.5
+SOLIDS = {
+    "cube": {"name": "cube", "size": (1, 1, 1)},
+    "cuboid": {"name": "cuboid", "size": (2, 1, 1)},
+    "pyramid": {"name": "square pyramid", "size": (1, 1, 1)},
+    "triprism": {"name": "triangular prism", "size": (1, 1, 1)},
+    "hexprism": {"name": "hexagonal prism", "size": (1, 1, 1)},
+    "cylinder": {"name": "cylinder", "size": (1, 1, 1)},
+    "cone": {"name": "cone", "size": (1, 1, 1)},
+    "sphere": {"name": "sphere", "size": (1, 1, 1)},
+}
+
+# (solid, cut) -> (shape name, plane point, plane normal). The shape is the
+# kit's claim; rs_grade.py computes it from the geometry and must agree.
+CUTS = {
+    ("cube", "across"): ("square", (0.5, 0.5, 0.5), (0, 0, 1)),
+    ("cube", "down"): ("square", (0.5, 0.5, 0.5), (1, 0, 0)),
+    ("cube", "diagonal"): ("rectangle", (0.5, 0.5, 0.5), (1, -1, 0)),
+    ("cube", "corner"): ("triangle", (1, 0, 0), (1, 1, 1)),
+    ("cube", "middle"): ("hexagon", (0.5, 0.5, 0.5), (1, 1, 1)),
+    ("cuboid", "across"): ("rectangle", (1, 0.5, 0.5), (0, 0, 1)),
+    ("cuboid", "short"): ("square", (1, 0.5, 0.5), (1, 0, 0)),
+    ("cuboid", "long"): ("rectangle", (1, 0.5, 0.5), (0, 1, 0)),
+    ("pyramid", "across"): ("square", (0.5, 0.5, 0.4), (0, 0, 1)),
+    ("pyramid", "down"): ("triangle", (0.5, 0.5, 0.5), (1, 0, 0)),
+    ("triprism", "across"): ("triangle", (0.5, 0.5, 0.5), (0, 0, 1)),
+    ("triprism", "down"): ("rectangle", (0.5, 0.45, 0.5), (0, 1, 0)),
+    ("hexprism", "across"): ("hexagon", (0.5, 0.5, 0.5), (0, 0, 1)),
+    ("hexprism", "down"): ("rectangle", (0.5, 0.5, 0.5), (1, 0, 0)),
+    ("cylinder", "across"): ("circle", (0.5, 0.5, 0.5), (0, 0, 1)),
+    ("cylinder", "down"): ("rectangle", (0.5, 0.5, 0.5), (1, 0, 0)),
+    ("cylinder", "slant"): ("oval", (0.5, 0.5, 0.5), (0.5, 0, 1)),
+    ("cone", "across"): ("circle", (0.5, 0.5, 0.35), (0, 0, 1)),
+    ("cone", "down"): ("triangle", (0.5, 0.5, 0.5), (1, 0, 0)),
+    ("cone", "slant"): ("oval", (0.5, 0.5, 0.4), (0.35, 0, 1)),
+    ("sphere", "across"): ("circle", (0.5, 0.5, 0.5), (0, 0, 1)),
+    ("sphere", "slant"): ("circle", (0.5, 0.5, 0.5), (0.6, 0, 1)),
+}
+FLAT = ["circle", "oval", "square", "rectangle", "triangle", "hexagon"]
+SIDES = {"square": 4, "rectangle": 4, "triangle": 3, "hexagon": 6}
+
+# The mistakes a child actually makes about a cut, per answer.
+FLAT_TRAPS = {
+    "circle": ["oval", "square", "rectangle"],
+    "oval": ["circle", "rectangle", "triangle"],
+    "square": ["rectangle", "triangle", "hexagon"],
+    "rectangle": ["square", "oval", "triangle"],
+    "triangle": ["square", "rectangle", "hexagon"],
+    "hexagon": ["square", "triangle", "rectangle"],
+}
+
+
+def _section_pic(solid, cut):
+    shape, p0, n = CUTS[(solid, cut)]
+    return {"kind": "section", "solid": solid, "cut": cut,
+            "point": list(p0), "normal": list(n)}
+
+
+def section_shape(prompt, solid, cut, hint=None):
+    shape = CUTS[(solid, cut)][0]
+    opts = [shape] + FLAT_TRAPS[shape]
+    q = _q("sectionShape", prompt, hint or "Picture the cut face lying flat on the table.",
+           _section_pic(solid, cut), {"type": "option", "value": 0}, optionShapes=opts)
+    return _rotate(q, ["optionShapes"], _seed(prompt, solid, cut))
+
+
+def section_sides(prompt, solid, cut, hint=None):
+    shape = CUTS[(solid, cut)][0]
+    if shape not in SIDES:
+        raise ValueError(f"a {shape} has no straight sides to count")
+    ans = SIDES[shape]
+    return _q("sectionSides", prompt, hint or "Count the faces of the solid the cut goes through.",
+              _section_pic(solid, cut), {"type": "number", "value": ans},
+              **_numbers(ans, [3, 4, 5, 6, 8], _seed(prompt, solid, cut), lo=3,
+                         allowed={3, 4, 5, 6, 8}))
+
+
+def section_which(prompt, want, cuts, hint=None):
+    """Four cuts; exactly one gives [want]."""
+    if want not in prompt:
+        raise ValueError(f"the prompt does not name the {want}")
+    hits = [i for i, (s, c) in enumerate(cuts) if CUTS[(s, c)][0] == want]
+    if hits != [0]:
+        raise ValueError(f"cuts giving a {want}: {hits}; need exactly the first")
+    q = _q("sectionWhich", prompt, hint or "Imagine each cut face lying flat.",
+           None, {"type": "option", "value": 0},
+           optionSections=[_section_pic(s, c) for s, c in cuts])
+    return _rotate(q, ["optionSections"], _seed(prompt, cuts))

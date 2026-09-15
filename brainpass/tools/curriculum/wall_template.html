@@ -937,6 +937,258 @@ function viewOptions(c,views,x,y,w){
   });
   return 104;
 }
+// ---- band d, second pass: rotation, cross-sections, substitution --------
+function isoP(ox,oy,s){ const a=s*0.866,b=s*0.5;
+  return function(X,Y,Z){ return [ox+(X-Y)*a, oy+(X+Y)*b-Z*s]; }; }
+function polyFill(c,pts,fill,stroke,lw){
+  c.beginPath(); c.moveTo(pts[0][0],pts[0][1]);
+  for(let i=1;i<pts.length;i++) c.lineTo(pts[i][0],pts[i][1]);
+  c.closePath(); if(fill){c.fillStyle=fill; c.fill();}
+  if(stroke){c.lineWidth=lw||1; c.strokeStyle=stroke; c.stroke();}
+}
+function voxelBounds(cubes){
+  let mn=[1e9,1e9], mx=[-1e9,-1e9];
+  cubes.forEach(function(q){ [0,1].forEach(function(dx){ [0,1].forEach(function(dy){ [0,1].forEach(function(dz){
+    const X=q[0]+dx,Y=q[1]+dy,Z=q[2]+dz, u=(X-Y)*0.866, v=(X+Y)*0.5-Z;
+    mn=[Math.min(mn[0],u),Math.min(mn[1],v)]; mx=[Math.max(mx[0],u),Math.max(mx[1],v)];
+  });});});});
+  return [mn,mx];
+}
+function drawVoxels(c,cubes,x,y,w,h){
+  const bb=voxelBounds(cubes), s=Math.min(w/(bb[1][0]-bb[0][0]), h/(bb[1][1]-bb[0][1]), 30);
+  const ox=x+(w-(bb[1][0]-bb[0][0])*s)/2-bb[0][0]*s, oy=y+(h-(bb[1][1]-bb[0][1])*s)/2-bb[0][1]*s;
+  const P=isoP(ox,oy,s), occ={};
+  cubes.forEach(function(q){ occ[q.join(",")]=1; });
+  cubes.slice().sort(function(m,n){return (m[0]+m[1]+m[2])-(n[0]+n[1]+n[2]);}).forEach(function(q){
+    const X=q[0],Y=q[1],Z=q[2];
+    if(!occ[[X,Y,Z+1].join(",")]) polyFill(c,[P(X,Y,Z+1),P(X+1,Y,Z+1),P(X+1,Y+1,Z+1),P(X,Y+1,Z+1)],"#EFE9FF",K.primaryLedge,1.2);
+    if(!occ[[X,Y+1,Z].join(",")]) polyFill(c,[P(X,Y+1,Z),P(X+1,Y+1,Z),P(X+1,Y+1,Z+1),P(X,Y+1,Z+1)],"#C9B6F8",K.primaryLedge,1.2);
+    if(!occ[[X+1,Y,Z].join(",")]) polyFill(c,[P(X+1,Y,Z),P(X+1,Y+1,Z),P(X+1,Y+1,Z+1),P(X+1,Y,Z+1)],"#9F82EE",K.primaryLedge,1.2);
+  });
+}
+function drawPolycube(c,p,x,y,w){ drawVoxels(c,p.cubes,x+w*0.2,y,w*0.6,140); return 150; }
+function cubeOptions(c,sets,x,y,w){
+  const cw=(w-10)/2, ch=124;
+  sets.forEach(function(cubes,i){
+    const bx=x+(i%2)*(cw+10), by=y+Math.floor(i/2)*(ch+18);
+    rrect(c,bx,by+4,cw,ch,14,K.ledge); rrect(c,bx,by,cw,ch,14,K.surface,K.line,1.5);
+    drawVoxels(c,cubes,bx+12,by+10,cw-24,ch-20);
+  });
+  return 2*132+10;
+}
+function drawTurnCube(c,p,x,y,w){
+  const cx=x+w/2, cy=y+62, s=46, a=s*0.866, b=s*0.5;
+  const top=[[cx,cy-s],[cx+a,cy-b],[cx,cy],[cx-a,cy-b]];
+  const front=[[cx-a,cy-b],[cx,cy],[cx,cy+s],[cx-a,cy+b]];
+  const right=[[cx,cy],[cx+a,cy-b],[cx+a,cy+b],[cx,cy+s]];
+  [[top,"#EFE9FF",0],[front,"#C9B6F8",1],[right,"#9F82EE",2]].forEach(function(f){
+    polyFill(c,f[0],f[1],K.primaryLedge,1.5);
+    const mx=(f[0][0][0]+f[0][1][0]+f[0][2][0]+f[0][3][0])/4, my=(f[0][0][1]+f[0][1][1]+f[0][2][1]+f[0][3][1])/4;
+    glyph(c,p.marks[f[2]],mx,my,12,"#FFFFFF",null);
+    glyph(c,p.marks[f[2]],mx,my,10,K.accentLedge,null);
+  });
+  (p.steps||[]).forEach(function(t,i){
+    const label=(p.steps.length>1?(i+1)+". ":"")+t;
+    text(c,label,x+w/2,y+132+i*22,14,K.text,800,"center");
+  });
+  return 132+22*(p.steps||[]).length;
+}
+// Cross-sections. The solids here are the same solids rs_grade.py cuts:
+// cube [0,1]^3, cuboid 2x1x1, prisms standing on a triangle or a hexagon of
+// radius 0.5, a square pyramid with its tip at height 1, a cylinder and a cone
+// of radius 0.5 and height 1, and a sphere of radius 0.5.
+function solidMesh(kind){
+  const box=function(W){ const v=[[0,0,0],[W,0,0],[W,1,0],[0,1,0],[0,0,1],[W,0,1],[W,1,1],[0,1,1]];
+    return [[v[0],v[1],v[2],v[3]],[v[4],v[5],v[6],v[7]],[v[0],v[1],v[5],v[4]],[v[1],v[2],v[6],v[5]],[v[2],v[3],v[7],v[6]],[v[3],v[0],v[4],v[7]]]; };
+  const prism=function(base){ const n=base.length, lo=base.map(function(q){return [q[0],q[1],0];}), hi=base.map(function(q){return [q[0],q[1],1];});
+    const f=[lo.slice().reverse(),hi]; for(let i=0;i<n;i++){const j=(i+1)%n; f.push([lo[i],lo[j],hi[j],hi[i]]);} return f; };
+  if(kind==="cube") return box(1);
+  if(kind==="cuboid") return box(2);
+  if(kind==="triprism") return prism([[0,0],[1,0],[0.5,0.866]]);
+  if(kind==="hexprism"){ const b=[]; for(let i=0;i<6;i++){const t=i*Math.PI/3; b.push([0.5+0.5*Math.cos(t),0.5+0.5*Math.sin(t)]);} return prism(b); }
+  if(kind==="pyramid"){ const t=[0.5,0.5,1], v=[[0,0,0],[1,0,0],[1,1,0],[0,1,0]];
+    return [[v[3],v[2],v[1],v[0]],[v[0],v[1],t],[v[1],v[2],t],[v[2],v[3],t],[v[3],v[0],t]]; }
+  return null;
+}
+function planeInBox(pt,nm,lo,hi){
+  const E=[], corners=[];
+  for(let i=0;i<8;i++) corners.push([i&1?hi[0]:lo[0], i&2?hi[1]:lo[1], i&4?hi[2]:lo[2]]);
+  for(let i=0;i<8;i++) for(let j=i+1;j<8;j++){ const d=i^j; if(d===1||d===2||d===4) E.push([corners[i],corners[j]]); }
+  const pts=[], dotp=function(a){return (a[0]-pt[0])*nm[0]+(a[1]-pt[1])*nm[1]+(a[2]-pt[2])*nm[2];};
+  E.forEach(function(e){ const da=dotp(e[0]), db=dotp(e[1]);
+    if(da*db<0){ const t=da/(da-db); pts.push([0,1,2].map(function(k){return e[0][k]+t*(e[1][k]-e[0][k]);})); } });
+  const cxp=[0,1,2].map(function(k){return pts.reduce(function(s,q){return s+q[k];},0)/pts.length;});
+  const ln=Math.hypot(nm[0],nm[1],nm[2]), N=nm.map(function(v){return v/ln;});
+  const hlp=Math.abs(N[0])<0.9?[1,0,0]:[0,1,0];
+  const U=[hlp[1]*N[2]-hlp[2]*N[1], hlp[2]*N[0]-hlp[0]*N[2], hlp[0]*N[1]-hlp[1]*N[0]];
+  const V=[N[1]*U[2]-N[2]*U[1], N[2]*U[0]-N[0]*U[2], N[0]*U[1]-N[1]*U[0]];
+  pts.sort(function(m,n){
+    const dm=[m[0]-cxp[0],m[1]-cxp[1],m[2]-cxp[2]], dn=[n[0]-cxp[0],n[1]-cxp[1],n[2]-cxp[2]];
+    return Math.atan2(dm[0]*V[0]+dm[1]*V[1]+dm[2]*V[2], dm[0]*U[0]+dm[1]*U[1]+dm[2]*U[2])
+         - Math.atan2(dn[0]*V[0]+dn[1]*V[1]+dn[2]*V[2], dn[0]*U[0]+dn[1]*U[1]+dn[2]*U[2]); });
+  return pts;
+}
+function drawSolidCut(c,p,x,y,w,h){
+  const W=p.solid==="cuboid"?2:1, m=0.22, lo=[-m,-m,-m], hi=[W+m,1+m,1+m];
+  let mn=[1e9,1e9], mx=[-1e9,-1e9];
+  for(let i=0;i<8;i++){ const X=i&1?hi[0]:lo[0], Y=i&2?hi[1]:lo[1], Z=i&4?hi[2]:lo[2];
+    const u=(X-Y)*0.866, v=(X+Y)*0.5-Z; mn=[Math.min(mn[0],u),Math.min(mn[1],v)]; mx=[Math.max(mx[0],u),Math.max(mx[1],v)]; }
+  const s=Math.min(w/(mx[0]-mn[0]), h/(mx[1]-mn[1]));
+  const ox=x+(w-(mx[0]-mn[0])*s)/2-mn[0]*s, oy=y+(h-(mx[1]-mn[1])*s)/2-mn[1]*s, P=isoP(ox,oy,s);
+  const mesh=solidMesh(p.solid);
+  if(mesh){
+    const cen=[W/2,0.5,0.5];
+    mesh.forEach(function(f){
+      const e1=[f[1][0]-f[0][0],f[1][1]-f[0][1],f[1][2]-f[0][2]], e2=[f[2][0]-f[0][0],f[2][1]-f[0][1],f[2][2]-f[0][2]];
+      let n=[e1[1]*e2[2]-e1[2]*e2[1], e1[2]*e2[0]-e1[0]*e2[2], e1[0]*e2[1]-e1[1]*e2[0]];
+      const fc=[0,1,2].map(function(k){return f.reduce(function(sum,q){return sum+q[k];},0)/f.length;});
+      if(n[0]*(fc[0]-cen[0])+n[1]*(fc[1]-cen[1])+n[2]*(fc[2]-cen[2])<0) n=n.map(function(v){return -v;});
+      if(n[0]+n[1]+n[2]<=1e-9) return;
+      const L=Math.hypot(n[0],n[1],n[2]), up=n[2]/L;
+      polyFill(c,f.map(function(q){return P(q[0],q[1],q[2]);}), up>0.5?"#EFE9FF":(n[0]>n[1]?"#9F82EE":"#C9B6F8"), K.primaryLedge,1.3);
+    });
+  } else {
+    const a=s*0.866, b=s*0.5, rx=Math.SQRT2*0.5*a, ry=Math.SQRT2*0.5*b;
+    if(p.solid==="sphere"){
+      const cc=P(0.5,0.5,0.5), R=0.5*s*1.2247;
+      const g=c.createRadialGradient(cc[0]-R*0.35,cc[1]-R*0.35,R*0.1,cc[0],cc[1],R);
+      g.addColorStop(0,"#F3EEFF"); g.addColorStop(1,"#A98BF0");
+      c.fillStyle=g; c.beginPath(); c.arc(cc[0],cc[1],R,0,7); c.fill();
+      c.lineWidth=1.3; c.strokeStyle=K.primaryLedge; c.stroke();
+      c.save(); c.setLineDash([4,4]); c.beginPath(); c.ellipse(cc[0],cc[1],rx,ry,0,0,7); c.stroke(); c.restore();
+    } else {
+      const bc=P(0.5,0.5,0), tc=P(0.5,0.5,1);
+      c.beginPath(); c.moveTo(bc[0]-rx,bc[1]);
+      if(p.solid==="cylinder"){ c.lineTo(tc[0]-rx,tc[1]); c.lineTo(tc[0]+rx,tc[1]); }
+      else { c.lineTo(tc[0],tc[1]); }
+      c.lineTo(bc[0]+rx,bc[1]); c.ellipse(bc[0],bc[1],rx,ry,0,0,Math.PI); c.closePath();
+      c.fillStyle="#C9B6F8"; c.fill(); c.lineWidth=1.3; c.strokeStyle=K.primaryLedge; c.stroke();
+      if(p.solid==="cylinder"){ c.beginPath(); c.ellipse(tc[0],tc[1],rx,ry,0,0,7); c.fillStyle="#EFE9FF"; c.fill(); c.stroke(); }
+    }
+  }
+  // The plane is a plain square sheet in the cutting plane, centred on the
+  // solid. It used to be the plane clipped to a box round the solid, and that
+  // outline IS the cut shape for a cube: the hexagon cut drew a yellow hexagon.
+  const ln=Math.hypot(p.normal[0],p.normal[1],p.normal[2]);
+  const N=p.normal.map(function(v){return v/ln;});
+  const cen=[W/2,0.5,0.5];
+  const off=(cen[0]-p.point[0])*N[0]+(cen[1]-p.point[1])*N[1]+(cen[2]-p.point[2])*N[2];
+  const cp=[cen[0]-off*N[0],cen[1]-off*N[1],cen[2]-off*N[2]];
+  let U,V;
+  if(Math.abs(N[2])>0.99){ U=[1,0,0]; V=[0,1,0]; }
+  else {
+    V=[-N[2]*N[0],-N[2]*N[1],1-N[2]*N[2]];
+    const lv=Math.hypot(V[0],V[1],V[2]); V=V.map(function(v){return v/lv;});
+    U=[V[1]*N[2]-V[2]*N[1], V[2]*N[0]-V[0]*N[2], V[0]*N[1]-V[1]*N[0]];
+  }
+  const hs=0.85+0.35*(W-1);
+  const corner=function(a,b){ return P(cp[0]+a*hs*U[0]+b*hs*V[0], cp[1]+a*hs*U[1]+b*hs*V[1], cp[2]+a*hs*U[2]+b*hs*V[2]); };
+  polyFill(c,[corner(-1,-1),corner(1,-1),corner(1,1),corner(-1,1)],"rgba(253,199,3,0.34)",K.accentLedge,1.6);
+  // the solid's outline again, over the sheet, so the shape stays readable
+  c.save(); c.globalAlpha=0.75;
+  if(mesh){
+    const cen2=[W/2,0.5,0.5];
+    mesh.forEach(function(f){
+      const e1=[f[1][0]-f[0][0],f[1][1]-f[0][1],f[1][2]-f[0][2]], e2=[f[2][0]-f[0][0],f[2][1]-f[0][1],f[2][2]-f[0][2]];
+      let n=[e1[1]*e2[2]-e1[2]*e2[1], e1[2]*e2[0]-e1[0]*e2[2], e1[0]*e2[1]-e1[1]*e2[0]];
+      const fc=[0,1,2].map(function(k){return f.reduce(function(sum,q){return sum+q[k];},0)/f.length;});
+      if(n[0]*(fc[0]-cen2[0])+n[1]*(fc[1]-cen2[1])+n[2]*(fc[2]-cen2[2])<0) n=n.map(function(v){return -v;});
+      if(n[0]+n[1]+n[2]<=1e-9) return;
+      polyFill(c,f.map(function(q){return P(q[0],q[1],q[2]);}),null,K.primaryLedge,1.3);
+    });
+  } else {
+    const a=s*0.866, b=s*0.5, rx=Math.SQRT2*0.5*a, ry=Math.SQRT2*0.5*b;
+    c.lineWidth=1.3; c.strokeStyle=K.primaryLedge;
+    if(p.solid==="sphere"){ const cc=P(0.5,0.5,0.5); c.beginPath(); c.arc(cc[0],cc[1],0.5*s*1.2247,0,7); c.stroke(); }
+    else {
+      const bc=P(0.5,0.5,0), tc=P(0.5,0.5,1);
+      c.beginPath(); c.ellipse(bc[0],bc[1],rx,ry,0,0,Math.PI); c.stroke();
+      c.beginPath(); c.moveTo(bc[0]-rx,bc[1]);
+      if(p.solid==="cylinder"){ c.lineTo(tc[0]-rx,tc[1]); c.moveTo(bc[0]+rx,bc[1]); c.lineTo(tc[0]+rx,tc[1]);
+        c.stroke(); c.beginPath(); c.ellipse(tc[0],tc[1],rx,ry,0,0,7); }
+      else { c.lineTo(tc[0],tc[1]); c.lineTo(bc[0]+rx,bc[1]); }
+      c.stroke();
+    }
+  }
+  c.restore();
+}
+function drawSection(c,p,x,y,w){ drawSolidCut(c,p,x+w*0.15,y,w*0.7,160); return 170; }
+function sectionOptions(c,pics,x,y,w){
+  const cw=(w-10)/2, ch=124;
+  pics.forEach(function(pic,i){
+    const bx=x+(i%2)*(cw+10), by=y+Math.floor(i/2)*(ch+18);
+    rrect(c,bx,by+4,cw,ch,14,K.ledge); rrect(c,bx,by,cw,ch,14,K.surface,K.line,1.5);
+    drawSolidCut(c,pic,bx+8,by+8,cw-16,ch-16);
+  });
+  return 2*132+10;
+}
+function flatShape(c,name,cx,cy,r){
+  c.fillStyle="#C9B6F8"; c.strokeStyle=K.primaryLedge; c.lineWidth=1.6; c.beginPath();
+  if(name==="circle") c.arc(cx,cy,r,0,7);
+  else if(name==="oval") c.ellipse(cx,cy,r*1.35,r*0.75,0,0,7);
+  else if(name==="square") c.rect(cx-r*0.9,cy-r*0.9,r*1.8,r*1.8);
+  else if(name==="rectangle") c.rect(cx-r*1.35,cy-r*0.72,r*2.7,r*1.44);
+  else if(name==="triangle"){ c.moveTo(cx,cy-r); c.lineTo(cx+r*0.95,cy+r*0.7); c.lineTo(cx-r*0.95,cy+r*0.7); c.closePath(); }
+  else if(name==="hexagon"){ for(let i=0;i<6;i++){const t=i*Math.PI/3; const px=cx+r*Math.cos(t), py=cy+r*Math.sin(t); i?c.lineTo(px,py):c.moveTo(px,py);} c.closePath(); }
+  c.fill(); c.stroke();
+}
+function shapeOptions(c,names,x,y,w){
+  const gap=10, bw=(w-gap*3)/4;
+  names.forEach(function(nm,i){
+    const bx=x+i*(bw+gap);
+    rrect(c,bx,y+4,bw,76,16,K.ledge); rrect(c,bx,y,bw,76,16,K.surface,K.line,1.5);
+    flatShape(c,nm,bx+bw/2,y+38,Math.min(bw,76)*0.26);
+  });
+  return 86;
+}
+function drawMirrorAlpha(c,p,x,y,w){
+  const A="ABCDEFGHIJKLMNOPQRSTUVWXYZ", bw=w/13;
+  for(let i=0;i<13;i++){
+    const bx=x+i*bw;
+    rrect(c,bx+1,y,bw-2,56,6,K.surface,K.line,1);
+    text(c,A[i],bx+bw/2,y+15,13,K.text,900,"center");
+    text(c,"↕",bx+bw/2,y+29,10,K.muted,900,"center");
+    text(c,A[25-i],bx+bw/2,y+43,13,K.primary,900,"center");
+  }
+  text(c,"Each letter swaps with the one below it.",x+w/2,y+74,12,K.muted,700,"center");
+  const label=p.mode==="encode"?"Word":"Code", word=String(p.word), lw=38, gap=6;
+  const cellw=Math.min(40,(w-lw-gap*word.length)/word.length), wy=y+96;
+  text(c,label,x,wy+20,13,K.muted,800);
+  for(let i=0;i<word.length;i++){
+    const bx=x+lw+i*(cellw+gap);
+    rrect(c,bx,wy,cellw,40,10,p.mode==="encode"?K.surface:"#F1ECFF",K.primary,1.5);
+    text(c,word[i],bx+cellw/2,wy+20,20,p.mode==="encode"?K.text:K.primary,900,"center");
+  }
+  return 150;
+}
+function letterRow(c,word,x,y,cellw,fill,color){
+  for(let i=0;i<word.length;i++){
+    rrect(c,x+i*(cellw+4),y,cellw,36,9,fill,K.primary,1.4);
+    text(c,word[i],x+i*(cellw+4)+cellw/2,y+18,17,color,900,"center");
+  }
+  return word.length*(cellw+4)-4;
+}
+function drawExample(c,p,x,y,w){
+  const ex=p.example[0], code=p.example[1], cw=30;
+  rrect(c,x,y,w,104,16,"#FFFCEF","#F2E3B3",1.5);
+  text(c,"Example",x+14,y+14,12,K.muted,800);
+  let px=x+14, lw=letterRow(c,ex,px,y+26,cw,K.surface,K.text);
+  text(c,"→",px+lw+18,y+44,20,K.muted,900,"center");
+  letterRow(c,code,px+lw+36,y+26,cw,"#F1ECFF",K.primary);
+  const qy=y+66, word=String(p.word);
+  if(p.mode==="encode"){
+    lw=letterRow(c,word,px,qy,cw,K.surface,K.text);
+    text(c,"→",px+lw+18,qy+18,20,K.muted,900,"center");
+    rrect(c,px+lw+36,qy,cw*1.4,36,9,"#F1ECFF",K.primary,1.8);
+    text(c,"?",px+lw+36+cw*0.7,qy+18,20,K.primary,900,"center");
+  } else {
+    rrect(c,px,qy,cw*1.4,36,9,K.surface,K.primary,1.8);
+    text(c,"?",px+cw*0.7,qy+18,20,K.primary,900,"center");
+    text(c,"→",px+cw*1.4+18,qy+18,20,K.muted,900,"center");
+    letterRow(c,word,px+cw*1.4+36,qy,cw,"#F1ECFF",K.primary);
+  }
+  return 112;
+}
 function drawFraction(c,pic,x,y,w){
   const h=176, two=(pic.otherSlices||0)>0;
   const r=Math.min(72,two?w/4.6:w/2.6), cy=y+h/2;
@@ -1189,6 +1441,14 @@ function render(cv,q){
       case "roll":         put(drawRoll(c,pic,M,y,CW)); break;
       case "stackCount": case "stackFill": case "stackView":
                            put(drawStack(c,pic,M,y,CW)); break;
+      case "knights":      put(drawClues(c,pic,M,y,CW)); break;
+      case "mirrorCode": case "mirrorWrite":
+                           put(drawMirrorAlpha(c,pic,M,y,CW)); break;
+      case "crackCode":    put(drawExample(c,pic,M,y,CW)); break;
+      case "sameShape":    put(drawPolycube(c,pic,M,y,CW)); break;
+      case "cubeTurn":     put(drawTurnCube(c,pic,M,y,CW)); break;
+      case "sectionShape": case "sectionSides":
+                           put(drawSection(c,pic,M,y,CW)); break;
       case "sizeOrder":    put(drawSize(c,pic,M,y,CW)); break;
       case "fraction":     put(drawFraction(c,pic,M,y,CW)); break;
     }
@@ -1230,6 +1490,9 @@ function render(cv,q){
       ? "Fill every box, then run it. Steps can be used again."
       : "Tap the steps to fill the boxes, then run it."});
   }
+  else if(q.optionCubes&&q.optionCubes.length) y+=cubeOptions(c,q.optionCubes,M,y,CW)+8;
+  else if(q.optionSections&&q.optionSections.length) y+=sectionOptions(c,q.optionSections,M,y,CW)+8;
+  else if(q.optionShapes&&q.optionShapes.length) y+=shapeOptions(c,q.optionShapes,M,y,CW)+8;
   else if(q.optionBits&&q.optionBits.length) y+=bitOptions(c,q.optionBits,pic&&pic.values,M,y,CW)+8;
   else if(q.optionNets&&q.optionNets.length) y+=netOptions(c,q.optionNets,M,y,CW)+8;
   else if(q.optionViews&&q.optionViews.length) y+=viewOptions(c,q.optionViews,M,y,CW)+8;
@@ -1276,6 +1539,9 @@ function answerWords(q){
       if(o) return `option ${v+1}: ${o.map(word).join(" · ")}`;
       if(q.optionBits) return `bulbs ${q.optionBits[v].map(b=>b?"●":"○").join(" ")}`;
       if(q.optionNets) return `net ${v+1}`;
+      if(q.optionCubes) return `picture ${v+1}`;
+      if(q.optionShapes) return `the ${q.optionShapes[v]}`;
+      if(q.optionSections) return `cut ${v+1}`;
       if(q.optionViews) return `view ${v+1} (heights ${q.optionViews[v].join(", ")})`;
       if(q.optionCells) return `the ${q.optionCells[v].kind}`;
       return `option ${v+1}`;

@@ -79,7 +79,7 @@ def pic_h(q):
     k = p["kind"]
     if k == "sequence":
         return 64 + (38 if ("askPosition" in p or "askValue" in p) else 0)
-    if k in ("clues", "claim"):
+    if k in ("clues", "claim", "truth"):
         return card_h(p["lines"])
     if k == "grid":
         return card_h(p["lines"]) + (112 if len(p["people"]) == 3 else 0)
@@ -100,6 +100,16 @@ def pic_h(q):
         return rows * size + 8
     if k == "roll":
         return max(p["h"] * 38, 104) + 10
+    if k == "polycube":
+        return 150
+    if k == "turnCube":
+        return 132 + 22 * len(p["steps"])
+    if k == "section":
+        return 170
+    if k == "mirrorAlpha":
+        return 150
+    if k == "example":
+        return 112
     if k == "stack":
         hs = p["heights"]
         w, d = len(hs[0]), len(hs)
@@ -122,6 +132,10 @@ def opts_h(q):
         return 2 * 132 + 10
     if q.get("optionViews"):
         return 104
+    if q.get("optionCubes") or q.get("optionSections"):
+        return 2 * 132 + 10
+    if q.get("optionShapes"):
+        return 86
     return 0
 
 
@@ -184,6 +198,16 @@ def check_matches(qid, q):
         bad(qid, "prompt names a different face")
     if q["shape"] == "netPick" and (("NOT" in pr) == bool(q.get("askFolds"))):
         bad(qid, "prompt and question disagree about NOT")
+    if q["shape"] == "knights" and p["ask"] not in pr:
+        bad(qid, "prompt asks about a different person")
+    if q["shape"] == "cubeTurn":
+        side = {"T": "on top", "F": "at the front", "R": "on the right"}[p["ask"]]
+        if side not in pr:
+            bad(qid, "prompt asks about a different side")
+        if ("both" in pr) != (len(p["moves"]) == 2):
+            bad(qid, "prompt and picture disagree about how many turns")
+    if q["shape"] == "sectionWhich":
+        want = q["optionShapeWanted"] if "optionShapeWanted" in q else None
     if q["shape"] == "deduce":
         if p.get("who") and f"the {(p['who'] + ' ' + p['noun']).strip()}" not in pr:
             bad(qid, "prompt asks about a different thing")
@@ -202,6 +226,7 @@ def check_glyphs(qid, q):
     used |= {k["glyph"] for k in p.get("key") or []}
     used |= {g["glyph"] for g in p.get("word") or [] if isinstance(g, dict)}
     used |= {c["kind"] for c in q.get("optionCells") or []}
+    used |= set(p.get("marks") or [])
     if used & SMALL_UNCLEAR:
         bad(qid, f"draws {sorted(used & SMALL_UNCLEAR)} small, where it is easy to misread")
 
@@ -218,7 +243,8 @@ def check_answerable(qid, q):
             bad(qid, "number keys are not in order")
         return
     opts = (q.get("optionsText") or q.get("optionCells") or q.get("optionBits")
-            or q.get("optionNets") or q.get("optionViews"))
+            or q.get("optionNets") or q.get("optionViews") or q.get("optionCubes")
+            or q.get("optionShapes") or q.get("optionSections"))
     if not opts:
         return bad(qid, "no options to tap")
     if not (0 <= a["value"] < len(opts)):
@@ -239,13 +265,17 @@ REQUIRED = {
     "letters": (), "net": ("cells", "marks", "target"),
     "roll": ("w", "h", "start", "moves", "top", "front", "right"),
     "stack": ("heights",),
+    "truth": ("lines", "people", "says", "ask"),
+    "polycube": ("cubes",), "turnCube": ("marks", "moves", "steps", "ask"),
+    "section": ("solid", "point", "normal"), "mirrorAlpha": ("word", "mode"),
+    "example": ("example", "word", "mode"),
 }
 
 
 def check_render(qid, q):
     p = q.get("pic")
     if p is None:
-        if q["shape"] != "netPick":
+        if q["shape"] not in ("netPick", "sectionWhich"):
             bad(qid, "no picture")
         return
     for f in REQUIRED.get(p["kind"], ()):
@@ -256,7 +286,8 @@ def check_render(qid, q):
 def key_of(q):
     return json.dumps([q.get(k) for k in ("prompt", "pic", "visual", "optionsText",
                                           "optionCells", "optionBits", "optionNets",
-                                          "optionViews", "choices", "options")],
+                                          "optionViews", "optionCubes", "optionShapes",
+                                          "optionSections", "choices", "options")],
                       sort_keys=True)
 
 
