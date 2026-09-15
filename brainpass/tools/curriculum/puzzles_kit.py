@@ -1,515 +1,887 @@
 # -*- coding: utf-8 -*-
-"""Authoring kit for Puzzles & Logic — the band b skill, ages 7-8.
+"""Authoring kit for Puzzles & Logic — band b, ages 7-8.
 
-Same discipline as numkit.py and kit.py: where an answer follows from the
-picture it is COMPUTED here, never typed beside it. Over 324 questions a typed
-answer is a coin flip that only lands wrong once, and when it does a child is
-told their correct answer is wrong with no way to argue.
+REBUILT 2026-09-15 at Sai's request. The first version was shape patterns and
+sorting; this one is the reasoning an Olympiad paper asks of a Class 2-3 child,
+plus the family-relation puzzles from aptitude papers, pitched down to seven:
 
-Three rules this skill is built on, beyond that one.
+  number thinking   missing numbers, number riddles, story sums, number patterns
+  order and place   taller/older/faster, places in a line, left, right, turning
+  relations, codes  family relations, analogies, letter and number codes
+  logic             odd one out, days, months and the clock, "how many ways"
 
-EVERY QUESTION IS A PICTURE. The gate has no text-option question in it by
-design: CoderGate deleted its old "truth" shape because it "drew a condition in
-mid-air beside a list of facts", and a child cannot look at a condition. So band
-b asks nothing in words that it cannot also show. "True or false" is a YES tray
-and a NO tray with shapes to sort into them, not a sentence.
+Sources the pitch rests on (see the commit for links): the SOF IMO Class 2 and 3
+reasoning syllabi; research that seven and eight year olds handle three-term
+comparisons ("A is taller than B, B is taller than C"); schema research that
+"change" story sums are easier than "compare" ones; family-relation guidance that
+direct relations are easy and in-law or multi-step ones are not; and the Nupo
+design memo's budget for band b -- a question of about eight words, one of four
+answers, fifteen to twenty-five seconds, contexts from the playground, the shop
+and the family.
 
-NOTHING HERE NEEDS READING FLUENCY. Band b is seven and eight, and Nupo ships
-in India where many of those children are learning in their second or third
-language. A puzzle that is really a reading test fails the wrong child. That is
-why the shift ciphers and decode-a-word puzzles in the original spine are not
-here: they test the alphabet, not reasoning.
-
-SIX SECONDS. The card sits over the app a child actually wanted to open. A
-question that needs a paragraph read, or two separate ideas held at once, is the
-wrong question for this surface however good it would be on paper.
+Every answer is COMPUTED by an engine that does the reasoning. pz_grade.py works
+each one out again with different code. The wrong options are the mistakes a
+child actually makes: adding when the story takes away, counting from the wrong
+end of the line, turning the wrong way, naming the relation backwards.
 """
-import hashlib, json
+import datetime
+import hashlib
+import itertools
+import json
 
-# The vocabulary the existing views already draw. Staying inside it is what lets
-# band b reuse PlayViews, SortViews and the option rows unchanged.
-STAR, HEART, CIRCLE, SQUARE = "star", "heart", "circle", "square"
-TRIANGLE, DIAMOND, HEXAGON, FLOWER = "triangle", "diamond", "hexagon", "flower"
+# Clues are read by children who may be reading in a second language. Every name
+# is short, common in India, and clearly a girl's or a boy's name -- but the
+# relation engines never rely on that: a person's gender comes only from a clue
+# word ("mother", "brother"), and pz_grade.py reads it from the sentence itself.
+GIRLS = ["Asha", "Meera", "Zoya", "Priya", "Isha", "Tara", "Neha", "Anu", "Riya",
+         "Sara", "Nina", "Mia", "Diya", "Lila", "Anya", "Rani", "Pooja", "Kavya"]
+BOYS = ["Ravi", "Kabir", "Arjun", "Dev", "Rohan", "Imran", "Aman", "Ali", "Om",
+        "Veer", "Raj", "Yash", "Karan", "Sahil", "Nikhil", "Tom"]
 
-PRIMARY, ACCENT = "primary", "accent"
-
-SHAPES = [STAR, HEART, CIRCLE, SQUARE, TRIANGLE, DIAMOND, HEXAGON, FLOWER]
-
-
-def cell(kind, color=PRIMARY, rotation=0):
-    return {"kind": kind, "color": color, "rotation": rotation}
-
-
-# Which turns a child can actually SEE, from the geometry Glyphs.kt draws (the
-# review wall draws the same shapes). A turn is only a difference if the drawing
-# changes:
-#   circle            any turn looks identical
-#   square, diamond   four-fold: a quarter turn looks identical, and an eighth
-#                     turn makes one look like the other
-#   hexagon, flower   six-fold: a half turn looks identical, a quarter turn is a
-#                     30-degree nudge nobody can judge at this size
-#   star              five points: upside down is obvious, but a quarter turn
-#                     leaves a point 18 degrees off vertical -- it looks upright
-#   triangle, heart   every quarter turn is plainly different
-# The first draft compared the rotation NUMBER, so it happily offered a square
-# turned 90 degrees and an unturned square as two different answers. They are
-# the same picture.
-VISIBLE_TURNS = {TRIANGLE: {90, 180, 270}, HEART: {90, 180, 270}, STAR: {180}}
+MAX_WORDS = 8          # per clue line, and for the prompt: the memo's band b budget
+MAX_LINES = 3
 
 
-def seen_rotation(c):
-    """The rotation as a child perceives it: 0 whenever the turn does not show."""
-    r = c.get("rotation", 0) % 360
-    return r if r in VISIBLE_TURNS.get(c["kind"], ()) else 0
-
-
-def looks(c):
-    """Everything a child can see about one drawn shape."""
-    return (c["kind"], c["color"], seen_rotation(c), c.get("n", 1),
-            c.get("size", 1))
-
-
-def _same(a, b):
-    return looks(a) == looks(b)
-
-
-def _seed(prompt, pic):
-    """A stable number for one question, so builds stay reproducible."""
-    blob = json.dumps([prompt, pic], sort_keys=True, ensure_ascii=False)
+def _seed(*parts):
+    blob = json.dumps(parts, sort_keys=True, ensure_ascii=False, default=str)
     return int(hashlib.sha256(blob.encode("utf-8")).hexdigest()[:8], 16)
 
 
-def _vary_slot(q):
-    """Move the right answer off whichever slot it would otherwise always sit in.
+def _words(s):
+    return len(s.replace("?", " ").replace(".", " ").split())
 
-    Measured on the shipped skills before writing this: EVERY number answer in
-    Think Like a Coder is the second of the four offered -- 100% of 93 -- and 88%
-    of Number Sense's are the third. numkit.near() says in its own docstring that
-    returning the choices in ascending order means "the position of the answer is
-    not a tell", but a window centred on the answer puts it in the same slot every
-    time, so the order never mattered. A child who taps the second number scores
-    full marks on 85 coder questions without reading one of them.
 
-    Fixed for the drawn options by rotating them, which keeps the row's order
-    intact while moving the answer; and for numbers by sliding the window rather
-    than shuffling it, so the four stay in ascending order and stay easy to scan.
-    """
-    v = (q.get("answer") or {}).get("value")
-    if not isinstance(v, int) or isinstance(v, bool):
-        return
-    seed = _seed(q.get("prompt"), q.get("pic"))
-
-    opts = q.get("optionCells")
-    if opts and 0 <= v < len(opts):
-        k = seed % len(opts)
-        q["optionCells"] = [opts[(i - k) % len(opts)] for i in range(len(opts))]
-        q["answer"] = dict(q["answer"], value=(v + k) % len(opts))
-        return
-
-    ch = q.get("choices")
-    if ch and v in ch:
-        below = seed % len(ch)
-        start = max(0, v - below)
-        q["choices"] = [start + i for i in range(len(ch))]
+def _lines_ok(lines):
+    if len(lines) > MAX_LINES:
+        raise ValueError(f"{len(lines)} clue lines; a seven year old gets at most {MAX_LINES}")
+    for l in lines:
+        if _words(l) > MAX_WORDS:
+            raise ValueError(f'"{l}" is {_words(l)} words; the cap is {MAX_WORDS}')
 
 
 def _q(shape, prompt, hint, pic, answer, **extra):
-    q = {"shape": shape, "prompt": prompt, "hint": hint, "pic": pic,
-         "answer": answer}
+    if _words(prompt) > MAX_WORDS:
+        raise ValueError(f'prompt "{prompt}" is {_words(prompt)} words; the cap is {MAX_WORDS}')
+    if pic and pic.get("lines"):
+        _lines_ok(pic["lines"])
+    q = {"shape": shape, "prompt": prompt, "hint": hint, "pic": pic, "answer": answer}
     q.update(extra)
-    _vary_slot(q)
     return q
 
 
-def near(n, lo=0, hi=99, count=4):
-    """Four numbers around [n]: the answer and the near misses.
+def choices4(ans, mistakes, k=0, lo=0):
+    """Four ascending numbers: the answer and three mistakes, answer in slot k.
 
-    Identical in spirit to numkit.near. Off-by-one is the mistake a child of
-    this age actually makes, so the wrong options sit either side of the answer.
-    Scattered wrong numbers can be eliminated without doing the puzzle, which
-    makes the question free.
+    Real mistakes come before invented near misses. Nothing below [lo] is ever
+    offered, so a seven year old is never shown a negative number.
     """
-    out = {n}
-    step = 1
-    while len(out) < count:
-        for cand in (n - step, n + step):
-            if lo <= cand <= hi and len(out) < count:
-                out.add(cand)
+    real = []
+    for m in mistakes:
+        if m != ans and m not in real and m >= lo and float(m).is_integer():
+            real.append(int(m))
+    pad, step = [], 1
+    while len(pad) < 8:
+        for c in (ans + step, ans - step):
+            if c != ans and c not in real and c not in pad and c >= lo:
+                pad.append(c)
         step += 1
-        if step > 60:
-            break
-    return sorted(out)
+    below = [c for c in real if c < ans] + [c for c in pad if c < ans]
+    above = [c for c in real if c > ans] + [c for c in pad if c > ans]
+    j = min(k, len(below))
+    if len(above) < 3 - j:
+        j = 3 - len(above)
+    return sorted(below[:j] + [ans] + above[:3 - j])
 
 
-def _one_match(options, want, what):
-    """Index of the single option equal to [want], or raise.
-
-    Every drawn-option question in this file goes through here. Two matching
-    options is a question with two right answers, and none is a question with no
-    way forward; both have shipped in this repo before and both are caught here
-    rather than by a child.
-    """
-    idx = [i for i, o in enumerate(options) if _same(o, want)]
-    if len(idx) != 1:
-        raise ValueError(f"{what}: {len(idx)} of {len(options)} options match "
-                         f"the answer, need exactly 1")
-    return idx[0]
+def _numbers(ans, mistakes, lo=0):
+    return {"choices": choices4(ans, mistakes, 0, lo),
+            "_pool": {"mistakes": [int(m) for m in mistakes if float(m).is_integer()], "lo": lo}}
 
 
-# ============================================================ section 1: patterns
-
-def pattern(prompt, cells, gap_at, options, hint=None):
-    """A run with one cell hidden. Which option fills it is computed.
-
-    Mirrors numkit.pattern exactly so PlayViews.PatternStripView draws it with
-    no change. Band b's strips are longer and vary two properties at once —
-    band a already covers ABAB, and a seven year old meeting it again would
-    learn the screen rather than the idea.
-    """
-    want = cells[gap_at]
-    idx = _one_match(options, want, "pattern gap")
-    return _q("pattern", prompt, hint or "Say the pattern out loud as you point.",
-              {"kind": "pattern", "cells": cells, "gapAt": gap_at},
-              {"type": "int", "value": idx}, optionCells=options)
+def _options(q, field):
+    """Mark a question whose text or picture options the emitter may reorder."""
+    q["_rotate"] = [field]
+    return q
 
 
-def repeat_strip(unit, times, extra=0):
-    """[unit] laid end to end, so the strip is a repeat by construction.
+# ============================================================ 1. number thinking
 
-    Building the strip from its repeating unit rather than writing out the cells
-    means a strip can never accidentally not be a pattern — which is the one way
-    a "what comes next" question can have no defensible answer at all.
-    """
+def equation(prompt, left, op, right, result, hide, hint=None):
+    """A number sentence with one box empty: 8 + ? = 15."""
+    val = {"+": left + right, "-": left - right}[op]
+    if val != result:
+        raise ValueError(f"{left} {op} {right} is not {result}")
+    if min(left, right, result) < 0 or max(left, right, result) > 100:
+        raise ValueError("numbers must stay between 0 and 100")
+    ans = {"left": left, "right": right, "result": result}[hide]
+    if op == "+":
+        mistakes = {"left": [result + right, result], "right": [result + left, result],
+                    "result": [abs(left - right), left]}[hide]
+    else:
+        mistakes = {"left": [result - right, result], "right": [left + result, result],
+                    "result": [left + right, right]}[hide]
+    pic = {"kind": "equation", "left": left, "op": op, "right": right, "result": result,
+           "hide": hide}
+    return _q("equation", prompt, hint or "What number makes both sides the same?",
+              pic, {"type": "number", "value": ans},
+              **_numbers(ans, mistakes + [ans + 1, ans - 1]))
+
+
+RIDDLE_WORDS = {"add": "add {k}", "take": "take away {k}", "double": "double it",
+                "half": "halve it"}
+
+
+def _riddle_apply(steps, x):
+    for s in steps:
+        if s[0] == "add":
+            x = x + s[1]
+        elif s[0] == "take":
+            x = x - s[1]
+        elif s[0] == "double":
+            x = x * 2
+        elif s[0] == "half":
+            if x % 2:
+                return None
+            x = x // 2
+    return x
+
+
+def riddle(prompt, steps, result, hint=None):
+    """I am a number. Add 4 to me. Now I am 12."""
+    hits = [x for x in range(0, 101) if _riddle_apply(steps, x) == result]
+    if len(hits) != 1:
+        raise ValueError(f"{len(hits)} numbers fit this riddle")
+    ans = hits[0]
+    said = [RIDDLE_WORDS[s[0]].format(k=s[1] if len(s) > 1 else "") for s in steps]
+    middle = ("I " + said[0] + ".") if len(said) == 1 else f"I {said[0]}, then {said[1]}."
+    lines = ["I am a number.", middle.replace("I halve it", "I halve").replace(
+        "I double it", "I double"), f"Now I am {result}."]
+    forward = _riddle_apply(steps, result)
+    return _q("riddle", prompt, hint or "Work backwards from the end.",
+              {"kind": "card", "lines": lines, "steps": [list(s) for s in steps], "result": result},
+              {"type": "number", "value": ans},
+              **_numbers(ans, [result, forward if forward is not None else result + 1,
+                               ans + 1, ans - 1]))
+
+
+# ---- story sums, by schema ---------------------------------------------------
+
+def _he(name):
+    return "She" if name in GIRLS else "He"
+
+
+STORY = {
+    # change: something is added or taken away
+    "join": lambda n, t, a, b: ([f"{n} has {a} {t}.", f"{_he(n)} gets {b} more.", "How many now?"],
+                                a + b, [a - b, b, a + b + 1]),
+    "leave": lambda n, t, a, b: ([f"{n} has {a} {t}.", f"{_he(n)} gives away {b}.", "How many are left?"],
+                                 a - b, [a + b, b, a - b - 1]),
+    "gain": lambda n, t, a, b: ([f"{n} had {a} {t}.", f"Now {_he(n).lower()} has {b}.",
+                                 "How many did " + _he(n).lower() + " get?"],
+                                b - a, [a + b, b, a]),
+    # combine: two parts make a whole
+    "total": lambda n, t, a, b: ([f"{n} has {a} red {t}.", f"{_he(n)} has {b} blue {t}.",
+                                  f"How many {t} in all?"],
+                                 a + b, [a - b, a, b]),
+    "part": lambda n, t, a, b: ([f"There are {a} {t}.", f"{b} of them are big.",
+                                 "How many are not big?"],
+                                a - b, [a + b, b, a]),
+    # compare
+    "more": lambda n, t, a, b, m: ([f"{n} has {a} {t}.", f"{m} has {b} more than {n}.",
+                                    f"How many does {m} have?"],
+                                   a + b, [a - b, b, a]),
+    "fewer": lambda n, t, a, b, m: ([f"{n} has {a} {t}.", f"{m} has {b} fewer.",
+                                     f"How many does {m} have?"],
+                                    a - b, [a + b, b, a]),
+    "diff": lambda n, t, a, b, m: ([f"{n} has {a} {t}.", f"{m} has {b} {t}.",
+                                    f"How many more does {n} have?"],
+                                   a - b, [a + b, a, b]),
+    # equal groups
+    "groups": lambda n, t, a, b: ([f"There are {a} bags.", f"Each bag has {b} {t}.",
+                                   f"How many {t} in all?"],
+                                  a * b, [a + b, a * b + b, a * b - b]),
+    "share": lambda n, t, a, b: ([f"{a} {t} are shared equally.", f"{b} friends get them.",
+                                  "How many does each get?"],
+                                 a // b, [a - b, b, a // b + 1]),
+    "legs": lambda n, t, a, b: ([f"{a} {t} are playing.", f"Each has {b} legs.",
+                                 "How many legs in all?"],
+                                a * b, [a + b, a, a * b + 1]),
+}
+
+
+def story(prompt, schema, name, thing, a, b, other=None, hint=None):
+    fn = STORY[schema]
+    lines, ans, mistakes = fn(name, thing, a, b, other) if schema in ("more", "fewer", "diff") \
+        else fn(name, thing, a, b)
+    if schema == "share" and a % b:
+        raise ValueError("a fair share must come out even")
+    if ans < 0 or ans > 100:
+        raise ValueError(f"the answer {ans} is out of range for seven")
+    return _q("story", prompt, hint or "Is something joining, leaving, or being compared?",
+              {"kind": "card", "lines": lines, "schema": schema, "nums": [a, b]},
+              {"type": "number", "value": ans}, **_numbers(ans, mistakes))
+
+
+def bars(prompt, top_name, top, low_name, low, hide, hint=None):
+    """Two bars, drawn to scale, with one number hidden. The picture carries it."""
+    if top <= low:
+        raise ValueError("the top bar is the bigger one")
+    diff = top - low
+    ans = {"top": top, "low": low, "diff": diff}[hide]
+    shown = {"top": None if hide == "top" else top, "low": None if hide == "low" else low,
+             "diff": None if hide == "diff" else diff}
+    mistakes = {"top": [low - diff, low, diff], "low": [top + diff, top, diff],
+                "diff": [top + low, top, low]}[hide]
+    return _q("bars", prompt, hint or "The longer bar is the shorter bar plus the gap.",
+              {"kind": "bars", "names": [top_name, low_name], "values": [top, low],
+               "shown": shown, "hide": hide},
+              {"type": "number", "value": ans}, **_numbers(ans, mistakes))
+
+
+# ---- number patterns -----------------------------------------------------------
+
+def series(prompt, terms, gap, hint=None):
+    shown = [None if i == gap else t for i, t in enumerate(terms)]
+    if sum(t is not None for t in shown) < 4:
+        raise ValueError("show at least four numbers")
+    ans = terms[gap]
+    mistakes = [ans + 1, ans - 1]
+    if gap >= 2:
+        mistakes.append(terms[gap - 1] + (terms[gap - 1] - terms[gap - 2]) + 1)
+    if 0 < gap < len(terms) - 1:
+        mistakes.append(terms[gap - 1] + 1)
+    return _q("series", prompt, hint or "How does each number change to the next?",
+              {"kind": "series", "terms": shown, "gapAt": gap},
+              {"type": "number", "value": ans}, **_numbers(ans, mistakes))
+
+
+def rule_words(r):
+    t = r[0]
+    if t == "add":
+        return f"Add {r[1]} each time"
+    if t == "take":
+        return f"Take away {r[1]} each time"
+    if t == "double":
+        return "Double each time"
+    if t == "grow":
+        return "Add 1 more each time"
+    raise ValueError(t)
+
+
+def rule_run(r, first, n):
+    out, v, step = [first], first, 1
+    for _ in range(n - 1):
+        if r[0] == "add":
+            v += r[1]
+        elif r[0] == "take":
+            v -= r[1]
+        elif r[0] == "double":
+            v *= 2
+        elif r[0] == "grow":
+            v += step
+            step += 1
+        out.append(v)
+    return out
+
+
+def series_rule(prompt, terms, rules, hint=None):
+    """Which rule makes this row. rules[0] is the one; the others fit a step or two."""
+    fits = [i for i, r in enumerate(rules) if rule_run(r, terms[0], len(terms)) == terms]
+    if fits != [0]:
+        raise ValueError(f"rules that fit: {fits}; need exactly the first")
+    q = _q("seriesRule", prompt, hint or "Check the rule on every step, not just the first.",
+           {"kind": "series", "terms": terms}, {"type": "option", "value": 0},
+           optionsText=[rule_words(r) for r in rules], optionRules=[list(r) for r in rules])
+    q["_rotate"] = ["optionsText", "optionRules"]
+    return q
+
+
+# ============================================================ 2. order and position
+
+DIMS = {"tall": ("taller", "shorter", "tallest", "shortest"),
+        "old": ("older", "younger", "oldest", "youngest"),
+        "fast": ("faster", "slower", "fastest", "slowest"),
+        "heavy": ("heavier", "lighter", "heaviest", "lightest")}
+
+
+def _orders(people, clues):
+    """Every order, most first, that agrees with the clues."""
     out = []
-    while len(out) < times * len(unit) + extra:
-        out.append(unit[len(out) % len(unit)])
+    for perm in itertools.permutations(people):
+        pos = {p: i for i, p in enumerate(perm)}
+        if all((pos[a] < pos[b]) == (w == "more") for a, b, w in clues):
+            out.append(perm)
     return out
 
 
-def grow_strip(start, step, count):
-    """Counts that grow by a fixed step: 1, 3, 5, 7 drawn as groups."""
-    return [start + step * i for i in range(count)]
+def rank(prompt, dim, people, clues, ask, hint=None):
+    """Who is tallest, from comparisons. ask: "top", "bottom" or "second"."""
+    more, less, most, least = DIMS[dim]
+    orders = _orders(people, clues)
+    pick = {"top": 0, "bottom": -1, "second": 1}[ask]
+    answers = {o[pick] for o in orders}
+    if len(answers) != 1:
+        raise ValueError(f"{len(answers)} people could be the answer")
+    word = {"top": most, "bottom": least, "second": f"second {most}"}[ask]
+    if word not in prompt:
+        raise ValueError(f'the prompt does not ask for the "{word}"')
+    ans = answers.pop()
+    lines = [f"{a} is {more if w == 'more' else less} than {b}." for a, b, w in clues]
+    q = _q("rank", prompt, hint or "Put them in order, one clue at a time.",
+           {"kind": "card", "lines": lines, "dim": dim, "people": list(people),
+            "clues": [list(c) for c in clues], "ask": ask},
+           {"type": "option", "value": list(people).index(ans)}, optionsText=list(people))
+    return _options(q, "optionsText")
 
 
-def interleaved(prompt, shapes, colours, length, gap, hint=None):
-    """A strip where shape and colour run on DIFFERENT cycles.
-
-    This is the thing that separates band b from band a. Number Sense's patterns
-    are period two on a single property -- star, heart, star, heart -- and a five
-    year old solves them by seeing the repeat without reasoning about it. Two
-    shapes against three colours gives a period of six: long enough that the eye
-    cannot just match it, so the child has to track each cycle separately and put
-    them back together. A child who follows only the shapes, or only the colours,
-    gets a specific wrong answer rather than a random one.
-
-    Which is what the distractors are. The three wrong options are exactly those
-    mistakes -- right shape with the wrong colour, right colour with the wrong
-    shape, and both wrong -- so an answer cannot be reached by tracking half the
-    pattern and guessing the rest.
-    """
-    if len(shapes) < 2 or len(colours) < 2:
-        raise ValueError("an interleaved strip needs at least two of each")
-    if len(shapes) == len(colours):
-        raise ValueError(f"{len(shapes)} shapes against {len(colours)} colours "
-                         f"repeats every {len(shapes)}, the same as one property")
-    cells = [cell(shapes[i % len(shapes)], colours[i % len(colours)])
-             for i in range(length)]
-    want = cells[gap]
-    other_shape = shapes[(shapes.index(want["kind"]) + 1) % len(shapes)]
-    other_colour = [c for c in colours if c != want["color"]][0]
-    options = [cell(want["kind"], want["color"]),
-               cell(want["kind"], other_colour),
-               cell(other_shape, want["color"]),
-               cell(other_shape, other_colour)]
-    return pattern(prompt, cells, gap, options,
-                   hint or "Follow the shapes and the colours separately.")
+def rank_count(prompt, dim, people, clues, who, hint=None):
+    more = DIMS[dim][0]
+    if f"{more} than {who}" not in prompt:
+        raise ValueError("the prompt asks about someone else")
+    orders = _orders(people, clues)
+    counts = {o.index(who) for o in orders}
+    if len(counts) != 1:
+        raise ValueError("the clues do not settle the count")
+    ans = counts.pop()
+    lines = [f"{a} is {more if w == 'more' else DIMS[dim][1]} than {b}." for a, b, w in clues]
+    return _q("rankCount", prompt, hint or "Put them in order first, then count.",
+              {"kind": "card", "lines": lines, "dim": dim, "people": list(people),
+               "clues": [list(c) for c in clues], "who": who},
+              {"type": "number", "value": ans},
+              **_numbers(ans, [len(people) - 1 - ans, ans + 1, len(people) - 1]))
 
 
-def skip_line(prompt, to, start, step, hops, hint=None):
-    """Hops of the same size along a number line.
-
-    The one place in band b where something genuinely happens over time, which
-    is why it is also the only unit whose teach cards animate.
-    """
-    end = start + step * hops
-    if end > to:
-        raise ValueError(f"skip line lands on {end}, past the end of the line ({to})")
-    if end < 0:
-        raise ValueError(f"skip line lands on {end}, before the start of the line")
-    return _q("numberLine", prompt,
-              hint or f"Every hop moves {abs(step)}. Count them as they land.",
-              {"kind": "numberLine", "from": 0, "to": to, "labelEvery": 5,
-               "hopFrom": start, "marker": start, "step": step, "hops": hops},
-              {"type": "int", "value": end})
+def ordinal(n):
+    return {1: "1st", 2: "2nd", 3: "3rd"}.get(n, f"{n}th")
 
 
-def count_objects(prompt, n, glyph=STAR, hint=None):
-    """How many, with the answer taken from the number actually drawn."""
-    return _q("countObjects", prompt, hint or "Point at each one as you count it.",
-              {"kind": "count", "n": n, "glyph": glyph},
-              {"type": "int", "value": n}, choices=near(n, 0, 20))
+def queue_back(prompt, name, n, front, hint=None):
+    """A line drawn with one child marked: what place is that from the back?"""
+    if not 1 <= front <= n <= 10:
+        raise ValueError("a line of up to ten")
+    ans = n - front + 1
+    return _q("queueBack", prompt, hint or "Count from the other end of the line.",
+              {"kind": "line", "n": n, "mark": front, "name": name},
+              {"type": "number", "value": ans},
+              **_numbers(ans, [front, n - front, ans + 1], lo=1))
 
 
-def array(prompt, rows, cols, glyph=CIRCLE, hint=None):
-    """Rows and columns — a growing pattern seen all at once."""
-    n = rows * cols
-    return _q("array", prompt, hint or "Count one row, then count the rows.",
-              {"kind": "array", "rows": rows, "cols": cols, "glyph": glyph},
-              {"type": "int", "value": n}, choices=near(n, 0, 60))
+def queue_calc(prompt, kind, a, b, name=None, other=None, hint=None):
+    """Places in a line, told in words. kind: "total" or "between"."""
+    if kind == "total":
+        lines = [f"{name} is {ordinal(a)} from the front.", f"{name} is {ordinal(b)} from the back.",
+                 "How many are in the line?"]
+        ans, mistakes = a + b - 1, [a + b, a + b + 1, max(a, b)]
+    else:
+        lines = [f"{name} is {ordinal(a)} in the line.", f"{other} is {ordinal(b)} in the line.",
+                 "How many stand between them?"]
+        ans, mistakes = abs(a - b) - 1, [abs(a - b), abs(a - b) + 1, a + b]
+        if ans < 1:
+            raise ValueError("nobody stands between them")
+    return _q("queueCalc", prompt, hint or "Draw the line in your head.",
+              {"kind": "card", "lines": lines, "calc": kind, "nums": [a, b]},
+              {"type": "number", "value": ans}, **_numbers(ans, mistakes, lo=0))
 
 
-# ============================================================ section 2: rules
-
-def odd_one_out(prompt, cells, hint=None):
-    """Four things, one different. Which one is worked out, not declared.
-
-    Mirrors numkit.odd_one_out, but compares on count and size too, because band
-    b's odd-one-out is not always about shape or colour — that is the "why" the
-    unit is named for. If the row does not have exactly one outlier on exactly
-    one property it is not a fair question and this refuses it.
-    """
-    def sig(c):
-        return looks(c)
-
-    counts = {}
-    for c in cells:
-        counts[sig(c)] = counts.get(sig(c), 0) + 1
-    odd = [i for i, c in enumerate(cells) if counts[sig(c)] == 1]
-    common = [k for k, n in counts.items() if n == len(cells) - 1]
-    if len(odd) != 1 or len(common) != 1:
-        raise ValueError(f"odd-one-out is ambiguous: {[sig(c) for c in cells]}")
-    return _q("oddOneOut", prompt, hint or "What do three of them have in common?",
-              {"kind": "oddOneOut", "cells": cells},
-              {"type": "int", "value": odd[0]})
+def queue_who(prompt, names, nth, end, hint=None):
+    """A named line; who is nth from the front or back."""
+    if f"{ordinal(nth)} from the {end}" not in prompt:
+        raise ValueError("the prompt asks about another place")
+    idx = nth - 1 if end == "front" else len(names) - nth
+    ans = names[idx]
+    wrong = names[len(names) - nth] if end == "front" else names[nth - 1]
+    opts = [ans]
+    for c in [wrong] + [names[(idx + d) % len(names)] for d in (1, -1, 2)]:
+        if c not in opts:
+            opts.append(c)
+    q = _q("queueWho", prompt, hint or "Find which end is the front first.",
+           {"kind": "line", "n": len(names), "names": list(names), "nth": nth, "end": end},
+           {"type": "option", "value": 0}, optionsText=opts[:4])
+    return _options(q, "optionsText")
 
 
-def odd_readings(cells):
-    """Every property on which exactly one cell differs and the rest agree.
-
-    Band a's odd-one-out has all four cells identical but for one, so a single
-    full-signature comparison finds it. Band b makes the other properties noise
-    on purpose, so the outlier has to be found one property at a time -- and if
-    TWO properties each single out a DIFFERENT cell, the question has two
-    defensible answers and must not ship.
-    """
-    out = []
-    for prop in ("kind", "color", "rotation"):
-        vals = [seen_rotation(c) if prop == "rotation" else c.get(prop, 0)
-                for c in cells]
-        counts = {}
-        for v in vals:
-            counts[v] = counts.get(v, 0) + 1
-        lone = [i for i, v in enumerate(vals) if counts[v] == 1]
-        common = [v for v, n in counts.items() if n == len(cells) - 1]
-        if len(lone) == 1 and len(common) == 1:
-            out.append((prop, lone[0]))
-    return out
+DIRS = ["North", "East", "South", "West"]
+TURN_TEXT = {"right": "turns right", "left": "turns left", "around": "turns around"}
 
 
-def odd_by(prompt, cells, prop, hint=None):
-    """Odd one out where the OTHER properties are deliberately noisy.
-
-    Number Sense's odd-one-out gives four cells identical but for one, so the
-    outlier pops without any reasoning. Here only [prop] is shared -- five
-    triangles in four different colours and one square -- so the child must
-    decide which property matters before they can find the one that breaks it.
-    That is the "and why" the unit is named for, and it is a different question
-    from the band a version even though it is the same drawing.
-
-    Exactly one cell may differ on [prop], and every other cell must agree on it.
-    """
-    vals = [seen_rotation(c) if prop == "rotation" else c[prop] for c in cells]
-    counts = {}
-    for v in vals:
-        counts[v] = counts.get(v, 0) + 1
-    lone = [i for i, v in enumerate(vals) if counts[v] == 1]
-    common = [v for v, n in counts.items() if n == len(cells) - 1]
-    if len(lone) != 1 or len(common) != 1:
-        raise ValueError(f"odd-by-{prop} is ambiguous: {vals}")
-    # The noise must be real noise, or this is just the band a question again.
-    noisy = [k for k in ("kind", "color") if k != prop
-             and len({c[k] for c in cells}) > 1]
-    if not noisy:
-        raise ValueError(f"every cell agrees on everything but {prop}; nothing "
-                         f"to see past, so this is a band a question")
-    others = [(pr, i) for pr, i in odd_readings(cells)
-              if pr != prop and i != lone[0]]
-    if others:
-        raise ValueError(f"ambiguous: odd by {prop} is cell {lone[0]}, but "
-                         f"{others} single out a different cell")
-    return _q("oddOneOut", prompt, hint or "Decide what they share first.",
-              {"kind": "oddOneOut", "cells": cells},
-              {"type": "int", "value": lone[0]})
+def turns(prompt, name, start, moves, hint=None):
+    """Facing one way, then turning. The four directions keep the same order on
+    screen every time, because a compass a child can learn is part of fairness."""
+    if name not in prompt:
+        raise ValueError("the prompt is about someone else")
+    i = DIRS.index(start)
+    for m in moves:
+        i = (i + {"right": 1, "left": -1, "around": 2}[m]) % 4
+    ans = i
+    if len(moves) == 1:
+        lines = [f"{name} faces {start}.", f"{_he(name)} {TURN_TEXT[moves[0]]}."]
+    else:
+        lines = [f"{name} faces {start}.", f"{_he(name)} {TURN_TEXT[moves[0]]}.",
+                 f"Then {_he(name).lower()} {TURN_TEXT[moves[1]]}."]
+    return _q("turns", prompt, hint or "Turn your own body the same way.",
+              {"kind": "compass", "lines": lines, "start": start, "moves": list(moves)},
+              {"type": "option", "value": ans}, optionsText=list(DIRS), fixedOrder=True)
 
 
-def sort_two(prompt, cells, rule, left_label, right_label, hint=None):
-    """Two trays, and [rule] decides which tray each shape belongs in.
-
-    [rule] is a FUNCTION, not a list of sides. Writing the sides out by hand is
-    the same coin flip as typing an answer, and worse here because one wrong
-    entry in eight looks exactly like seven right ones. Passing the rule means
-    the sides are derived from the same sentence the child is reading.
-
-    Returns sides as 0 = left tray, 1 = right tray.
-    """
-    sides = [0 if rule(c) else 1 for c in cells]
-    if 0 not in sides or 1 not in sides:
-        raise ValueError(f"sort puts every shape in one tray ({left_label}/"
-                         f"{right_label}); nothing to decide")
-    return _q("sortTwo", prompt, hint or "Check each one against the label.",
-              {"kind": "sortTwo", "cells": cells,
-               "leftLabel": left_label, "rightLabel": right_label},
-              {"type": "ints", "value": sides})
+SHAPE_WORDS = ["star", "heart", "circle", "square", "triangle", "diamond"]
 
 
-def yes_no(prompt, cells, rule, hint=None):
-    """True or false, as a picture.
-
-    The gate has no sentence-and-two-buttons shape, on purpose. This is what
-    replaces it: the claim is in the prompt, the evidence is the shapes, and the
-    child sorts them into YES and NO. Same idea, but there is something to look
-    at, and it takes several judgements instead of a coin flip.
-    """
-    return sort_two(prompt, cells, rule, "YES", "NO",
-                    hint or "Check the rule against one shape at a time.")
-
-
-def size_order(prompt, sizes, glyph=STAR, hint=None):
-    """Tap smallest first. The order is computed, never written out.
-
-    [sizes] are FRACTIONS OF THE LARGEST RADIUS, 0.15 to 1.0 -- not ranks. Both
-    SizeOrderView and the review wall multiply a maximum radius by this number,
-    so passing 1, 2, 3, 4 draws the last shape at four times full size and it
-    runs off the card. That shipped in the first draft of this skill and was
-    spotted on the wall; the range check below is why it cannot come back.
-
-    Neighbouring sizes must also differ enough to be told apart at a glance, or
-    the question has no defensible answer.
-    """
-    if len(set(sizes)) != len(sizes):
-        raise ValueError(f"two shapes are the same size ({sizes}); the order is "
-                         f"not decidable")
-    for v in sizes:
-        if not (0.15 <= v <= 1.0):
-            raise ValueError(f"size {v} is outside 0.15-1.0; these are fractions "
-                             f"of the largest radius, not ranks, and this would "
-                             f"draw off the card")
-    ordered = sorted(sizes)
-    tight = [(a, b) for a, b in zip(ordered, ordered[1:]) if b - a < 0.12]
-    if tight:
-        raise ValueError(f"sizes {tight} are too close to tell apart by eye")
-    return _q("sizeOrder", prompt, hint or "Find the smallest one first.",
-              {"kind": "sizeOrder", "sizes": list(sizes), "glyph": glyph},
-              {"type": "ints",
-               "value": sorted(range(len(sizes)), key=lambda i: sizes[i])})
+def shelf(prompt, items, target, side, steps, hint=None):
+    """A row of shapes: which is just left (or two places right) of the heart."""
+    if target not in prompt or side not in prompt:
+        raise ValueError("the prompt does not match the question")
+    if len(set(items)) != len(items):
+        raise ValueError("every shape in the row must be different")
+    t = items.index(target)
+    j = t - steps if side == "left" else t + steps
+    if not 0 <= j < len(items):
+        raise ValueError("that place is off the end of the row")
+    ans = items[j]
+    wrong_side = t + steps if side == "left" else t - steps
+    opts = [ans]
+    for c in ([items[wrong_side]] if 0 <= wrong_side < len(items) else []) + \
+             [items[k] for k in (j + 1, j - 1, t) if 0 <= k < len(items)] + list(items):
+        if c not in opts and c != target:
+            opts.append(c)
+    q = _q("shelf", prompt, hint or "Hold up your left hand to check which side is left.",
+           {"kind": "shelf", "items": list(items), "target": target, "side": side, "steps": steps},
+           {"type": "option", "value": 0},
+           optionCells=[{"kind": k, "color": "primary", "rotation": 0} for k in opts[:4]])
+    return _options(q, "optionCells")
 
 
-# ============================================================ section 3: codes
+# ============================================================ 3. relations and codes
 
-def item(kind, color=PRIMARY, rotation=0, n=1, size=1):
-    """A cell that can also carry a count and a size.
-
-    Analogies need more relations than colour and rotation to be worth asking —
-    "one becomes three" and "small becomes big" are relations a seven year old
-    can see and name, and neither fits in the plain cell. AnalogyView is new, so
-    it can draw these; nothing older is asked to.
-    """
-    c = cell(kind, color, rotation)
-    c["n"] = n
-    c["size"] = size
-    return c
+FEMALE_TERMS = {"mother", "sister", "daughter", "grandmother", "aunt", "wife", "granddaughter"}
+TERM_EDGE = {"mother": "P", "father": "P", "son": "C", "daughter": "C", "sister": "S",
+             "brother": "S", "wife": "W", "husband": "W", "grandmother": "PP",
+             "grandfather": "PP", "aunt": "SP", "uncle": "SP"}
+INVERSE = {"P": "C", "C": "P", "S": "S", "W": "W"}
+REDUCE = [("PS", "P"), ("SC", "C"), ("WP", "P"), ("CW", "C"), ("SS", "S"), ("CP", "S")]
+WORD_TERM = {"P": ("mother", "father"), "C": ("daughter", "son"), "S": ("sister", "brother"),
+             "W": ("wife", "husband"), "PP": ("grandmother", "grandfather"),
+             "CC": ("granddaughter", "grandson"), "SP": ("aunt", "uncle"),
+             "CSP": ("cousin", "cousin")}
 
 
-# The relations an analogy may use. Each is a function from item to item, so the
-# fourth term is COMPUTED by applying to C exactly what A -> B did.
-def rel_colour(it):
-    out = dict(it); out["color"] = ACCENT if it["color"] == PRIMARY else PRIMARY
-    return out
+def _reduce(word):
+    changed = True
+    while changed:
+        changed = False
+        for a, b in REDUCE:
+            if a in word:
+                word = word.replace(a, b, 1)
+                changed = True
+    return word
 
 
-def rel_count(mult):
-    def f(it):
-        out = dict(it); out["n"] = it.get("n", 1) * mult
-        return out
-    return f
+def relation_of(facts, x, y):
+    """Every relation word x can be to y, walking only the facts given."""
+    edges = {}
+    for a, term, b in facts:
+        w = TERM_EDGE[term]
+        edges.setdefault(a, []).append((b, w))
+        inv = "".join(INVERSE[ch] for ch in reversed(w))
+        edges.setdefault(b, []).append((a, inv))
+    found = set()
+    stack = [(x, "", {x})]
+    while stack:
+        node, word, seen = stack.pop()
+        for nxt, w in edges.get(node, []):
+            if nxt in seen:
+                continue
+            nw = _reduce(word + w)
+            if nxt == y:
+                found.add(nw)
+            else:
+                stack.append((nxt, nw, seen | {nxt}))
+    return found
 
 
-def rel_bigger(it):
-    out = dict(it); out["size"] = it.get("size", 1) + 1
-    return out
+def gender_of(facts, person):
+    for a, term, b in facts:
+        if a == person:
+            return "F" if term in FEMALE_TERMS else "M"
+    return None
 
 
-def rel_smaller(it):
-    out = dict(it); out["size"] = max(1, it.get("size", 1) - 1)
-    return out
+def relation_term(facts, x, y):
+    words = relation_of(facts, x, y)
+    if len(words) != 1:
+        raise ValueError(f"{x} to {y} can be read {len(words)} ways: {words}")
+    w = words.pop()
+    if w not in WORD_TERM:
+        raise ValueError(f"{x} to {y} is '{w}', which is not a relation for seven year olds")
+    g = gender_of(facts, x)
+    if g is None and w != "CSP":
+        raise ValueError(f"no clue says whether {x} is a girl or a boy")
+    return WORD_TERM[w][0 if g == "F" else 1]
 
 
-def rel_turn(it):
-    out = dict(it); out["rotation"] = (it.get("rotation", 0) + 90) % 360
-    return out
+RELATION_TRAPS = {
+    "mother": ["father", "sister", "grandmother", "daughter"],
+    "father": ["mother", "brother", "grandfather", "son"],
+    "sister": ["brother", "mother", "daughter", "aunt"],
+    "brother": ["sister", "father", "son", "uncle"],
+    "son": ["daughter", "father", "brother", "grandson"],
+    "daughter": ["son", "mother", "sister", "granddaughter"],
+    "grandmother": ["grandfather", "mother", "aunt", "granddaughter"],
+    "grandfather": ["grandmother", "father", "uncle", "grandson"],
+    "grandson": ["granddaughter", "son", "grandfather", "brother"],
+    "granddaughter": ["grandson", "daughter", "grandmother", "sister"],
+    "aunt": ["uncle", "mother", "sister", "grandmother"],
+    "uncle": ["aunt", "father", "brother", "grandfather"],
+    "cousin": ["brother", "sister", "uncle", "aunt"],
+    "wife": ["husband", "mother", "sister", "daughter"],
+    "husband": ["wife", "father", "brother", "son"],
+}
 
 
-def analogy(prompt, a, c, rel, options, hint=None):
-    """A is to B as C is to what.
-
-    B is computed by applying [rel] to A, and the answer by applying the SAME
-    [rel] to C. That is the whole reason this helper exists: an analogy whose
-    two halves do not perform the same transformation is not an analogy, and
-    written out by hand that is invisible until a child meets it.
-    """
-    b = rel(a)
-    want = rel(c)
-    if _same(a, b):
-        raise ValueError("analogy relation changes nothing; A and B are identical")
-    idx = _one_match(options, want, "analogy")
-    return _q("analogy", prompt, hint or "What changed from the first to the second?",
-              {"kind": "analogy", "a": a, "b": b, "c": c},
-              {"type": "int", "value": idx}, optionCells=options)
+def fact_line(f):
+    a, term, b = f
+    return f"{a} is {b}'s {term}."
 
 
-def code_read(prompt, key, row, hint=None):
-    """A key of symbol -> number, and a row of symbols to add up.
-
-    [key] is a list of (shape, value). The answer is the row's total, computed
-    from the key, so the arithmetic is done once by the machine rather than
-    twice by a person.
-
-    The answer is a number, which the gate already renders as four tappable
-    options — so this needs a new drawing but no new answer control.
-    """
-    table = {k: v for k, v in key}
-    missing = [s for s in row if s not in table]
-    if missing:
-        raise ValueError(f"row uses {missing} which the key does not define")
-    total = sum(table[s] for s in row)
-    return _q("codeRead", prompt, hint or "Read the key first, then the row.",
-              {"kind": "code", "key": [{"glyph": k, "n": v} for k, v in key],
-               "row": list(row)},
-              {"type": "int", "value": total}, choices=near(total, 0, 40))
+def relation(prompt, facts, x, y, hint=None):
+    """Who is x to y, from what the clues say and nothing else."""
+    if x not in prompt or y not in prompt:
+        raise ValueError("the prompt asks about other people")
+    ans = relation_term(facts, x, y)
+    opts = [ans] + RELATION_TRAPS[ans][:3]
+    q = _q("relation", prompt, hint or "Draw the family: who is above, who is beside?",
+           {"kind": "card", "lines": [fact_line(f) for f in facts],
+            "facts": [list(f) for f in facts], "x": x, "y": y},
+           {"type": "option", "value": 0}, optionsText=opts)
+    return _options(q, "optionsText")
 
 
-def code_pick(prompt, key, row, gap_at, total, options, hint=None):
-    """The same key, but one symbol in the row is missing and the total is given.
+def relation_who(prompt, facts, y, term, hint=None):
+    """Tap Riya's grandmother: the one person in the clues who is that to y."""
+    if term not in prompt or y not in prompt:
+        raise ValueError("the prompt asks for something else")
+    people = []
+    for a, _, b in facts:
+        for p in (a, b):
+            if p not in people and p != y:
+                people.append(p)
+    hits = []
+    for p in people:
+        try:
+            if relation_term(facts, p, y) == term:
+                hits.append(p)
+        except ValueError:
+            pass
+    if len(hits) != 1:
+        raise ValueError(f"{len(hits)} people are {y}'s {term}")
+    if len(people) < 3:
+        raise ValueError("need at least three names to choose from")
+    opts = [hits[0]] + [p for p in people if p != hits[0]][:3]
+    q = _q("relationWho", prompt, hint or "Find each person's place in the family.",
+           {"kind": "card", "lines": [fact_line(f) for f in facts],
+            "facts": [list(f) for f in facts], "y": y, "term": term},
+           {"type": "option", "value": 0}, optionsText=opts)
+    return _options(q, "optionsText")
 
-    Two steps instead of one: add what is there, take it from the total, then
-    find the symbol worth the difference. The missing value and the matching
-    option are both computed, and a difference no symbol can supply raises here
-    rather than trapping a child on a question with no answer.
-    """
-    table = {k: v for k, v in key}
-    known = [s for i, s in enumerate(row) if i != gap_at]
-    missing_syms = [s for s in known if s not in table]
-    if missing_syms:
-        raise ValueError(f"row uses {missing_syms} which the key does not define")
-    need = total - sum(table[s] for s in known)
-    want = [k for k, v in key if v == need]
-    if len(want) != 1:
-        raise ValueError(f"the gap needs a symbol worth {need}; the key has "
-                         f"{len(want)} of those")
-    idx = _one_match([cell(o) for o in options], cell(want[0]), "code gap")
-    return _q("codePick", prompt,
-              hint or "Add what you can see, then find what is left.",
-              {"kind": "code", "key": [{"glyph": k, "n": v} for k, v in key],
-               "row": list(row), "gapAt": gap_at, "total": total},
-              {"type": "int", "value": idx},
-              optionCells=[cell(o) for o in options])
+
+# ---- analogies -------------------------------------------------------------------
+# Facts a seven year old in India can be expected to know, one relation per pair.
+# pz_grade.py checks the questions are fair against these facts -- exactly one
+# option fits, and the example pair is not also another relation -- but it
+# cannot re-derive a fact like "a baby cow is a calf". That is said plainly here
+# so nobody later mistakes the check for more than it is.
+REL = {
+    "baby": {"cow": "calf", "dog": "puppy", "cat": "kitten", "hen": "chick", "sheep": "lamb",
+             "duck": "duckling", "frog": "tadpole", "lion": "cub", "horse": "foal"},
+    "home": {"bird": "nest", "bee": "hive", "lion": "den", "horse": "stable", "dog": "kennel",
+             "spider": "web", "rabbit": "burrow"},
+    "opposite": {"hot": "cold", "big": "small", "up": "down", "day": "night", "happy": "sad",
+                 "fast": "slow", "wet": "dry", "full": "empty", "tall": "short", "in": "out"},
+    "sense": {"eye": "see", "ear": "hear", "nose": "smell", "tongue": "taste"},
+    "work": {"doctor": "hospital", "teacher": "school", "farmer": "farm", "pilot": "plane",
+             "cook": "kitchen"},
+    "colour": {"grass": "green", "banana": "yellow", "snow": "white", "coal": "black",
+               "tomato": "red", "sky": "blue"},
+}
+REL_ARROW = {"baby": "baby", "home": "home", "opposite": "opposite", "sense": "does",
+             "work": "works in", "colour": "colour"}
+
+
+def word_analogy(prompt, rel, a, c, extra_wrong=(), hint=None):
+    """cow → calf, dog → ? . The wrong options are the classic slips: a word from a
+    different relation to the same thing, the example's own answer, and the right
+    relation to a different thing."""
+    table = REL[rel]
+    b, ans = table[a], table[c]
+    other_rels = [r for r, t in REL.items() if r != rel and t.get(a) == b]
+    if other_rels:
+        raise ValueError(f"{a} → {b} is also a {other_rels} pair")
+    wrong = list(extra_wrong)
+    for r, t in REL.items():
+        if r != rel and c in t:
+            wrong.append(t[c])
+    wrong.append(b)
+    for k, v in table.items():
+        if k not in (a, c):
+            wrong.append(v)
+    opts = [ans]
+    for w in wrong:
+        if w not in opts and w != ans:
+            opts.append(w)
+    opts = opts[:4]
+    if sum(1 for o in opts if o == ans) != 1:
+        raise ValueError("the answer appears twice")
+    q = _q("wordAnalogy", prompt, hint or "Say how the first two go together. Use the same link.",
+           {"kind": "wordPairs", "pairs": [[a, b], [c, None]], "rel": rel},
+           {"type": "option", "value": 0}, optionsText=opts)
+    return _options(q, "optionsText")
+
+
+NUM_RULES = {"add": lambda x, k: x + k, "take": lambda x, k: x - k, "times": lambda x, k: x * k}
+
+
+def number_analogy(prompt, rule, k, examples, ask, hint=None):
+    """2 → 4, 3 → 6, 5 → ? . Two examples, so "add 2" and "double" cannot both fit."""
+    f = NUM_RULES[rule]
+    pairs = [[x, f(x, k)] for x in examples]
+    fitting = set()
+    for r2, g in NUM_RULES.items():
+        for k2 in range(1, 11):
+            if all(g(x, k2) == y for x, y in pairs):
+                fitting.add(g(ask, k2))
+    if len(fitting) != 1:
+        raise ValueError(f"the examples fit rules giving {fitting}")
+    ans = f(ask, k)
+    if ans < 0 or ans > 100:
+        raise ValueError("out of range")
+    first = pairs[0]
+    slip = ask + (first[1] - first[0])
+    return _q("numberAnalogy", prompt, hint or "What happens to each number? Do the same.",
+              {"kind": "numPairs", "pairs": pairs + [[ask, None]]},
+              {"type": "number", "value": ans},
+              **_numbers(ans, [slip, ans + 1, ans - 1, ask]))
+
+
+# ---- codes -----------------------------------------------------------------------
+ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+
+def shift_word(w, k):
+    return "".join(ALPHA[(ALPHA.index(ch) + k) % 26] for ch in w)
+
+
+def letter_code(prompt, example, ask, rule, hint=None):
+    """CAT is written DBU. How is PEN written? rule: ("shift", k) or ("reverse",)."""
+    make = (lambda w: shift_word(w, rule[1])) if rule[0] == "shift" else (lambda w: w[::-1])
+    ex = make(example)
+    fits = [("shift", k) for k in range(1, 26) if shift_word(example, k) == ex]
+    if example[::-1] == ex:
+        fits.append(("reverse",))
+    if len(fits) != 1:
+        raise ValueError(f"the example fits {len(fits)} rules")
+    ans = make(ask)
+    wrong = [shift_word(ask, -rule[1]) if rule[0] == "shift" else shift_word(ask, 1),
+             ask[::-1] if rule[0] == "shift" else ask,
+             shift_word(ask, rule[1] + 1) if rule[0] == "shift" else ans[1:] + ans[0],
+             shift_word(ask, 2)]
+    opts = [ans]
+    for w in wrong:
+        if w not in opts:
+            opts.append(w)
+    q = _q("wordCode", prompt, hint or "Look at one letter of the example at a time.",
+           {"kind": "example", "example": [example, ex], "word": ask, "mode": "encode"},
+           {"type": "option", "value": 0}, optionsText=opts[:4])
+    return _options(q, "optionsText")
+
+
+def _nums(w):
+    return " ".join(str(ALPHA.index(ch) + 1) for ch in w)
+
+
+def number_code(prompt, example, ask, mode, hint=None):
+    """A is 1, B is 2: BAD is 2 1 4. mode "encode" asks the numbers, "decode" the word."""
+    if max(ALPHA.index(ch) for ch in example + ask) > 9:
+        raise ValueError("keep to A to J, so every number is one digit")
+    if mode == "encode":
+        ans = _nums(ask)
+        wrong = [_nums(ask[::-1]), " ".join(str(ALPHA.index(ch) + 2) for ch in ask),
+                 " ".join(str(ALPHA.index(ch)) for ch in ask)]
+        shown = ask
+    else:
+        ans = ask
+        shown = _nums(ask)
+        wrong = [ask[::-1], shift_word(ask, 1), shift_word(ask, -1)]
+    opts = [ans]
+    for w in wrong:
+        if w not in opts:
+            opts.append(w)
+    q = _q("numCode", prompt, hint or "A is 1. Count along the alphabet for the rest.",
+           {"kind": "numExample", "example": [example, _nums(example)], "word": shown, "mode": mode},
+           {"type": "option", "value": 0}, optionsText=opts[:4])
+    return _options(q, "optionsText")
+
+
+def alphabet(prompt, base, offset, hint=None):
+    """Just after M, just before K, two after P."""
+    if base not in prompt:
+        raise ValueError("the prompt names another letter")
+    i = ALPHA.index(base) + offset
+    if not 0 <= i < 26:
+        raise ValueError("off the end of the alphabet")
+    ans = ALPHA[i]
+    wrong = [ALPHA[ALPHA.index(base) - offset]] if 0 <= ALPHA.index(base) - offset < 26 else []
+    wrong += [ALPHA[j] for j in (i + 1, i - 1, i + 2) if 0 <= j < 26]
+    opts = [ans]
+    for w in wrong:
+        if w not in opts and w != base:
+            opts.append(w)
+    q = _q("alphabet", prompt, hint or "Say the alphabet up to that letter.",
+           {"kind": "letter", "base": base, "offset": offset},
+           {"type": "option", "value": 0}, optionsText=opts[:4])
+    return _options(q, "optionsText")
+
+
+# ============================================================ 4. logic
+
+CATEGORIES = {
+    "fruit": ["apple", "mango", "banana", "grapes", "orange", "guava", "papaya", "cherry"],
+    "vegetable": ["carrot", "potato", "onion", "cabbage", "peas", "brinjal", "spinach", "radish"],
+    "animal": ["lion", "cow", "dog", "cat", "horse", "goat", "zebra", "elephant"],
+    "bird": ["crow", "parrot", "sparrow", "peacock", "eagle", "pigeon", "owl", "duck"],
+    "vehicle": ["bus", "car", "train", "cycle", "truck", "boat", "plane", "scooter"],
+    "colour": ["red", "blue", "green", "yellow", "pink", "black", "white", "brown"],
+    "body": ["hand", "leg", "nose", "ear", "eye", "knee", "foot", "elbow"],
+    "clothes": ["shirt", "sock", "cap", "dress", "coat", "scarf", "skirt", "shorts"],
+    "shape": ["circle", "square", "triangle", "oval", "rectangle"],
+}
+
+
+def category_of(word):
+    return [c for c, ws in CATEGORIES.items() if word in ws]
+
+
+def odd_word(prompt, words, hint=None):
+    """Three from one group, one from another. Which is which is worked out."""
+    cats = [category_of(w) for w in words]
+    if any(len(c) != 1 for c in cats):
+        raise ValueError("every word must belong to exactly one group")
+    names = [c[0] for c in cats]
+    common = [c for c in set(names) if names.count(c) == 3]
+    odd = [i for i, c in enumerate(names) if names.count(c) == 1]
+    if len(common) != 1 or len(odd) != 1:
+        raise ValueError(f"not three-and-one: {names}")
+    q = _q("oddWord", prompt, hint or "Say what three of them are.",
+           {"kind": "words", "words": list(words), "groups": names},
+           {"type": "option", "value": odd[0]}, optionsText=list(words))
+    return _options(q, "optionsText")
+
+
+NUMBER_PROPS = {
+    "even": lambda n: n % 2 == 0,
+    "fives": lambda n: n % 5 == 0,
+    "tens": lambda n: n % 10 == 0,
+    "two digits": lambda n: n >= 10,
+    "tens digit 2": lambda n: n // 10 == 2,
+}
+
+
+def odd_number(prompt, nums, hint=None):
+    """One number breaks what the other three share, on exactly one property."""
+    readings = []
+    for name, f in NUMBER_PROPS.items():
+        vals = [f(n) for n in nums]
+        lone = [i for i, v in enumerate(vals) if vals.count(v) == 1]
+        if len(lone) == 1:
+            readings.append((name, lone[0]))
+    picks = {i for _, i in readings}
+    if len(picks) != 1:
+        raise ValueError(f"readings {readings}: need exactly one odd number")
+    q = _q("oddNumber", prompt, hint or "Are they odd or even? Do they end in 0 or 5?",
+           {"kind": "words", "words": [str(n) for n in nums], "nums": list(nums)},
+           {"type": "option", "value": picks.pop()}, optionsText=[str(n) for n in nums])
+    return _options(q, "optionsText")
+
+
+DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August",
+          "September", "October", "November", "December"]
+
+
+def weekday(prompt, form, day, n=1, hint=None):
+    """forms: after (today + n), ago (today - n), today (tomorrow is day),
+    tomorrow (yesterday was day)."""
+    i = DAYS.index(day)
+    if form == "after":
+        lines, ans, slip = [f"Today is {day}.", f"What day is it in {n} days?"], i + n, i - n
+    elif form == "ago":
+        lines, ans, slip = [f"Today is {day}.", f"What day was it {n} days ago?"], i - n, i + n
+    elif form == "today":
+        lines, ans, slip = [f"Tomorrow is {day}.", "What day is it today?"], i - 1, i + 1
+    elif form == "tomorrow":
+        lines, ans, slip = [f"Yesterday was {day}.", "What day is it tomorrow?"], i + 2, i + 1
+    else:
+        raise ValueError(form)
+    ans %= 7
+    opts = [DAYS[ans]]
+    for j in (slip, ans + 1, ans - 1, ans + 2):
+        if DAYS[j % 7] not in opts:
+            opts.append(DAYS[j % 7])
+    q = _q("weekday", prompt, hint or "Say the days of the week in order.",
+           {"kind": "card", "lines": lines, "form": form, "day": day, "n": n},
+           {"type": "option", "value": 0}, optionsText=opts[:4])
+    return _options(q, "optionsText")
+
+
+def month(prompt, base, offset, hint=None):
+    i = MONTHS.index(base)
+    word = {1: "just after", -1: "just before", 2: "two months after"}[offset]
+    lines = [f"Which month comes {word} {base}?"]
+    ans = (i + offset) % 12
+    opts = [MONTHS[ans]]
+    for j in (i - offset, ans + 1, ans - 1, i):
+        if MONTHS[j % 12] not in opts:
+            opts.append(MONTHS[j % 12])
+    q = _q("month", prompt, hint or "Say the months in order from January.",
+           {"kind": "card", "lines": lines, "base": base, "offset": offset},
+           {"type": "option", "value": 0}, optionsText=opts[:4])
+    return _options(q, "optionsText")
+
+
+def time_words(h, m):
+    return f"{h} o'clock" if m == 0 else f"half past {h}"
+
+
+def clock(prompt, h, m, form, delta=0, hint=None):
+    """A clock face. forms: read (what time does it show), after, before."""
+    if m not in (0, 30) or not 1 <= h <= 12:
+        raise ValueError("o'clock and half past only")
+    if form == "read":
+        lines, nh = [], h
+        wrong = [time_words(h, 30 - m), time_words(h % 12 + 1, m), time_words(m // 5 if m else 12, 0)]
+    else:
+        sign = 1 if form == "after" else -1
+        nh = (h - 1 + sign * delta) % 12 + 1
+        lines = [f"What time is it {delta} hours later?" if form == "after"
+                 else f"What time was it {delta} hours before?"]
+        back = (h - 1 - sign * delta) % 12 + 1
+        wrong = [time_words(back, m), time_words(nh % 12 + 1, m), time_words(nh, 30 - m)]
+    ans = time_words(nh, m)
+    opts = [ans]
+    for w in wrong:
+        if w not in opts:
+            opts.append(w)
+    q = _q("clock", prompt, hint or "The short hand shows the hour.",
+           {"kind": "clock", "h": h, "m": m, "form": form, "delta": delta, "lines": lines},
+           {"type": "option", "value": 0}, optionsText=opts[:4])
+    return _options(q, "optionsText")
+
+
+def combos(prompt, name, a, a_noun, b, b_noun, hint=None):
+    """3 tops and 2 skirts: how many different outfits."""
+    if not (2 <= a <= 4 and 2 <= b <= 4):
+        raise ValueError("keep to 2 to 4 of each")
+    lines = [f"{name} has {a} {a_noun} and {b} {b_noun}.",
+             f"{_he(name)} picks one of each.", "How many different ways?"]
+    ans = a * b
+    return _q("combos", prompt, hint or "Take one of the first. How many can go with it?",
+              {"kind": "card", "lines": lines, "nums": [a, b]},
+              {"type": "number", "value": ans}, **_numbers(ans, [a + b, ans + 1, max(a, b)]))

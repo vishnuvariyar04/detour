@@ -1189,6 +1189,155 @@ function drawExample(c,p,x,y,w){
   }
   return 112;
 }
+// ---- band b, rebuilt: reasoning for ages 7-8 ------------------------------
+// Every height returned here is the number pz_simulate.py checks against the
+// card. Change one and change the other.
+function tokenBox(c,label,x,y,w,h,hole){
+  rrect(c,x,y+3,w,h,12,K.ledge);
+  rrect(c,x,y,w,h,12,hole?"#F1ECFF":K.surface,hole?K.primary:K.line,hole?2:1.5);
+  const z=fitSize(c,label,w-8,24,12,900);
+  text(c,label,x+w/2,y+h/2,z,hole?K.primary:K.text,900,"center");
+}
+function drawEquation(c,p,x,y,w){
+  const toks=[[p.hide==="left"?"?":String(p.left),"box",p.hide==="left"],[p.op==="-"?"−":"+","op"],
+              [p.hide==="right"?"?":String(p.right),"box",p.hide==="right"],["=","op"],
+              [p.hide==="result"?"?":String(p.result),"box",p.hide==="result"]];
+  const bw=58, ow=28, tot=3*bw+2*ow+4*8, ox=x+(w-tot)/2;
+  let cx=ox;
+  toks.forEach(function(t){
+    if(t[1]==="box"){ tokenBox(c,t[0],cx,y+8,bw,52,t[2]); cx+=bw+8; }
+    else { text(c,t[0],cx+ow/2,y+34,26,K.muted,900,"center"); cx+=ow+8; }
+  });
+  return 70;
+}
+function drawBarPair(c,p,x,y,w){
+  const nameW=56, maxW=w-nameW-44, top=p.values[0], low=p.values[1];
+  const scale=maxW/top, rows=[[p.names[0],top,p.shown.top,"#C9B6F8"],[p.names[1],low,p.shown.low,"#FDE68A"]];
+  rows.forEach(function(r,i){
+    const by=y+10+i*50;
+    text(c,r[0],x,by+17,14,K.text,800);
+    rrect(c,x+nameW,by,r[1]*scale,34,8,r[3],K.primaryLedge,1.2);
+    text(c,r[2]===null?"?":String(r[2]),x+nameW+r[1]*scale/2,by+17,18,r[2]===null?K.primary:K.text,900,"center");
+  });
+  const gx0=x+nameW+low*scale, gx1=x+nameW+top*scale, gy=y+60+34+8;
+  c.save(); c.strokeStyle=K.primary; c.lineWidth=2;
+  c.beginPath(); c.moveTo(gx0,gy-6); c.lineTo(gx0,gy); c.lineTo(gx1,gy); c.lineTo(gx1,gy-6); c.stroke(); c.restore();
+  const dlabel=p.shown.diff===null?"?":String(p.shown.diff);
+  text(c,dlabel,(gx0+gx1)/2,gy+12,16,p.shown.diff===null?K.primary:K.text,900,"center");
+  // guide lines from the end of each bar down to the gap, so the bracket reads as
+  // "the part the longer bar has and the shorter does not"
+  c.save(); c.setLineDash([4,4]); c.strokeStyle=K.muted; c.lineWidth=1.2;
+  c.beginPath(); c.moveTo(gx1,y+10+34); c.lineTo(gx1,gy-6); c.stroke();
+  c.beginPath(); c.moveTo(gx0,y+60+34); c.lineTo(gx0,gy-6); c.stroke(); c.restore();
+  return 124;
+}
+function drawQueue(c,p,x,y,w){
+  const n=p.n, sp=w/n, r=Math.min(11,sp*0.28), base=y+62;
+  text(c,"FRONT",x+2,y+10,11,K.primary,900);
+  text(c,"BACK",x+w-2,y+10,11,K.muted,900,"right");
+  for(let i=0;i<n;i++){
+    const cx=x+sp*i+sp/2, mark=(p.mark===i+1);
+    c.fillStyle=mark?K.accent:"#C9B6F8";
+    c.beginPath(); c.arc(cx,base-26,r,0,7); c.fill();
+    rrect(c,cx-r*1.1,base-13,r*2.2,r*2.6,r*0.8,mark?K.accent:"#C9B6F8");
+    if(p.names){ const z=fitSize(c,p.names[i],sp-2,12,8,800); text(c,p.names[i],cx,base+30,z,K.text,800,"center"); }
+  }
+  if(p.mark){ const cx=x+sp*(p.mark-1)+sp/2; text(c,p.name,cx,base-48,13,K.text,900,"center"); }
+  return p.names?128:110;
+}
+function drawCompass(c,p,x,y,w){
+  const h=clueCard(c,p.lines,x,y,w), cy=y+h+10+59, cx=x+w/2, R=46;
+  c.lineWidth=1.5; c.strokeStyle=K.line; c.fillStyle=K.surface;
+  c.beginPath(); c.arc(cx,cy,R,0,7); c.fill(); c.stroke();
+  [["N",0,-1],["E",1,0],["S",0,1],["W",-1,0]].forEach(function(d){
+    text(c,d[0],cx+d[1]*(R+11),cy+d[2]*(R+11),13,K.primary,900,"center");
+    c.beginPath(); c.moveTo(cx+d[1]*(R-4),cy+d[2]*(R-4)); c.lineTo(cx+d[1]*R,cy+d[2]*R); c.stroke();
+  });
+  const dir={North:[0,-1],East:[1,0],South:[0,1],West:[-1,0]}[p.start];
+  arrow(c,cx+dir[0]*R*0.35,cy+dir[1]*R*0.35,12,{North:"up",East:"right",South:"down",West:"left"}[p.start],K.accentLedge);
+  c.fillStyle=K.primary; c.beginPath(); c.arc(cx,cy,6,0,7); c.fill();
+  return h+10+118;
+}
+function drawShelf(c,p,x,y,w){
+  const n=p.items.length, gap=8, tile=Math.min(58,(w-gap*(n-1))/n), tot=tile*n+gap*(n-1), ox=x+(w-tot)/2;
+  p.items.forEach(function(k,i){
+    const bx=ox+i*(tile+gap);
+    rrect(c,bx,y+14,tile,tile,12,K.surface,K.line,1.5);
+    glyph(c,k,bx+tile/2,y+14+tile/2,tile*0.28,K.primary,K.primaryLedge);
+  });
+  text(c,"left",x+4,y+6,11,K.muted,800); text(c,"right",x+w-4,y+6,11,K.muted,800,"right");
+  return 84;
+}
+function drawWordPairs(c,p,x,y,w){
+  rrect(c,x,y,w,104,16,"#FFFCEF","#F2E3B3",1.5);
+  p.pairs.forEach(function(pr,i){
+    const ry=y+14+i*46, bw=(w-80)/2;
+    tokenBox(c,pr[0],x+14,ry,bw,36,false);
+    text(c,"→",x+w/2,ry+18,20,K.muted,900,"center");
+    tokenBox(c,pr[1]===null?"?":pr[1],x+w-14-bw,ry,bw,36,pr[1]===null);
+  });
+  return 112;
+}
+function drawNumPairs(c,p,x,y,w){
+  const bw=70;
+  p.pairs.forEach(function(pr,i){
+    const ry=y+6+i*44, ox=x+(w-(bw*2+60))/2;
+    tokenBox(c,String(pr[0]),ox,ry,bw,34,false);
+    text(c,"→",ox+bw+30,ry+17,20,K.muted,900,"center");
+    tokenBox(c,pr[1]===null?"?":String(pr[1]),ox+bw+60,ry,bw,34,pr[1]===null);
+  });
+  return 44*p.pairs.length+12;
+}
+function numRow(c,s,x,y){
+  const parts=String(s).split(" "), cw=30;
+  parts.forEach(function(v,i){
+    rrect(c,x+i*(cw+4),y,cw,36,9,"#F1ECFF",K.primary,1.4);
+    text(c,v,x+i*(cw+4)+cw/2,y+18,16,K.primary,900,"center");
+  });
+  return parts.length*(cw+4)-4;
+}
+function drawNumExample(c,p,x,y,w){
+  const cw=30, px=x+14;
+  rrect(c,x,y,w,104,16,"#FFFCEF","#F2E3B3",1.5);
+  text(c,"Example",x+14,y+14,12,K.muted,800);
+  const lw=letterRow(c,p.example[0],px,y+26,cw,K.surface,K.text);
+  text(c,"→",px+lw+18,y+44,20,K.muted,900,"center");
+  numRow(c,p.example[1],px+lw+36,y+26);
+  const qy=y+66;
+  if(p.mode==="encode"){
+    const l2=letterRow(c,p.word,px,qy,cw,K.surface,K.text);
+    text(c,"→",px+l2+18,qy+18,20,K.muted,900,"center");
+    rrect(c,px+l2+36,qy,cw*1.4,36,9,"#F1ECFF",K.primary,1.8);
+    text(c,"?",px+l2+36+cw*0.7,qy+18,20,K.primary,900,"center");
+  } else {
+    const l2=numRow(c,p.word,px,qy);
+    text(c,"→",px+l2+18,qy+18,20,K.muted,900,"center");
+    rrect(c,px+l2+36,qy,cw*1.4,36,9,K.surface,K.primary,1.8);
+    text(c,"?",px+l2+36+cw*0.7,qy+18,20,K.primary,900,"center");
+  }
+  return 112;
+}
+function drawLetterHint(c,p,x,y,w){
+  const seq = p.offset===1?[p.base,"?"]:p.offset===-1?["?",p.base]:p.offset===2?[p.base,"",'?']:["?","",p.base];
+  const bw=56, tot=seq.length*bw+(seq.length-1)*10, ox=x+(w-tot)/2;
+  seq.forEach(function(v,i){ tokenBox(c,v,ox+i*(bw+10),y+8,bw,52,v==="?"); });
+  return 70;
+}
+function drawClock(c,p,x,y,w){
+  const cx=x+w/2, cy=y+68, R=58;
+  c.fillStyle=K.surface; c.strokeStyle=K.primaryLedge; c.lineWidth=3;
+  c.beginPath(); c.arc(cx,cy,R,0,7); c.fill(); c.stroke();
+  for(let i=1;i<=12;i++){ const a=i*Math.PI/6;
+    text(c,String(i),cx+Math.sin(a)*(R-13),cy-Math.cos(a)*(R-13),11,K.text,800,"center"); }
+  const ha=((p.h%12)+p.m/60)*Math.PI/6, ma=p.m*Math.PI/30;
+  c.lineCap="round"; c.strokeStyle=K.text;
+  c.lineWidth=5; c.beginPath(); c.moveTo(cx,cy); c.lineTo(cx+Math.sin(ha)*R*0.48,cy-Math.cos(ha)*R*0.48); c.stroke();
+  c.lineWidth=3; c.strokeStyle=K.primary; c.beginPath(); c.moveTo(cx,cy); c.lineTo(cx+Math.sin(ma)*R*0.78,cy-Math.cos(ma)*R*0.78); c.stroke();
+  c.fillStyle=K.text; c.beginPath(); c.arc(cx,cy,4,0,7); c.fill();
+  let h=140;
+  if(p.lines&&p.lines.length){ h+=clueCard(c,p.lines,x,y+140,w)+10; }
+  return h;
+}
 function drawFraction(c,pic,x,y,w){
   const h=176, two=(pic.otherSlices||0)>0;
   const r=Math.min(72,two?w/4.6:w/2.6), cy=y+h/2;
@@ -1442,6 +1591,24 @@ function render(cv,q){
       case "stackCount": case "stackFill": case "stackView":
                            put(drawStack(c,pic,M,y,CW)); break;
       case "knights":      put(drawClues(c,pic,M,y,CW)); break;
+      case "story": case "riddle": case "rank": case "rankCount": case "queueCalc":
+      case "relation": case "relationWho": case "weekday": case "month": case "combos":
+                           put(drawClues(c,pic,M,y,CW)); break;
+      case "equation":     put(drawEquation(c,pic,M,y,CW)); break;
+      case "bars":         put(drawBarPair(c,pic,M,y,CW)); break;
+      case "series": case "seriesRule":
+                           put(drawSequence(c,pic,M,y,CW)); break;
+      case "queueBack": case "queueWho":
+                           put(drawQueue(c,pic,M,y,CW)); break;
+      case "turns":        put(drawCompass(c,pic,M,y,CW)); break;
+      case "shelf":        put(drawShelf(c,pic,M,y,CW)); break;
+      case "wordAnalogy":  put(drawWordPairs(c,pic,M,y,CW)); break;
+      case "numberAnalogy": put(drawNumPairs(c,pic,M,y,CW)); break;
+      case "wordCode":     put(drawExample(c,pic,M,y,CW)); break;
+      case "numCode":      put(drawNumExample(c,pic,M,y,CW)); break;
+      case "alphabet":     put(drawLetterHint(c,pic,M,y,CW)); break;
+      case "oddWord": case "oddNumber": break;
+      case "clock":        put(drawClock(c,pic,M,y,CW)); break;
       case "mirrorCode": case "mirrorWrite":
                            put(drawMirrorAlpha(c,pic,M,y,CW)); break;
       case "crackCode":    put(drawExample(c,pic,M,y,CW)); break;

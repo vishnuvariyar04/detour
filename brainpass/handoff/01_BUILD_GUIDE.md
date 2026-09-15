@@ -23,26 +23,38 @@ what a band-c child sees if nothing better exists.
 | Band | Ages | Skill | Stops | Questions | Status |
 |---|---|---|---|---|---|
 | a | 5–6 | Number Sense | 48 | 324 | shipped |
-| **b** | **7–8** | **Puzzles & Logic** | 48 | 324 | **authored; needs its 2 views** |
+| **b** | **7–8** | **Puzzles & Logic** | 48 | 324 | **rebuilt and authored; needs its views** |
 | c | 9–10 | Think Like a Coder | 48 | 324 | shipped |
 | **d** | **11–12** | **Reasoning** | 48 | 324 | **authored; needs its views** |
 
-> **Status, 2026-09-15 (branch `bands-b-and-d`).** Both new skills are authored
+> **Status, 2026-09-15 (branch `bands-b-and-d`).** Both new skills are authored,
 > and every gate is green: band b through `pz_simulate.py` / `pz_grade.py`, band d
-> through `rs_simulate.py` / `rs_grade.py`. Neither has its Kotlin views yet, and
-> the two are held back differently for a reason worth knowing:
+> through `rs_simulate.py` / `rs_grade.py`. Both wait in
+> `assets/curriculum_pending/`, which pubspec does not bundle, because every
+> question in them needs a view CoderGate does not have yet. The gate serves the
+> most advanced skill a child's band has reached, and its `when(q.shape)` has no
+> else branch, so in `assets/curriculum` they would replace a working skill with
+> one that has no playable stop. Move each file across once its views exist.
 >
-> - **Band b** is in `assets/curriculum/`, with its 16 stops that use `analogy`,
->   `codeRead` or `codePick` emitted `authored: false`. A band-b child already
->   plays the other 32 stops.
-> - **Band d** is in `assets/curriculum_pending/`, which pubspec does not bundle.
->   Every band-d question needs a new view, and the gate serves the most advanced
->   skill a child's band has reached — so in `assets/curriculum` it would switch
->   every eleven year old from Think Like a Coder, which works, to a skill with no
->   playable stop. Move it across once its views exist.
+> **Band b was rebuilt, and no longer follows §4.1.** At Sai's request the
+> patterns-and-sorting skill was replaced with the reasoning of a Class 2-3
+> Olympiad paper (the SOF IMO syllabi) plus the family-relation puzzles of
+> aptitude papers, pitched for seven year olds:
 >
-> Band d's Space section replaced "cross-sections" with "stacks of cubes": a slice
-> through a curved solid can be neither drawn nor graded exactly.
+> | Section | Units |
+> |---|---|
+> | 1. Number thinking | Missing numbers · Story sums · Number patterns |
+> | 2. Order and position | Taller, older, faster · Places in a line · Left, right and turning |
+> | 3. Relations and codes | Family relations · Analogies · Letter and number codes |
+> | 4. Logic | Odd one out · Days, months and the clock · Think it through |
+>
+> Its question text is capped at eight words, per the design memo's band b
+> budget. `pz_simulate.py` also refuses the same puzzle retold with new names.
+>
+> **Band d follows §4.1 exactly**, including the source spine's knights and
+> knaves (as truth-tellers and liars), pattern cipher and perspective. Its
+> cross-section and rotation answers are graded from real geometry in
+> `rs_grade.py`.
 
 Band b and band d children currently fall through to the older random-question
 engine (`Questions.kt`), which has no ladder, no roadmap and no progress. That

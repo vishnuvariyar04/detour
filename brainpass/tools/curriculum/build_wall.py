@@ -40,7 +40,8 @@ KEEP = ("shape", "prompt", "hint", "pic", "visual", "truth", "choices",
 
 SKILLS = [("coder", "Think Like a Coder", "think_like_a_coder.json"),
           ("number", "Number Sense", "number_sense.json"),
-          ("puzzles", "Puzzles & Logic", "puzzles_and_logic.json"),
+          ("puzzles", "Puzzles & Logic", os.path.join("..", "curriculum_pending",
+                                                    "puzzles_and_logic.json")),
           # Band d is not bundled with the app yet (see rs_emit.py), but it is
           # exactly what needs reviewing, so the wall reads it from where it waits.
           ("reasoning", "Reasoning", os.path.join("..", "curriculum_pending",

@@ -323,8 +323,10 @@ def main():
         if k in seen:
             bad(qid, f"same question as {seen[k]}")
         seen[k] = qid
-    for other in ("number_sense.json", "think_like_a_coder.json", "puzzles_and_logic.json"):
-        o = json.load(open(os.path.join(ROOT, "assets", "curriculum", other), encoding="utf-8"))
+    for folder, other in (("curriculum", "number_sense.json"),
+                          ("curriculum", "think_like_a_coder.json"),
+                          ("curriculum_pending", "puzzles_and_logic.json")):
+        o = json.load(open(os.path.join(ROOT, "assets", folder, other), encoding="utf-8"))
         for sec in o["sections"]:
             for u in sec["units"]:
                 for st in u["stops"]:

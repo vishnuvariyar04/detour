@@ -1,765 +1,637 @@
 # -*- coding: utf-8 -*-
 """Puzzles & Logic — 48 stops, 324 questions, band b, ages 7-8.
 
-REWRITTEN after the first draft was reviewed on the wall and judged "almost the
-same as 5-6". That was correct, and measuring it afterwards showed how correct:
+REBUILT 2026-09-15. Everything that was here before (shape patterns, sorting,
+analogies of shapes, symbol sums) was removed at Sai's request and replaced with
+reasoning of the kind a Class 2-3 Olympiad paper and an aptitude paper ask,
+pitched for seven and eight year olds:
 
-  patterns    band a runs star, heart, star, heart -- period two, one property.
-              The first draft ran period three. Longer, but the same act: see
-              the repeat. Now every pattern runs TWO cycles at once, two shapes
-              against three colours, so the strip only repeats every six and the
-              child has to track each cycle and put them back together.
-  sorting     band a already ships POINTY / ROUND over five shapes. The first
-              draft shipped STAR / NOT A STAR over five shapes. Identical. Now
-              the rules take two properties at once, or a negation.
-  odd one out band a gives four cells identical but for one, so the outlier pops
-              with no reasoning at all. Now the other properties are noise, and
-              the child has to work out which property matters first.
-  arrays      band a already reaches 8x3 and 5x6. The first draft's biggest was
-              the same size. Now they are times-table facts up to 48.
+  1 Number thinking     missing numbers, story sums, number patterns
+  2 Order and position  taller/older/faster, places in a line, left, right, turning
+  3 Relations and codes family relations, analogies, letter and number codes
+  4 Logic               odd one out, days, months and the clock, think it through
 
-Four rules hold everywhere in this file.
-
-HARDER THAN BAND A, DEMONSTRABLY. Not "longer" and not "more of them". If a five
-year old could do it with the same act of thought, it does not belong here.
-
-ONE IDEA, SEVERAL PICTURES. Each unit now mixes two or three question types.
-Both shipped skills do this in all twelve of their units; the first draft of this
-one had ten units running a single type for twenty-seven questions.
-
-SHORT, PLAIN PROMPTS. Seven year olds, many reading in a second or third
-language, on a card over the app they actually wanted. One short sentence naming
-one action. Where a rule is needed, it goes on the TRAY LABEL, which is on screen
-beside the shapes, instead of lengthening the sentence.
-
-NO QUESTION APPEARS TWICE, here or against the 648 already shipped.
+Rules held everywhere, and enforced by the kit and pz_simulate.py:
+- the question a child reads is at most eight words, and each clue line too
+- at most three clue lines on a screen
+- numbers stay between 0 and 100, never negative
+- family relations stay to parents, grandparents, brothers and sisters, aunts,
+  uncles and cousins; no in-laws, nothing a child has to guess from a name
+- no question appears twice, and no puzzle appears twice with only the names
+  or the order of the numbers changed
 """
 from puzzles_kit import (
-    STAR, HEART, CIRCLE, SQUARE, TRIANGLE, DIAMOND, HEXAGON, FLOWER,
-    PRIMARY, ACCENT, cell, item,
-    pattern, repeat_strip, interleaved, skip_line, count_objects, array,
-    odd_one_out, odd_by, sort_two, yes_no, size_order,
-    analogy, rel_colour, rel_count, rel_bigger, rel_smaller, rel_turn,
-    code_read, code_pick,
+    equation, riddle, story, bars, series, series_rule,
+    rank, rank_count, queue_back, queue_calc, queue_who, turns, shelf,
+    relation, relation_who, word_analogy, number_analogy,
+    letter_code, number_code, alphabet,
+    odd_word, odd_number, weekday, month, clock, combos,
 )
 
-_SQ, _TR, _CI = cell(SQUARE), cell(TRIANGLE), cell(CIRCLE)
-_ST, _HE, _HX = cell(STAR), cell(HEART), cell(HEXAGON)
-_DI, _FL = cell(DIAMOND), cell(FLOWER)
-_SQy, _TRy = cell(SQUARE, ACCENT), cell(TRIANGLE, ACCENT)
-_CIy, _STy = cell(CIRCLE, ACCENT), cell(STAR, ACCENT)
-_HEy, _HXy = cell(HEART, ACCENT), cell(HEXAGON, ACCENT)
-_DIy, _FLy = cell(DIAMOND, ACCENT), cell(FLOWER, ACCENT)
-
-# One short sentence, one action. Reused deliberately: a child who has met the
-# sentence before spends their attention on the puzzle instead of the wording.
-P_NEXT = "Tap the shape that comes next."
-P_GAP = "Tap the shape that fits the gap."
+P_BOX = "Tap the number for the box."
+P_RID = "Tap the number I am."
+P_STORY = "Read the story. Tap the answer."
+P_BAR = "Tap the missing number on the bars."
+P_MISS = "Tap the missing number."
+P_RULE = "Tap the rule for this row."
+P_CLUE = "Read the clues. Tap the answer."
+P_WAYS = "Read the story. Tap how many ways."
+P_AN = "Tap the word that fits."
+P_NAN = "Tap the number that fits."
+P_CODE = "Tap how the word is written."
 P_ODD = "Tap the one that does not belong."
-P_SMALL = "Tap them from small to big."
-P_LAND = "Tap the number it lands on."
-P_SORT = "Move each shape to its box."
-P_AN = "Tap the shape that finishes it."
-P_CODE = "Tap what the row adds up to."
-P_CODEGAP = "Tap the missing symbol."
+P_DAY = "Read the clue. Tap the day."
+P_MONTH = "Tap the month."
+P_TIME = "Tap the time."
+P_READ = "Tap the time the clock shows."
 
-# Two shapes against three colours: repeats every six, not every two.
-_2x3 = [(([STAR, HEART]), [PRIMARY, ACCENT, PRIMARY]),
-        (([CIRCLE, SQUARE]), [ACCENT, PRIMARY, PRIMARY]),
-        (([TRIANGLE, DIAMOND]), [PRIMARY, PRIMARY, ACCENT]),
-        (([HEXAGON, FLOWER]), [ACCENT, ACCENT, PRIMARY])]
+
+def back(n):
+    return f"Tap {n}'s place from the back."
+
+
+def face(n):
+    return f"Tap the way {n} faces now."
 
 
 # ================================================================ SECTION 1
-# Patterns: two rules running at once, not one.
+# Number thinking.
+
+# ---- 1.1 Missing numbers ----------------------------------------------------
 
 S111 = [
-    interleaved(P_NEXT, [STAR, HEART], [PRIMARY, ACCENT, PRIMARY], 8, 7),
-    interleaved(P_NEXT, [CIRCLE, SQUARE], [ACCENT, PRIMARY, PRIMARY], 8, 7),
-    interleaved(P_NEXT, [TRIANGLE, DIAMOND], [PRIMARY, PRIMARY, ACCENT], 8, 7),
-    interleaved(P_NEXT, [HEXAGON, FLOWER], [ACCENT, ACCENT, PRIMARY], 8, 7),
-    interleaved(P_NEXT, [HEART, CIRCLE], [PRIMARY, ACCENT, ACCENT], 8, 7),
-    interleaved(P_NEXT, [SQUARE, STAR], [ACCENT, PRIMARY, ACCENT], 8, 7),
-    interleaved(P_NEXT, [DIAMOND, HEXAGON], [PRIMARY, ACCENT, PRIMARY], 8, 7),
+    equation(P_BOX, 8, "+", 7, 15, "right"),
+    equation(P_BOX, 9, "+", 5, 14, "left"),
+    equation(P_BOX, 6, "+", 8, 14, "result"),
+    equation(P_BOX, 7, "+", 9, 16, "right"),
+    equation(P_BOX, 12, "+", 6, 18, "left"),
+    riddle(P_RID, [("add", 4)], 12),
+    riddle(P_RID, [("take", 5)], 9),
 ]
 
 S112 = [
-    interleaved(P_GAP, [STAR, CIRCLE], [PRIMARY, PRIMARY, ACCENT], 9, 4),
-    interleaved(P_GAP, [HEART, SQUARE], [ACCENT, PRIMARY, PRIMARY], 9, 3),
-    interleaved(P_GAP, [TRIANGLE, FLOWER], [PRIMARY, ACCENT, ACCENT], 9, 5),
-    interleaved(P_GAP, [DIAMOND, STAR], [ACCENT, ACCENT, PRIMARY], 9, 6),
-    odd_by(P_ODD, [_TR, _TRy, _SQ, _TR, _TRy], "kind"),
-    odd_by(P_ODD, [_CI, _CIy, _CI, _HE, _CIy], "kind"),
-    odd_by(P_ODD, [_ST, _STy, _STy, _ST, _DI], "kind"),
+    equation(P_BOX, 15, "-", 6, 9, "right"),
+    equation(P_BOX, 17, "-", 8, 9, "left"),
+    equation(P_BOX, 30, "+", 40, 70, "right"),
+    equation(P_BOX, 50, "-", 20, 30, "result"),
+    equation(P_BOX, 13, "-", 7, 6, "result"),
+    riddle(P_RID, [("double",)], 14),
+    riddle(P_RID, [("half",)], 8),
 ]
 
-# The gap now sits early in the strip, so the rule has to be read from the right
-# hand side backwards as well as from the left forwards.
 S113 = [
-    interleaved(P_GAP, [HEXAGON, CIRCLE], [PRIMARY, ACCENT, PRIMARY], 10, 1),
-    interleaved(P_GAP, [FLOWER, HEART], [ACCENT, PRIMARY, ACCENT], 10, 2),
-    interleaved(P_GAP, [SQUARE, DIAMOND], [PRIMARY, PRIMARY, ACCENT], 10, 0),
-    interleaved(P_GAP, [STAR, HEXAGON], [ACCENT, PRIMARY, PRIMARY], 10, 8),
-    interleaved(P_NEXT, [CIRCLE, TRIANGLE], [PRIMARY, ACCENT, ACCENT], 10, 9),
-    odd_by(P_ODD, [_HE, _HEy, _HE, _HEy, _FL, _HE], "kind"),
-    odd_by(P_ODD, [_DI, _DIy, _HX, _DI, _DIy], "kind"),
+    equation(P_BOX, 24, "+", 6, 30, "right"),
+    equation(P_BOX, 45, "-", 5, 40, "right"),
+    equation(P_BOX, 36, "+", 4, 40, "left"),
+    equation(P_BOX, 60, "-", 25, 35, "left"),
+    riddle(P_RID, [("add", 3), ("double",)], 16),
+    riddle(P_RID, [("double",), ("take", 4)], 10),
+    riddle(P_RID, [("take", 2), ("half",)], 6),
 ]
 
 S114 = [
-    interleaved(P_NEXT, [HEART, DIAMOND], [ACCENT, PRIMARY, PRIMARY], 9, 8),
-    interleaved(P_GAP, [FLOWER, STAR], [PRIMARY, ACCENT, PRIMARY], 10, 4),
-    odd_by(P_ODD, [_SQ, _SQy, _SQ, _CI, _SQy, _SQ], "kind"),
-    interleaved(P_GAP, [CIRCLE, HEXAGON], [ACCENT, ACCENT, PRIMARY], 9, 2),
-    odd_by(P_ODD, [_FL, _FLy, _TR, _FL, _FLy], "kind"),
-    interleaved(P_NEXT, [TRIANGLE, SQUARE], [PRIMARY, ACCENT, ACCENT], 8, 7),
+    equation(P_BOX, 19, "-", 11, 8, "right"),
+    riddle(P_RID, [("add", 10)], 25),
+    equation(P_BOX, 27, "+", 13, 40, "result"),
+    riddle(P_RID, [("half",), ("add", 5)], 11),
+    equation(P_BOX, 80, "-", 35, 45, "left"),
+    riddle(P_RID, [("double",), ("add", 6)], 20),
 ]
 
-# ---- 1.2 Number steps ------------------------------------------------------
-# Band a hops one at a time on a line to ten. These are threes, fours and sixes
-# to fifty, and back down again.
+# ---- 1.2 Story sums ---------------------------------------------------------
+# Change stories first, because research on young children finds them easiest;
+# then combine and compare, then equal groups and fair shares.
 
 S121 = [
-    skip_line(P_LAND, 30, 0, 3, 6),
-    skip_line(P_LAND, 30, 4, 3, 5),
-    skip_line(P_LAND, 40, 0, 4, 7),
-    skip_line(P_LAND, 40, 6, 4, 6),
-    skip_line(P_LAND, 50, 2, 6, 7),
-    skip_line(P_LAND, 50, 0, 6, 8),
-    skip_line(P_LAND, 40, 7, 4, 8),
+    story(P_STORY, "join", "Riya", "marbles", 8, 5),
+    story(P_STORY, "leave", "Kabir", "kites", 12, 4),
+    story(P_STORY, "join", "Om", "stickers", 15, 7),
+    story(P_STORY, "leave", "Meera", "sweets", 20, 6),
+    story(P_STORY, "gain", "Aman", "shells", 9, 16),
+    story(P_STORY, "leave", "Tara", "balloons", 11, 9),
+    bars(P_BAR, "Ravi", 14, "Asha", 9, "diff"),
 ]
 
 S122 = [
-    skip_line(P_LAND, 40, 38, -4, 8),
-    skip_line(P_LAND, 30, 29, -3, 8),
-    skip_line(P_LAND, 50, 48, -6, 7),
-    skip_line(P_LAND, 40, 35, -4, 7),
-    array("Count them. Tap the number.", 4, 6),
-    array("Count them. Tap the number.", 6, 5, STAR),
-    array("Count them. Tap the number.", 3, 9, HEART),
+    story(P_STORY, "total", "Diya", "balls", 7, 8),
+    story(P_STORY, "part", "Neha", "fish", 18, 7),
+    story(P_STORY, "more", "Veer", "pencils", 9, 4, "Isha"),
+    story(P_STORY, "fewer", "Priya", "books", 16, 5, "Rohan"),
+    story(P_STORY, "diff", "Sahil", "cards", 17, 9, "Zoya"),
+    story(P_STORY, "total", "Yash", "cars", 12, 9),
+    bars(P_BAR, "Lila", 20, "Karan", 13, "diff"),
 ]
 
 S123 = [
-    skip_line(P_LAND, 50, 5, 7, 6),
-    skip_line(P_LAND, 50, 44, -7, 6),
-    skip_line(P_LAND, 50, 3, 8, 5),
-    skip_line(P_LAND, 50, 46, -8, 5),
-    array("Count them. Tap the number.", 6, 7),
-    array("Count them. Tap the number.", 4, 8, SQUARE),
-    array("Count them. Tap the number.", 6, 8, CIRCLE),
+    story(P_STORY, "groups", "", "apples", 3, 4),
+    story(P_STORY, "legs", "", "hens", 5, 2),
+    story(P_STORY, "share", "", "mangoes", 12, 3),
+    story(P_STORY, "groups", "", "toffees", 5, 10),
+    story(P_STORY, "share", "", "pencils", 20, 5),
+    bars(P_BAR, "Mia", 25, "Dev", 18, "low"),
+    bars(P_BAR, "Anya", 30, "Raj", 22, "top"),
 ]
 
 S124 = [
-    skip_line(P_LAND, 50, 1, 6, 8),
-    array("Count them. Tap the number.", 5, 8, HEART),
-    skip_line(P_LAND, 50, 47, -6, 7),
-    array("Count them. Tap the number.", 7, 6, STAR),
-    skip_line(P_LAND, 40, 9, 4, 7),
-    skip_line(P_LAND, 30, 27, -3, 9),
+    story(P_STORY, "gain", "Pooja", "beads", 14, 21),
+    story(P_STORY, "fewer", "Nikhil", "stamps", 25, 8, "Sara"),
+    story(P_STORY, "legs", "", "cows", 4, 4),
+    bars(P_BAR, "Kavya", 40, "Ali", 26, "diff"),
+    story(P_STORY, "share", "", "biscuits", 18, 2),
+    story(P_STORY, "more", "Rani", "shells", 23, 9, "Tom"),
 ]
 
-# ---- 1.3 Growing patterns --------------------------------------------------
+# ---- 1.3 Number patterns ----------------------------------------------------
 
 S131 = [
-    array("Count them. Tap the number.", 3, 7),
-    size_order(P_SMALL, [0.3, 0.55, 0.85, 1.0]),
-    array("Count them. Tap the number.", 5, 6, STAR),
-    size_order(P_SMALL, [0.95, 0.4, 0.65, 0.2], HEART),
-    array("Count them. Tap the number.", 4, 7, HEART),
-    size_order(P_SMALL, [0.5, 1.0, 0.2, 0.75], CIRCLE),
-    array("Count them. Tap the number.", 8, 4, SQUARE),
+    series(P_MISS, [2, 4, 6, 8, 10, 12], 5),
+    series(P_MISS, [5, 10, 15, 20, 25, 30], 5),
+    series(P_MISS, [10, 20, 30, 40, 50, 60], 3),
+    series(P_MISS, [20, 18, 16, 14, 12, 10], 4),
+    series(P_MISS, [3, 5, 7, 9, 11, 13], 2),
+    series_rule(P_RULE, [4, 6, 8, 10, 12], [("add", 2), ("add", 4), ("double",), ("grow",)]),
+    series_rule(P_RULE, [25, 20, 15, 10, 5], [("take", 5), ("take", 4), ("add", 5), ("take", 10)]),
 ]
 
 S132 = [
-    size_order(P_SMALL, [0.2, 0.4, 0.6, 0.8, 1.0], SQUARE),
-    skip_line(P_LAND, 50, 5, 5, 8),
-    size_order(P_SMALL, [1.0, 0.75, 0.5, 0.3, 0.15], TRIANGLE),
-    skip_line(P_LAND, 50, 2, 7, 6),
-    size_order(P_SMALL, [0.6, 0.2, 0.95, 0.4, 0.8], HEXAGON),
-    array("Count them. Tap the number.", 6, 6, DIAMOND),
-    size_order(P_SMALL, [0.35, 0.85, 0.15, 0.6, 1.0], FLOWER),
+    series(P_MISS, [3, 6, 9, 12, 15, 18], 5),
+    series(P_MISS, [4, 8, 12, 16, 20, 24], 2),
+    series(P_MISS, [30, 27, 24, 21, 18, 15], 5),
+    series(P_MISS, [50, 45, 40, 35, 30, 25], 1),
+    series(P_MISS, [1, 4, 7, 10, 13, 16], 4),
+    series_rule(P_RULE, [2, 5, 8, 11, 14], [("add", 3), ("add", 2), ("grow",), ("double",)]),
+    series_rule(P_RULE, [40, 36, 32, 28, 24], [("take", 4), ("take", 2), ("take", 6), ("add", 4)]),
 ]
 
 S133 = [
-    array("Count them. Tap the number.", 7, 5),
-    interleaved(P_NEXT, [SQUARE, CIRCLE], [PRIMARY, ACCENT, ACCENT], 8, 7),
-    array("Count them. Tap the number.", 8, 5, HEART),
-    size_order(P_SMALL, [0.2, 0.5, 0.8, 1.0], DIAMOND),
-    array("Count them. Tap the number.", 6, 4, FLOWER),
-    interleaved(P_GAP, [HEART, HEXAGON], [ACCENT, PRIMARY, PRIMARY], 9, 5),
-    array("Count them. Tap the number.", 7, 4, HEXAGON),
+    series(P_MISS, [1, 2, 4, 7, 11, 16], 5),
+    series(P_MISS, [1, 2, 4, 8, 16, 32], 5),
+    series(P_MISS, [2, 3, 5, 8, 12, 17], 4),
+    series(P_MISS, [3, 6, 12, 24, 48], 3),
+    series(P_MISS, [10, 11, 13, 16, 20, 25], 3),
+    series_rule(P_RULE, [1, 2, 4, 8, 16], [("double",), ("add", 1), ("grow",), ("add", 2)]),
+    series_rule(P_RULE, [5, 6, 8, 11, 15], [("grow",), ("add", 1), ("double",), ("add", 3)]),
 ]
 
 S134 = [
-    array("Count them. Tap the number.", 8, 6),
-    size_order(P_SMALL, [0.15, 0.4, 0.65, 0.9], STAR),
-    skip_line(P_LAND, 50, 0, 7, 7),
-    array("Count them. Tap the number.", 5, 9, TRIANGLE),
-    size_order(P_SMALL, [0.8, 0.3, 1.0, 0.55, 0.15], CIRCLE),
-    skip_line(P_LAND, 50, 49, -7, 7),
+    series(P_MISS, [6, 12, 18, 24, 30, 36], 4),
+    series(P_MISS, [5, 10, 20, 40, 80], 4),
+    series_rule(P_RULE, [7, 14, 21, 28, 35], [("add", 7), ("double",), ("add", 6), ("grow",)]),
+    series(P_MISS, [45, 40, 35, 30, 25, 20], 3),
+    series(P_MISS, [4, 5, 7, 10, 14, 19], 5),
+    series(P_MISS, [90, 80, 70, 60, 50, 40], 5),
 ]
 
 
 # ================================================================ SECTION 2
-# Rules: two at once, or one turned inside out.
-#
-# Band a sorts on a single property it has already named -- ROUND / NOT ROUND.
-# Every rule here needs two properties held together, or a negation, which is
-# the first place a child has to check a shape against something it is NOT.
-# The rule lives on the tray label, on screen beside the shapes, so the prompt
-# stays one short sentence.
+# Order and position.
 
-_y = lambda c: c["color"] == ACCENT
-_pointy = lambda c: c["kind"] in (STAR, TRIANGLE, DIAMOND)
-_round = lambda c: c["kind"] == CIRCLE
-_corners4 = lambda c: c["kind"] in (SQUARE, DIAMOND)
-
-# ---- 2.1 Two rules at once -------------------------------------------------
+# ---- 2.1 Taller, older, faster ----------------------------------------------
+# Three people and two clues, which research finds seven and eight year olds can
+# hold. The second stop mixes "taller" with "shorter", which is where children
+# actually slip; four people come only at the end of the unit.
 
 S211 = [
-    sort_two(P_SORT, [_STy, _ST, _CIy, _STy, _HE, _CI],
-             lambda c: c["kind"] == STAR and _y(c), "YELLOW STARS", "THE REST"),
-    sort_two(P_SORT, [_CI, _CIy, _SQ, _CI, _HEy, _CIy],
-             lambda c: _round(c) and not _y(c), "PURPLE CIRCLES", "THE REST"),
-    sort_two(P_SORT, [_TRy, _TR, _DIy, _SQ, _TRy, _CI],
-             lambda c: c["kind"] == TRIANGLE and _y(c), "YELLOW TRIANGLES", "THE REST"),
-    sort_two(P_SORT, [_DIy, _DI, _SQy, _SQ, _HXy, _CIy],
-             lambda c: _corners4(c) and _y(c), "YELLOW, 4 CORNERS", "THE REST"),
-    sort_two(P_SORT, [_HE, _HEy, _FL, _HE, _FLy, _HEy],
-             lambda c: c["kind"] == HEART and not _y(c), "PURPLE HEARTS", "THE REST"),
-    sort_two(P_SORT, [_STy, _TRy, _CIy, _ST, _TR, _HXy],
-             lambda c: _pointy(c) and _y(c), "YELLOW, POINTY", "THE REST"),
-    sort_two(P_SORT, [_HXy, _HX, _FLy, _FL, _DIy, _DI],
-             lambda c: c["kind"] == HEXAGON and _y(c), "YELLOW HEXAGONS", "THE REST"),
-]
-
-# ---- 2.2 Odd one out, with noise -------------------------------------------
-# Band a's four cells are identical but for one, so nothing has to be worked out.
-# Here the other properties vary on purpose: the child has to decide which
-# property matters before they can find the shape that breaks it.
-
-S221 = [
-    odd_by(P_ODD, [_TR, _TRy, _TR, _SQ, _TRy], "kind"),
-    odd_by(P_ODD, [_CIy, _CI, _HE, _CIy, _CI], "kind"),
-    odd_by(P_ODD, [_ST, _STy, _ST, _STy, _HX, _ST], "kind"),
-    odd_by(P_ODD, [_DI, _DIy, _DI, _FL, _DIy, _DI], "kind"),
-    odd_by(P_ODD, [_HXy, _HX, _HXy, _TR, _HX], "kind"),
-    odd_by(P_ODD, [_FL, _FLy, _CI, _FL, _FLy, _FL], "kind"),
-    odd_by(P_ODD, [_SQ, _SQy, _SQ, _SQy, _HE], "kind"),
+    rank("Tap who is the tallest.", "tall", ["Asha", "Ravi", "Om"],
+         [("Asha", "Ravi", "more"), ("Ravi", "Om", "more")], "top"),
+    rank("Tap who is the shortest.", "tall", ["Kabir", "Meera", "Dev"],
+         [("Meera", "Kabir", "more"), ("Kabir", "Dev", "more")], "bottom"),
+    rank("Tap who is the oldest.", "old", ["Zoya", "Imran", "Tara"],
+         [("Imran", "Zoya", "more"), ("Zoya", "Tara", "more")], "top"),
+    rank("Tap who is the fastest.", "fast", ["Neha", "Arjun", "Priya"],
+         [("Priya", "Neha", "more"), ("Arjun", "Priya", "more")], "top"),
+    rank("Tap who is the heaviest.", "heavy", ["Rohan", "Isha", "Veer"],
+         [("Isha", "Veer", "more"), ("Rohan", "Isha", "more")], "top"),
+    rank_count("Tap how many are taller than Om.", "tall", ["Om", "Diya", "Yash"],
+               [("Diya", "Yash", "more"), ("Yash", "Om", "more")], "Om"),
+    rank_count("Tap how many are older than Riya.", "old", ["Riya", "Sahil", "Anu"],
+               [("Sahil", "Riya", "more"), ("Riya", "Anu", "more")], "Riya"),
 ]
 
 S212 = [
-    sort_two(P_SORT, [_ST, _STy, _HE, _HEy, _CI, _CIy],
-             _pointy, "POINTY", "SMOOTH"),
-    odd_by(P_ODD, [_TRy, _TR, _TRy, _CI, _TR, _TRy], "kind"),
-    sort_two(P_SORT, [_SQy, _SQ, _DIy, _CI, _HX, _DI],
-             _corners4, "4 CORNERS", "THE REST"),
-    odd_by(P_ODD, [_HE, _HEy, _HE, _DI, _HEy], "kind"),
-    sort_two(P_SORT, [_CIy, _CI, _STy, _ST, _FLy, _TR],
-             lambda c: _round(c) or c["kind"] == FLOWER, "ROUND", "THE REST"),
-    odd_by(P_ODD, [_HXy, _HX, _HX, _HXy, _FL, _HX], "kind"),
-    sort_two(P_SORT, [_DIy, _DI, _HXy, _HX, _SQy, _SQ],
-             lambda c: c["kind"] == DIAMOND and _y(c), "YELLOW DIAMONDS", "THE REST"),
+    rank("Tap who is the tallest.", "tall", ["Mia", "Karan", "Lila"],
+         [("Mia", "Karan", "less"), ("Lila", "Mia", "less")], "top"),
+    rank("Tap who is the youngest.", "old", ["Nina", "Tom", "Rani"],
+         [("Tom", "Nina", "less"), ("Rani", "Tom", "more")], "bottom"),
+    rank("Tap who is the slowest.", "fast", ["Ali", "Pooja", "Nikhil"],
+         [("Pooja", "Ali", "less"), ("Nikhil", "Pooja", "less")], "bottom"),
+    rank("Tap who is the lightest.", "heavy", ["Sara", "Aman", "Kavya"],
+         [("Aman", "Sara", "more"), ("Kavya", "Sara", "less")], "bottom"),
+    rank("Tap who is the shortest.", "tall", ["Raj", "Asha", "Veer"],
+         [("Asha", "Raj", "less"), ("Raj", "Veer", "less")], "bottom"),
+    rank_count("Tap how many are faster than Dev.", "fast", ["Dev", "Isha", "Om"],
+               [("Dev", "Isha", "less"), ("Om", "Dev", "less")], "Dev"),
+    rank_count("Tap how many are heavier than Zoya.", "heavy", ["Zoya", "Kabir", "Meera"],
+               [("Kabir", "Zoya", "less"), ("Meera", "Kabir", "less")], "Zoya"),
 ]
 
 S213 = [
-    sort_two(P_SORT, [_STy, _ST, _CIy, _CI, _TRy, _TR],
-             lambda c: not _y(c), "NOT YELLOW", "YELLOW"),
-    sort_two(P_SORT, [_CI, _SQ, _TR, _CIy, _HX, _DI],
-             lambda c: not _round(c), "NOT ROUND", "ROUND"),
-    odd_by(P_ODD, [_CI, _CIy, _CI, _SQ, _CIy, _CI], "kind"),
-    sort_two(P_SORT, [_TR, _TRy, _SQ, _HE, _DI, _CI],
-             lambda c: not _pointy(c), "NOT POINTY", "POINTY"),
-    sort_two(P_SORT, [_HE, _HEy, _FL, _FLy, _ST, _STy],
-             lambda c: c["kind"] != HEART, "NOT HEARTS", "HEARTS"),
-    odd_by(P_ODD, [_FLy, _FL, _FLy, _HX, _FL], "kind"),
-    sort_two(P_SORT, [_SQ, _SQy, _DI, _DIy, _CI, _TR],
-             lambda c: not _corners4(c), "NOT 4 CORNERS", "4 CORNERS"),
+    rank("Tap who is the second tallest.", "tall", ["Om", "Riya", "Dev"],
+         [("Riya", "Om", "more"), ("Om", "Dev", "more")], "second"),
+    rank("Tap who is the second oldest.", "old", ["Tara", "Imran", "Neha"],
+         [("Neha", "Tara", "less"), ("Imran", "Neha", "less")], "second"),
+    rank("Tap who is the second fastest.", "fast", ["Arjun", "Mia", "Yash"],
+         [("Yash", "Arjun", "more"), ("Mia", "Arjun", "less")], "second"),
+    rank("Tap who is the second heaviest.", "heavy", ["Lila", "Rohan", "Priya"],
+         [("Lila", "Priya", "less"), ("Rohan", "Lila", "less")], "second"),
+    rank("Tap who is the tallest.", "tall", ["Asha", "Ravi", "Om", "Meera"],
+         [("Ravi", "Om", "more"), ("Asha", "Ravi", "more"), ("Om", "Meera", "more")], "top"),
+    rank("Tap who is the youngest.", "old", ["Kabir", "Zoya", "Dev", "Anu"],
+         [("Zoya", "Dev", "less"), ("Kabir", "Zoya", "less"), ("Anu", "Dev", "more")], "bottom"),
+    rank_count("Tap how many are taller than Nina.", "tall", ["Aman", "Rani", "Tom", "Nina"],
+               [("Rani", "Aman", "more"), ("Aman", "Tom", "more"), ("Tom", "Nina", "more")], "Nina"),
 ]
 
 S214 = [
-    sort_two(P_SORT, [_STy, _ST, _HEy, _HE, _CIy, _CI],
-             lambda c: c["kind"] == STAR and _y(c), "YELLOW STARS", "THE REST"),
-    odd_by(P_ODD, [_TR, _TRy, _HX, _TR, _TRy, _TR], "kind"),
-    sort_two(P_SORT, [_DI, _DIy, _SQ, _SQy, _HX, _FL],
-             lambda c: not _corners4(c), "NOT 4 CORNERS", "4 CORNERS"),
-    interleaved(P_NEXT, [HEART, SQUARE], [ACCENT, PRIMARY, PRIMARY], 8, 7),
-    odd_by(P_ODD, [_CIy, _CI, _CIy, _TR, _CI], "kind"),
-    sort_two(P_SORT, [_FLy, _FL, _HXy, _HX, _STy, _ST],
-             lambda c: c["kind"] == FLOWER and not _y(c), "PURPLE FLOWERS", "THE REST"),
+    rank("Tap who is the oldest.", "old", ["Sahil", "Diya", "Ali"],
+         [("Diya", "Ali", "less"), ("Sahil", "Diya", "less")], "top"),
+    rank_count("Tap how many are older than Pooja.", "old", ["Pooja", "Veer", "Kavya"],
+               [("Veer", "Pooja", "more"), ("Kavya", "Veer", "more")], "Pooja"),
+    rank("Tap who is the second tallest.", "tall", ["Karan", "Isha", "Raj", "Neha"],
+         [("Isha", "Karan", "less"), ("Raj", "Isha", "less"), ("Neha", "Karan", "more")], "second"),
+    rank("Tap who is the heaviest.", "heavy", ["Anya", "Om", "Riya"],
+         [("Riya", "Anya", "less"), ("Om", "Anya", "more")], "top"),
+    rank("Tap who is the fastest.", "fast", ["Tom", "Meera", "Arjun", "Zoya"],
+         [("Meera", "Tom", "less"), ("Arjun", "Zoya", "more"), ("Zoya", "Tom", "more")], "top"),
+    rank_count("Tap how many are heavier than Imran.", "heavy", ["Imran", "Lila", "Dev", "Sara"],
+               [("Lila", "Imran", "less"), ("Dev", "Lila", "less"), ("Sara", "Dev", "less")], "Imran"),
 ]
 
-# ---- 2.3 Sorting into groups -----------------------------------------------
+# ---- 2.2 Places in a line ---------------------------------------------------
 
-S231 = [
-    sort_two(P_SORT, [_ST, _TR, _DI, _CI, _HE, _FL],
-             _pointy, "POINTY", "SMOOTH"),
-    odd_by(P_ODD, [_HE, _HEy, _HE, _CI, _HEy, _HE], "kind"),
-    sort_two(P_SORT, [_SQy, _DI, _CIy, _HX, _SQ, _DIy],
-             _corners4, "4 CORNERS", "THE REST"),
-    sort_two(P_SORT, [_CIy, _CI, _HEy, _STy, _ST, _HE],
-             _y, "YELLOW", "PURPLE"),
-    odd_by(P_ODD, [_DIy, _DI, _DIy, _ST, _DI], "kind"),
-    sort_two(P_SORT, [_TR, _TRy, _HX, _HXy, _FL, _FLy],
-             lambda c: c["kind"] == TRIANGLE, "TRIANGLES", "THE REST"),
-    sort_two(P_SORT, [_ST, _STy, _CI, _CIy, _SQ, _SQy],
-             lambda c: not _pointy(c), "NOT POINTY", "POINTY"),
+S221 = [
+    queue_back(back("Mia"), "Mia", 7, 2),
+    queue_back(back("Om"), "Om", 6, 4),
+    queue_back(back("Riya"), "Riya", 9, 3),
+    queue_back(back("Kabir"), "Kabir", 8, 8),
+    queue_back(back("Neha"), "Neha", 10, 6),
+    queue_who("Tap who is 2nd from the back.", ["Asha", "Ravi", "Tara", "Dev", "Zoya"], 2, "back"),
+    queue_who("Tap who is 3rd from the front.", ["Imran", "Diya", "Yash", "Lila", "Aman", "Sara"], 3, "front"),
 ]
-
-S232 = [
-    sort_two(P_SORT, [_HXy, _HX, _FLy, _FL, _DIy, _DI],
-             lambda c: _y(c) and not _corners4(c), "YELLOW, NOT 4", "THE REST"),
-    odd_by(P_ODD, [_SQ, _SQy, _FL, _SQ, _SQy, _SQ], "kind"),
-    sort_two(P_SORT, [_STy, _ST, _TRy, _TR, _CIy, _CI],
-             lambda c: _pointy(c) and not _y(c), "PURPLE, POINTY", "THE REST"),
-    interleaved(P_GAP, [DIAMOND, CIRCLE], [PRIMARY, ACCENT, ACCENT], 9, 4),
-    odd_by(P_ODD, [_HX, _HXy, _HX, _CI, _HXy], "kind"),
-    sort_two(P_SORT, [_HE, _HEy, _DI, _DIy, _CI, _CIy],
-             lambda c: c["kind"] == DIAMOND or _round(c), "ROUND OR DIAMOND", "THE REST"),
-    sort_two(P_SORT, [_FL, _FLy, _ST, _STy, _TR, _TRy],
-             lambda c: _y(c) and _pointy(c), "YELLOW, POINTY", "THE REST"),
-]
-
-S233 = [
-    odd_by(P_ODD, [_TRy, _TR, _TRy, _TR, _HE, _TR], "kind"),
-    sort_two(P_SORT, [_CI, _CIy, _SQ, _SQy, _HX, _HXy],
-             lambda c: not _round(c) and not _y(c), "PURPLE, NOT ROUND", "THE REST"),
-    array("Count them. Tap the number.", 6, 5, DIAMOND),
-    sort_two(P_SORT, [_STy, _ST, _FLy, _FL, _DIy, _DI],
-             lambda c: c["kind"] == STAR or c["kind"] == DIAMOND, "POINTY ONES", "THE REST"),
-    odd_by(P_ODD, [_CI, _CIy, _CI, _CIy, _DI, _CI], "kind"),
-    sort_two(P_SORT, [_HEy, _HE, _HXy, _HX, _TRy, _TR],
-             lambda c: not _y(c) and c["kind"] != TRIANGLE, "PURPLE, NO TRIANGLE", "THE REST"),
-    interleaved(P_NEXT, [FLOWER, DIAMOND], [PRIMARY, PRIMARY, ACCENT], 8, 7),
-]
-
-S234 = [
-    sort_two(P_SORT, [_ST, _STy, _HE, _HEy, _DI, _DIy],
-             lambda c: _pointy(c) and _y(c), "YELLOW, POINTY", "THE REST"),
-    odd_by(P_ODD, [_FL, _FLy, _FL, _SQ, _FLy], "kind"),
-    sort_two(P_SORT, [_CIy, _CI, _TRy, _TR, _HXy, _HX],
-             lambda c: not _y(c), "NOT YELLOW", "YELLOW"),
-    size_order(P_SMALL, [0.25, 0.55, 0.85, 1.0], HEXAGON),
-    odd_by(P_ODD, [_HE, _HEy, _HX, _HE, _HEy, _HE], "kind"),
-    sort_two(P_SORT, [_SQ, _SQy, _DI, _DIy, _FL, _FLy],
-             lambda c: _corners4(c) and not _y(c), "PURPLE, 4 CORNERS", "THE REST"),
-]
-
-
-# 2.2 continued. The property that matters moves: shape in 2.2.1, colour here,
-# and then the way a shape faces, which nothing about its outline gives away.
 
 S222 = [
-    odd_by(P_ODD, [_TR, _CI, _SQ, _STy, _HX], "color"),
-    odd_by(P_ODD, [_HEy, _CIy, _SQy, _TR, _FLy], "color"),
-    odd_by(P_ODD, [_ST, _HX, _DI, _CI, _TRy, _FL], "color"),
-    odd_by(P_ODD, [_CIy, _TRy, _HXy, _DIy, _SQ], "color"),
-    odd_by(P_ODD, [_SQ, _HE, _FL, _DI, _HXy], "color"),
-    odd_by(P_ODD, [_FLy, _STy, _DIy, _HE, _CIy, _TRy], "color"),
-    odd_by(P_ODD, [_HX, _TR, _CI, _HEy, _SQ, _DI], "color"),
+    queue_who("Tap who is 4th from the front.", ["Nina", "Raj", "Anu", "Veer", "Mia"], 4, "front"),
+    queue_who("Tap who is 3rd from the back.", ["Pooja", "Tom", "Kavya", "Ali", "Rohan", "Isha"], 3, "back"),
+    queue_who("Tap who is 1st from the back.", ["Sahil", "Rani", "Karan", "Meera"], 1, "back"),
+    queue_calc(P_CLUE, "total", 3, 5, "Arjun"),
+    queue_calc(P_CLUE, "total", 4, 4, "Priya"),
+    queue_calc(P_CLUE, "total", 5, 6, "Om"),
+    queue_calc(P_CLUE, "total", 1, 8, "Zoya"),
 ]
 
 S223 = [
-    odd_by(P_ODD, [cell(TRIANGLE), cell(HEART, ACCENT), cell(STAR),
-                   cell(TRIANGLE, ACCENT), cell(HEART, PRIMARY, 90)], "rotation"),
-    odd_by(P_ODD, [cell(HEART, PRIMARY, 90), cell(TRIANGLE, ACCENT, 90),
-                   cell(HEART, ACCENT, 90), cell(TRIANGLE, PRIMARY, 90),
-                   cell(STAR)], "rotation"),
-    odd_by(P_ODD, [cell(TRIANGLE, PRIMARY, 180), cell(TRIANGLE, ACCENT, 180),
-                   cell(HEART, PRIMARY, 180), cell(HEART, ACCENT, 180),
-                   cell(TRIANGLE), cell(STAR, PRIMARY, 180)], "rotation"),
-    odd_by(P_ODD, [cell(HEART, ACCENT), cell(TRIANGLE), cell(STAR, ACCENT),
-                   cell(TRIANGLE, PRIMARY, 270), cell(HEART)], "rotation"),
-    odd_by(P_ODD, [cell(TRIANGLE, ACCENT), cell(HEART), cell(TRIANGLE),
-                   cell(HEART, ACCENT), cell(STAR, PRIMARY, 180)], "rotation"),
-    odd_by(P_ODD, [cell(HEART, PRIMARY, 270), cell(TRIANGLE, ACCENT, 270),
-                   cell(HEART, ACCENT, 270), cell(TRIANGLE, PRIMARY, 270),
-                   cell(HEART), cell(TRIANGLE, PRIMARY, 270)], "rotation"),
-    odd_by(P_ODD, [cell(TRIANGLE), cell(HEART, ACCENT),
-                   cell(TRIANGLE, ACCENT, 180), cell(HEART), cell(STAR, ACCENT)],
-           "rotation"),
+    queue_calc(P_CLUE, "between", 2, 6, "Ravi", "Asha"),
+    queue_calc(P_CLUE, "between", 8, 3, "Diya", "Kabir"),
+    queue_calc(P_CLUE, "between", 1, 4, "Tara", "Imran"),
+    queue_calc(P_CLUE, "between", 4, 10, "Yash", "Lila"),
+    queue_back(back("Veer"), "Veer", 5, 1),
+    queue_back(back("Anu"), "Anu", 10, 9),
+    queue_calc(P_CLUE, "total", 7, 3, "Nikhil"),
 ]
 
 S224 = [
-    odd_by(P_ODD, [_TRy, _HXy, _CIy, _SQ, _FLy], "color"),
-    odd_by(P_ODD, [_HE, _HEy, _HE, _ST, _HEy, _HE], "kind"),
-    odd_by(P_ODD, [cell(HEART, ACCENT, 90), cell(TRIANGLE, PRIMARY, 90),
-                   cell(HEART, PRIMARY, 90), cell(TRIANGLE, ACCENT),
-                   cell(TRIANGLE, ACCENT, 90)], "rotation"),
-    sort_two(P_SORT, [_ST, _STy, _HX, _HXy, _CI, _CIy],
-             lambda c: _pointy(c) and not _y(c), "PURPLE, POINTY", "THE REST"),
-    odd_by(P_ODD, [_DI, _SQ, _HX, _CI, _FLy, _TR], "color"),
-    odd_by(P_ODD, [_FL, _FLy, _FL, _HE, _FLy, _FL], "kind"),
+    queue_who("Tap who is 2nd from the front.", ["Raj", "Mia", "Aman", "Pooja", "Ali"], 2, "front"),
+    queue_back(back("Sara"), "Sara", 8, 5),
+    queue_calc(P_CLUE, "between", 2, 9, "Tom", "Nina"),
+    queue_calc(P_CLUE, "total", 6, 4, "Kavya"),
+    queue_who("Tap who is 4th from the back.", ["Isha", "Rohan", "Sahil", "Rani", "Karan", "Meera"], 4, "back"),
+    queue_back(back("Dev"), "Dev", 9, 7),
+]
+
+# ---- 2.3 Left, right and turning --------------------------------------------
+
+S231 = [
+    shelf("Tap the shape just left of the heart.", ["star", "circle", "heart", "square", "diamond"], "heart", "left", 1),
+    shelf("Tap the shape just right of the star.", ["triangle", "star", "diamond", "circle", "heart"], "star", "right", 1),
+    shelf("Tap the shape just left of the square.", ["heart", "diamond", "triangle", "square", "star"], "square", "left", 1),
+    shelf("Tap the shape just right of the circle.", ["circle", "heart", "star", "triangle", "square"], "circle", "right", 1),
+    shelf("Tap the shape just left of the diamond.", ["square", "star", "circle", "triangle", "diamond"], "diamond", "left", 1),
+    turns(face("Om"), "Om", "North", ["right"]),
+    turns(face("Riya"), "Riya", "East", ["left"]),
+]
+
+S232 = [
+    turns(face("Kabir"), "Kabir", "South", ["right"]),
+    turns(face("Asha"), "Asha", "West", ["right"]),
+    turns(face("Dev"), "Dev", "North", ["left"]),
+    turns(face("Tara"), "Tara", "East", ["right", "right"]),
+    turns(face("Imran"), "Imran", "South", ["left", "left"]),
+    shelf("Tap the shape just right of the triangle.", ["diamond", "square", "triangle", "heart", "circle"], "triangle", "right", 1),
+    shelf("Tap the shape just left of the star.", ["circle", "star", "heart", "diamond", "triangle"], "star", "left", 1),
+]
+
+S233 = [
+    turns(face("Zoya"), "Zoya", "North", ["around"]),
+    turns(face("Yash"), "Yash", "West", ["around"]),
+    turns(face("Neha"), "Neha", "East", ["right", "left"]),
+    turns(face("Aman"), "Aman", "South", ["around", "left"]),
+    shelf("Tap two places left of the heart.", ["square", "triangle", "star", "heart", "circle"], "heart", "left", 2),
+    shelf("Tap two places right of the diamond.", ["diamond", "circle", "square", "star", "heart"], "diamond", "right", 2),
+    shelf("Tap two places right of the circle.", ["heart", "circle", "triangle", "diamond", "star"], "circle", "right", 2),
+]
+
+S234 = [
+    turns(face("Lila"), "Lila", "West", ["left", "left"]),
+    shelf("Tap two places left of the star.", ["triangle", "heart", "diamond", "square", "star"], "star", "left", 2),
+    turns(face("Veer"), "Veer", "North", ["right", "around"]),
+    shelf("Tap the shape just right of the heart.", ["star", "triangle", "circle", "heart", "diamond"], "heart", "right", 1),
+    turns(face("Diya"), "Diya", "South", ["left"]),
+    turns(face("Karan"), "Karan", "East", ["around", "left"]),
 ]
 
 
 # ================================================================ SECTION 3
-# Codes: a rule someone else hands you, which you then apply.
-#
-# No letters anywhere. The spine asked for shift ciphers and decode-a-word; both
-# test alphabet recall and reading speed rather than reasoning, neither fits in
-# six seconds over another app, and for a child reading in a second or third
-# language they fail the wrong child for the wrong reason.
+# Relations and codes.
 
-def _both(r1, r2):
-    """Two changes at once, applied in order."""
-    return lambda it: r2(r1(it))
+# ---- 3.1 Family relations ---------------------------------------------------
+# The puzzles from aptitude papers, pitched down: two or three short facts, and
+# only relations a seven year old uses at home. Two conventions the engine uses,
+# the same ones those papers use: a brother and a sister share their parents,
+# and a parent's husband or wife is also a parent.
 
 
-def analogy2(prompt, a, c, r1, r2, hint=None):
-    """An analogy where TWO things change between the first pair.
+def rel(x, y):
+    return f"Tap who {x} is to {y}."
 
-    The three wrong options are the two half-answers and the unchanged shape, so
-    a child who spots only one of the two changes lands on a wrong option rather
-    than stumbling onto the right one.
-    """
-    from puzzles_kit import _same
-    for part, rel in (("first", r1), ("second", r2)):
-        if _same(rel(a), a):
-            raise ValueError(f"the {part} change is invisible on {a['kind']}, so "
-                             f"the child is never shown it but graded on it")
-    return analogy(prompt, a, c, _both(r1, r2),
-                   [_both(r1, r2)(c), r1(c), r2(c), dict(c)], hint)
-
-
-# ---- 3.1 Analogies ---------------------------------------------------------
 
 S311 = [
-    analogy(P_AN, item(STAR), item(HEART), rel_colour,
-            [item(HEART, ACCENT), item(HEART), item(STAR, ACCENT), item(CIRCLE, ACCENT)]),
-    analogy(P_AN, item(CIRCLE), item(SQUARE), rel_count(2),
-            [item(SQUARE, n=2), item(SQUARE), item(SQUARE, n=3), item(CIRCLE, n=2)]),
-    analogy(P_AN, item(TRIANGLE), item(DIAMOND), rel_bigger,
-            [item(DIAMOND, size=2), item(DIAMOND), item(TRIANGLE, size=2), item(HEXAGON, size=2)]),
-    analogy(P_AN, item(TRIANGLE), item(HEART), rel_turn,
-            [item(HEART, rotation=90), item(HEART), item(TRIANGLE, rotation=90),
-             item(HEART, rotation=180)]),
-    analogy(P_AN, item(HEART, ACCENT), item(STAR, ACCENT), rel_colour,
-            [item(STAR), item(STAR, ACCENT), item(HEART), item(CIRCLE)]),
-    analogy(P_AN, item(SQUARE), item(HEXAGON), rel_count(3),
-            [item(HEXAGON, n=3), item(HEXAGON, n=2), item(HEXAGON), item(SQUARE, n=3)]),
-    analogy(P_AN, item(DIAMOND, size=2), item(CIRCLE, size=2), rel_smaller,
-            [item(CIRCLE), item(CIRCLE, size=2), item(DIAMOND), item(STAR)]),
+    relation(rel("Raj", "Riya"), [("Raj", "father", "Aman"), ("Riya", "sister", "Aman")], "Raj", "Riya"),
+    relation(rel("Om", "Meera"), [("Om", "son", "Meera")], "Om", "Meera"),
+    relation(rel("Diya", "Kabir"), [("Diya", "sister", "Arjun"), ("Arjun", "son", "Kabir")], "Diya", "Kabir"),
+    relation(rel("Priya", "Tom"), [("Priya", "mother", "Isha"), ("Tom", "brother", "Isha")], "Priya", "Tom"),
+    relation(rel("Yash", "Neha"), [("Neha", "daughter", "Ravi"), ("Yash", "son", "Ravi")], "Yash", "Neha"),
+    relation_who("Tap Anu's father.",
+                 [("Dev", "husband", "Lila"), ("Lila", "mother", "Anu"), ("Karan", "brother", "Anu")],
+                 "Anu", "father"),
+    relation_who("Tap Veer's sister.",
+                 [("Zoya", "daughter", "Raj"), ("Veer", "son", "Raj"), ("Mia", "mother", "Veer")],
+                 "Veer", "sister"),
 ]
 
-# Two changes at once.
 S312 = [
-    analogy2(P_AN, item(STAR), item(HEART), rel_colour, rel_count(2)),
-    analogy2(P_AN, item(CIRCLE), item(SQUARE), rel_colour, rel_bigger),
-    analogy2(P_AN, item(TRIANGLE), item(HEXAGON), rel_count(2), rel_bigger),
-    analogy2(P_AN, item(TRIANGLE), item(HEART), rel_colour, rel_turn),
-    analogy2(P_AN, item(HEART), item(CIRCLE), rel_count(3), rel_colour),
-    analogy2(P_AN, item(HEART), item(TRIANGLE), rel_bigger, rel_turn),
-    interleaved(P_NEXT, [HEXAGON, TRIANGLE], [ACCENT, PRIMARY, ACCENT], 9, 8),
+    relation(rel("Asha", "Om"), [("Asha", "mother", "Raj"), ("Raj", "father", "Om")], "Asha", "Om"),
+    relation(rel("Kabir", "Rani"), [("Kabir", "father", "Imran"), ("Rani", "daughter", "Imran")], "Kabir", "Rani"),
+    relation(rel("Nina", "Sahil"), [("Nina", "daughter", "Tara"), ("Tara", "daughter", "Sahil")], "Nina", "Sahil"),
+    relation(rel("Ali", "Pooja"), [("Ali", "son", "Karan"), ("Karan", "son", "Pooja")], "Ali", "Pooja"),
+    relation(rel("Meera", "Dev"),
+             [("Meera", "mother", "Rohan"), ("Rohan", "father", "Isha"), ("Dev", "brother", "Isha")],
+             "Meera", "Dev"),
+    relation_who("Tap Kavya's grandfather.",
+                 [("Om", "father", "Aman"), ("Aman", "father", "Kavya"), ("Sara", "mother", "Kavya")],
+                 "Kavya", "grandfather"),
+    relation_who("Tap Tom's grandmother.",
+                 [("Lila", "mother", "Diya"), ("Diya", "mother", "Tom"), ("Yash", "brother", "Tom")],
+                 "Tom", "grandmother"),
 ]
 
 S313 = [
-    analogy2(P_AN, item(HEART, ACCENT), item(TRIANGLE, ACCENT), rel_turn, rel_count(2)),
-    analogy(P_AN, item(STAR, ACCENT, n=2), item(HEART, ACCENT, n=2), rel_count(2),
-            [item(HEART, ACCENT, n=4), item(HEART, ACCENT, n=2),
-             item(HEART, ACCENT, n=3), item(STAR, ACCENT, n=4)]),
-    analogy2(P_AN, item(CIRCLE, size=2), item(HEXAGON, size=2), rel_smaller, rel_colour),
-    analogy(P_AN, item(TRIANGLE, rotation=90), item(HEART, rotation=90), rel_turn,
-            [item(HEART, rotation=180), item(HEART, rotation=90), item(HEART),
-             item(TRIANGLE, rotation=180)]),
-    analogy2(P_AN, item(FLOWER, ACCENT), item(STAR, ACCENT), rel_colour, rel_bigger),
-    analogy2(P_AN, item(HEART), item(DIAMOND), rel_bigger, rel_count(2)),
-    odd_by(P_ODD, [_HXy, _HX, _HXy, _DI, _HX, _HXy], "kind"),
+    relation(rel("Anu", "Om"), [("Anu", "sister", "Raj"), ("Raj", "father", "Om")], "Anu", "Om"),
+    relation(rel("Karan", "Riya"), [("Karan", "brother", "Meera"), ("Meera", "mother", "Riya")], "Karan", "Riya"),
+    relation(rel("Zoya", "Dev"),
+             [("Zoya", "daughter", "Asha"), ("Asha", "sister", "Ravi"), ("Ravi", "father", "Dev")],
+             "Zoya", "Dev"),
+    relation(rel("Priya", "Kabir"), [("Kabir", "son", "Imran"), ("Priya", "sister", "Imran")], "Priya", "Kabir"),
+    relation(rel("Rohan", "Mia"), [("Mia", "daughter", "Nina"), ("Rohan", "brother", "Nina")], "Rohan", "Mia"),
+    relation_who("Tap Isha's uncle.",
+                 [("Veer", "brother", "Pooja"), ("Pooja", "mother", "Isha"), ("Sahil", "father", "Isha")],
+                 "Isha", "uncle"),
+    relation_who("Tap Tara's aunt.",
+                 [("Lila", "sister", "Yash"), ("Yash", "father", "Tara"), ("Diya", "sister", "Tara")],
+                 "Tara", "aunt"),
 ]
 
 S314 = [
-    analogy2(P_AN, item(STAR), item(FLOWER), rel_colour, rel_count(3)),
-    analogy(P_AN, item(HEXAGON), item(HEART), rel_bigger,
-            [item(HEART, size=2), item(HEART), item(HEXAGON, size=2), item(CIRCLE, size=2)]),
-    analogy2(P_AN, item(TRIANGLE), item(HEART), rel_count(3), rel_turn),
-    analogy(P_AN, item(CIRCLE, ACCENT), item(TRIANGLE, ACCENT), rel_colour,
-            [item(TRIANGLE), item(TRIANGLE, ACCENT), item(CIRCLE), item(HEXAGON)]),
-    analogy2(P_AN, item(HEART, size=2), item(HEXAGON, size=2), rel_smaller, rel_count(2)),
-    analogy2(P_AN, item(HEART), item(TRIANGLE, ACCENT), rel_turn, rel_bigger),
+    relation(rel("Aman", "Sara"),
+             [("Aman", "father", "Ali"), ("Ali", "father", "Neha"), ("Sara", "sister", "Neha")],
+             "Aman", "Sara"),
+    relation_who("Tap Om's cousin.",
+                 [("Riya", "daughter", "Kabir"), ("Kabir", "brother", "Meera"), ("Meera", "mother", "Om")],
+                 "Om", "cousin"),
+    relation(rel("Diya", "Yash"),
+             [("Diya", "mother", "Rani"), ("Rani", "sister", "Tom"), ("Tom", "father", "Yash")],
+             "Diya", "Yash"),
+    relation(rel("Imran", "Kavya"), [("Imran", "husband", "Priya"), ("Priya", "mother", "Kavya")], "Imran", "Kavya"),
+    relation_who("Tap Veer's grandmother.",
+                 [("Asha", "mother", "Dev"), ("Dev", "brother", "Nina"), ("Nina", "mother", "Veer")],
+                 "Veer", "grandmother"),
+    relation(rel("Sahil", "Rani"),
+             [("Sahil", "husband", "Lila"), ("Lila", "mother", "Karan"), ("Karan", "father", "Rani")],
+             "Sahil", "Rani"),
 ]
 
-# ---- 3.2 Symbol codes ------------------------------------------------------
-
-_K4a = [(STAR, 2), (HEART, 3), (CIRCLE, 4), (DIAMOND, 5)]
-_K4b = [(TRIANGLE, 3), (SQUARE, 4), (HEXAGON, 6), (FLOWER, 7)]
-_K4c = [(STAR, 1), (SQUARE, 5), (HEXAGON, 6), (HEART, 8)]
+# ---- 3.2 Analogies ----------------------------------------------------------
 
 S321 = [
-    code_read(P_CODE, _K4a, [STAR, HEART]),
-    code_read(P_CODE, _K4a, [CIRCLE, DIAMOND]),
-    code_read(P_CODE, _K4a, [HEART, HEART, STAR]),
-    code_read(P_CODE, _K4a, [DIAMOND, STAR, HEART]),
-    code_read(P_CODE, _K4a, [CIRCLE, CIRCLE, HEART]),
-    code_read(P_CODE, _K4a, [STAR, STAR, DIAMOND, HEART]),
-    code_read(P_CODE, _K4a, [HEART, CIRCLE, DIAMOND]),
+    word_analogy(P_AN, "baby", "cow", "dog"),
+    word_analogy(P_AN, "baby", "hen", "sheep"),
+    word_analogy(P_AN, "baby", "cat", "duck"),
+    word_analogy(P_AN, "home", "bird", "bee"),
+    word_analogy(P_AN, "home", "dog", "horse"),
+    number_analogy(P_NAN, "add", 3, [2, 5], 7),
+    number_analogy(P_NAN, "times", 2, [3, 4], 6),
 ]
 
 S322 = [
-    code_read(P_CODE, _K4b, [TRIANGLE, SQUARE]),
-    code_read(P_CODE, _K4b, [HEXAGON, FLOWER]),
-    code_read(P_CODE, _K4b, [SQUARE, SQUARE, TRIANGLE]),
-    code_read(P_CODE, _K4b, [FLOWER, TRIANGLE, SQUARE]),
-    code_read(P_CODE, _K4b, [HEXAGON, HEXAGON, TRIANGLE]),
-    code_read(P_CODE, _K4b, [TRIANGLE, TRIANGLE, SQUARE, HEXAGON]),
-    array("Count them. Tap the number.", 9, 4),
+    word_analogy(P_AN, "opposite", "hot", "big"),
+    word_analogy(P_AN, "opposite", "up", "day"),
+    word_analogy(P_AN, "opposite", "happy", "fast"),
+    word_analogy(P_AN, "sense", "eye", "ear"),
+    word_analogy(P_AN, "sense", "nose", "tongue"),
+    number_analogy(P_NAN, "take", 4, [9, 12], 15),
+    number_analogy(P_NAN, "add", 10, [5, 12], 23),
 ]
 
 S323 = [
-    code_read(P_CODE, _K4c, [STAR, HEART]),
-    code_read(P_CODE, _K4c, [SQUARE, HEXAGON]),
-    code_read(P_CODE, _K4c, [HEART, SQUARE, STAR]),
-    code_read(P_CODE, _K4c, [HEXAGON, HEXAGON, STAR]),
-    code_read(P_CODE, _K4c, [STAR, STAR, SQUARE, HEXAGON]),
-    code_read(P_CODE, _K4c, [SQUARE, SQUARE, HEXAGON]),
-    skip_line(P_LAND, 50, 6, 7, 6),
+    word_analogy(P_AN, "work", "doctor", "teacher"),
+    word_analogy(P_AN, "work", "farmer", "cook"),
+    word_analogy(P_AN, "colour", "grass", "banana"),
+    word_analogy(P_AN, "colour", "snow", "coal"),
+    number_analogy(P_NAN, "times", 3, [2, 4], 5),
+    number_analogy(P_NAN, "times", 10, [3, 5], 4),
+    number_analogy(P_NAN, "take", 2, [10, 7], 18),
 ]
 
 S324 = [
-    code_read(P_CODE, _K4a, [DIAMOND, DIAMOND, CIRCLE]),
-    code_read(P_CODE, _K4b, [FLOWER, SQUARE, TRIANGLE]),
-    code_read(P_CODE, _K4c, [HEART, STAR, SQUARE, STAR]),
-    code_read(P_CODE, _K4a, [CIRCLE, HEART, HEART, STAR]),
-    code_read(P_CODE, _K4b, [HEXAGON, SQUARE, TRIANGLE, TRIANGLE]),
-    code_read(P_CODE, _K4c, [SQUARE, HEXAGON, STAR, STAR]),
+    word_analogy(P_AN, "baby", "lion", "frog"),
+    word_analogy(P_AN, "opposite", "wet", "full"),
+    number_analogy(P_NAN, "add", 6, [4, 9], 14),
+    word_analogy(P_AN, "home", "spider", "rabbit"),
+    word_analogy(P_AN, "work", "pilot", "doctor"),
+    number_analogy(P_NAN, "times", 5, [2, 3], 6),
 ]
 
-# ---- 3.3 Two-step codes ----------------------------------------------------
-# Add what is there, take it from the total, then find the symbol worth the
-# difference. Every key has four symbols so all four options mean something.
-
-_O4a = [STAR, HEART, CIRCLE, DIAMOND]
-_O4b = [TRIANGLE, SQUARE, HEXAGON, FLOWER]
-_O4c = [STAR, SQUARE, HEXAGON, HEART]
+# ---- 3.3 Letter and number codes --------------------------------------------
 
 S331 = [
-    code_pick(P_CODEGAP, _K4a, [STAR, HEART], 1, 5, _O4a),
-    code_pick(P_CODEGAP, _K4a, [CIRCLE, STAR], 1, 8, _O4a),
-    code_pick(P_CODEGAP, _K4a, [HEART, DIAMOND], 0, 9, _O4a),
-    code_pick(P_CODEGAP, _K4a, [DIAMOND, CIRCLE], 1, 7, _O4a),
-    code_pick(P_CODEGAP, _K4a, [STAR, CIRCLE], 0, 7, _O4a),
-    code_pick(P_CODEGAP, _K4a, [HEART, STAR], 0, 6, _O4a),
-    code_pick(P_CODEGAP, _K4a, [CIRCLE, DIAMOND], 0, 7, _O4a),
+    alphabet("Tap the letter just after M.", "M", 1),
+    alphabet("Tap the letter just before K.", "K", -1),
+    alphabet("Tap the letter just after R.", "R", 1),
+    alphabet("Tap the letter just before E.", "E", -1),
+    letter_code(P_CODE, "CAT", "PEN", ("shift", 1)),
+    letter_code(P_CODE, "BUS", "HAT", ("shift", 1)),
+    letter_code(P_CODE, "SUN", "FIG", ("shift", 1)),
 ]
 
 S332 = [
-    code_pick(P_CODEGAP, _K4b, [TRIANGLE, SQUARE], 1, 9, _O4b),
-    code_pick(P_CODEGAP, _K4b, [HEXAGON, TRIANGLE], 1, 13, _O4b),
-    code_pick(P_CODEGAP, _K4b, [FLOWER, SQUARE], 0, 10, _O4b),
-    code_pick(P_CODEGAP, _K4b, [SQUARE, HEXAGON], 1, 11, _O4b),
-    code_pick(P_CODEGAP, _K4b, [TRIANGLE, FLOWER], 0, 13, _O4b),
-    code_pick(P_CODEGAP, _K4c, [STAR, SQUARE], 1, 7, _O4c),
-    code_read(P_CODE, _K4c, [SQUARE, HEXAGON, HEART]),
+    letter_code(P_CODE, "TOP", "TEN", ("reverse",)),
+    letter_code(P_CODE, "PAN", "GUM", ("reverse",)),
+    letter_code(P_CODE, "DOG", "CUP", ("shift", 2)),
+    letter_code(P_CODE, "BED", "RAT", ("reverse",)),
+    letter_code(P_CODE, "JAM", "BOX", ("shift", -1)),
+    alphabet("Tap the letter two after P.", "P", 2),
+    alphabet("Tap the letter two before H.", "H", -2),
 ]
 
 S333 = [
-    code_pick(P_CODEGAP, _K4a, [STAR, HEART, CIRCLE], 2, 10, _O4a),
-    code_pick(P_CODEGAP, _K4a, [HEART, CIRCLE, DIAMOND], 1, 12, _O4a),
-    code_pick(P_CODEGAP, _K4a, [DIAMOND, STAR, HEART], 0, 9, _O4a),
-    code_pick(P_CODEGAP, _K4b, [TRIANGLE, SQUARE, HEXAGON], 2, 14, _O4b),
-    code_pick(P_CODEGAP, _K4b, [SQUARE, HEXAGON, TRIANGLE], 1, 11, _O4b),
-    code_pick(P_CODEGAP, _K4c, [STAR, HEXAGON, SQUARE], 2, 12, _O4c),
-    sort_two(P_SORT, [_STy, _ST, _DIy, _DI, _HXy, _HX],
-             lambda c: _pointy(c) and _y(c), "YELLOW, POINTY", "THE REST"),
+    number_code("A is 1. Tap the code.", "BAD", "CAB", "encode"),
+    number_code("A is 1. Tap the code.", "ACE", "BIG", "encode"),
+    number_code("A is 1. Tap the word.", "DIG", "BED", "decode"),
+    number_code("A is 1. Tap the word.", "FED", "HID", "decode"),
+    number_code("A is 1. Tap the code.", "HEAD", "FACE", "encode"),
+    letter_code(P_CODE, "HIT", "BAG", ("shift", 1)),
+    letter_code(P_CODE, "STAR", "POOL", ("reverse",)),
 ]
 
 S334 = [
-    code_pick(P_CODEGAP, _K4a, [CIRCLE, CIRCLE, HEART], 2, 11, _O4a),
-    code_pick(P_CODEGAP, _K4b, [HEXAGON, TRIANGLE, SQUARE], 0, 13, _O4b),
-    code_pick(P_CODEGAP, _K4c, [HEART, SQUARE, STAR], 1, 14, _O4c),
-    code_pick(P_CODEGAP, _K4a, [STAR, DIAMOND, HEART], 1, 10, _O4a),
-    code_pick(P_CODEGAP, _K4b, [FLOWER, TRIANGLE, SQUARE], 1, 17, _O4b),
-    code_pick(P_CODEGAP, _K4c, [HEXAGON, STAR, SQUARE], 0, 12, _O4c),
+    alphabet("Tap the letter just after V.", "V", 1),
+    number_code("A is 1. Tap the word.", "CAGE", "BADGE", "decode"),
+    letter_code(P_CODE, "MAP", "DOT", ("shift", 1)),
+    letter_code(P_CODE, "WAS", "NOW", ("reverse",)),
+    number_code("A is 1. Tap the code.", "JIG", "DEAF", "encode"),
+    alphabet("Tap the letter two after T.", "T", 2),
 ]
 
 
 # ================================================================ SECTION 4
-# Logic: everything so far, and the first questions needing a chain of thought.
+# Logic.
 
-# ---- 4.1 True or false -----------------------------------------------------
-# CoderGate deleted its old "truth" screen because it "drew a condition in mid-
-# air beside a list of facts", and a child cannot look at a condition. So the
-# claim is one short question, the evidence is on screen, and the child answers
-# it once per shape. Every rule here needs two properties or a negation.
+# ---- 4.1 Odd one out --------------------------------------------------------
 
 S411 = [
-    yes_no("Is it a yellow star? Move each shape.",
-           [_STy, _ST, _STy, _CIy, _HE, _STy],
-           lambda c: c["kind"] == STAR and _y(c)),
-    yes_no("Is it a purple circle? Move each shape.",
-           [_CI, _CIy, _CI, _SQ, _HEy, _CI],
-           lambda c: _round(c) and not _y(c)),
-    yes_no("Is it NOT yellow? Move each shape.",
-           [_TR, _TRy, _HX, _HXy, _DI, _DIy],
-           lambda c: not _y(c)),
-    yes_no("Is it yellow and pointy? Move each shape.",
-           [_STy, _TRy, _CIy, _ST, _HEy, _DIy],
-           lambda c: _y(c) and _pointy(c)),
-    yes_no("Is it NOT a circle? Move each shape.",
-           [_CI, _CIy, _ST, _HE, _SQ, _CIy],
-           lambda c: not _round(c)),
-    yes_no("Is it purple with 4 corners? Move each shape.",
-           [_SQ, _SQy, _DI, _DIy, _HX, _TR],
-           lambda c: _corners4(c) and not _y(c)),
-    yes_no("Is it a purple heart? Move each shape.",
-           [_HE, _HEy, _HE, _FL, _HEy, _DI],
-           lambda c: c["kind"] == HEART and not _y(c)),
+    odd_word(P_ODD, ["apple", "mango", "carrot", "banana"]),
+    odd_word(P_ODD, ["bus", "train", "parrot", "car"]),
+    odd_word(P_ODD, ["red", "blue", "shirt", "green"]),
+    odd_word(P_ODD, ["hand", "nose", "ear", "cycle"]),
+    odd_word(P_ODD, ["crow", "sparrow", "lion", "owl"]),
+    odd_number(P_ODD, [2, 4, 7, 8]),
+    odd_number(P_ODD, [10, 40, 30, 35]),
 ]
 
 S412 = [
-    yes_no("Is it yellow but NOT round? Move each shape.",
-           [_STy, _CIy, _TRy, _CI, _HXy, _ST],
-           lambda c: _y(c) and not _round(c)),
-    yes_no("Is it a yellow flower? Move each shape.",
-           [_FLy, _FL, _FLy, _STy, _HXy, _FL],
-           lambda c: c["kind"] == FLOWER and _y(c)),
-    yes_no("Is it NOT pointy? Move each shape.",
-           [_ST, _CI, _TR, _HE, _DI, _HX],
-           lambda c: not _pointy(c)),
-    yes_no("Is it purple and pointy? Move each shape.",
-           [_ST, _STy, _TR, _TRy, _CI, _DI],
-           lambda c: _pointy(c) and not _y(c)),
-    yes_no("Is it a yellow hexagon? Move each shape.",
-           [_HXy, _HX, _HXy, _FLy, _CIy, _HX],
-           lambda c: c["kind"] == HEXAGON and _y(c)),
-    yes_no("Is it NOT a square? Move each shape.",
-           [_SQ, _SQy, _DI, _CI, _TR, _SQ],
-           lambda c: c["kind"] != SQUARE),
-    yes_no("Is it purple and round? Move each shape.",
-           [_CI, _CIy, _CI, _STy, _HE, _CIy],
-           lambda c: _round(c) and not _y(c)),
+    odd_word(P_ODD, ["potato", "onion", "guava", "cabbage"]),
+    odd_word(P_ODD, ["sock", "cap", "dress", "eagle"]),
+    odd_word(P_ODD, ["circle", "square", "triangle", "pink"]),
+    odd_word(P_ODD, ["cow", "goat", "dog", "pigeon"]),
+    odd_number(P_ODD, [15, 55, 35, 42]),
+    odd_number(P_ODD, [3, 7, 9, 6]),
+    odd_number(P_ODD, [12, 14, 16, 19]),
 ]
 
 S413 = [
-    yes_no("Is it yellow with 4 corners? Move each shape.",
-           [_SQy, _DIy, _SQ, _DI, _HXy, _CIy],
-           lambda c: _corners4(c) and _y(c)),
-    yes_no("Is it NOT a heart and NOT yellow? Move each shape.",
-           [_HE, _HEy, _CI, _CIy, _TR, _TRy],
-           lambda c: c["kind"] != HEART and not _y(c)),
-    odd_by(P_ODD, [_ST, _STy, _ST, _HX, _STy, _ST], "kind"),
-    yes_no("Is it a purple triangle? Move each shape.",
-           [_TR, _TRy, _TR, _DI, _SQ, _TRy],
-           lambda c: c["kind"] == TRIANGLE and not _y(c)),
-    yes_no("Is it pointy but NOT a star? Move each shape.",
-           [_ST, _TR, _DI, _STy, _CI, _TRy],
-           lambda c: _pointy(c) and c["kind"] != STAR),
-    odd_by(P_ODD, [_CIy, _CI, _CIy, _FL, _CI], "kind"),
-    yes_no("Is it yellow or a diamond? Move each shape.",
-           [_DIy, _DI, _STy, _ST, _CIy, _CI],
-           lambda c: _y(c) or c["kind"] == DIAMOND),
+    odd_number(P_ODD, [35, 15, 45, 18]),
+    odd_number(P_ODD, [60, 50, 70, 55]),
+    odd_number(P_ODD, [8, 13, 17, 11]),
+    odd_number(P_ODD, [22, 26, 24, 31]),
+    odd_word(P_ODD, ["boat", "plane", "truck", "spinach"]),
+    odd_word(P_ODD, ["knee", "elbow", "foot", "scarf"]),
+    odd_word(P_ODD, ["papaya", "cherry", "orange", "peacock"]),
 ]
 
 S414 = [
-    yes_no("Is it a yellow star? Move each shape.",
-           [_STy, _ST, _HXy, _STy, _CI, _HE],
-           lambda c: c["kind"] == STAR and _y(c)),
-    yes_no("Is it NOT yellow and NOT round? Move each shape.",
-           [_CI, _CIy, _TR, _TRy, _SQ, _SQy],
-           lambda c: not _y(c) and not _round(c)),
-    interleaved(P_GAP, [STAR, DIAMOND], [PRIMARY, ACCENT, ACCENT], 10, 6),
-    yes_no("Does it have 4 corners? Move each shape.",
-           [_SQ, _DIy, _TR, _HX, _SQy, _CI],
-           _corners4),
-    odd_by(P_ODD, [_HXy, _HX, _HXy, _SQ, _HX, _HXy], "kind"),
-    yes_no("Is it purple and NOT a square? Move each shape.",
-           [_SQ, _SQy, _CI, _CIy, _HE, _HEy],
-           lambda c: not _y(c) and c["kind"] != SQUARE),
+    odd_word(P_ODD, ["zebra", "elephant", "horse", "duck"]),
+    odd_number(P_ODD, [40, 80, 90, 45]),
+    odd_word(P_ODD, ["yellow", "brown", "black", "scooter"]),
+    odd_number(P_ODD, [7, 9, 3, 12]),
+    odd_word(P_ODD, ["radish", "peas", "brinjal", "grapes"]),
+    odd_number(P_ODD, [30, 36, 38, 34]),
 ]
 
-# ---- 4.2 What is missing ---------------------------------------------------
-# The gap sits inside a strip whose shape and colour run on different cycles, so
-# it has to be read from both sides and on both properties at once.
+# ---- 4.2 Days, months and the clock -----------------------------------------
+# O'clock and half past only, which is where Class 2 and 3 are.
 
 S421 = [
-    interleaved(P_GAP, [HEART, CIRCLE], [PRIMARY, ACCENT, PRIMARY], 11, 5),
-    interleaved(P_GAP, [SQUARE, TRIANGLE], [ACCENT, PRIMARY, PRIMARY], 11, 6),
-    interleaved(P_GAP, [HEXAGON, STAR], [PRIMARY, PRIMARY, ACCENT], 11, 4),
-    interleaved(P_GAP, [FLOWER, DIAMOND], [ACCENT, ACCENT, PRIMARY], 11, 7),
-    interleaved(P_GAP, [CIRCLE, HEART], [PRIMARY, ACCENT, ACCENT], 11, 3),
-    interleaved(P_GAP, [TRIANGLE, HEXAGON], [ACCENT, PRIMARY, ACCENT], 11, 8),
-    interleaved(P_GAP, [DIAMOND, SQUARE], [PRIMARY, ACCENT, PRIMARY], 11, 2),
+    weekday(P_DAY, "after", "Monday", 2),
+    weekday(P_DAY, "after", "Friday", 3),
+    weekday(P_DAY, "ago", "Thursday", 2),
+    weekday(P_DAY, "today", "Sunday"),
+    weekday(P_DAY, "tomorrow", "Tuesday"),
+    month(P_MONTH, "June", 1),
+    month(P_MONTH, "March", -1),
 ]
 
 S422 = [
-    interleaved(P_GAP, [STAR, FLOWER], [PRIMARY, PRIMARY, ACCENT], 12, 9),
-    interleaved(P_GAP, [HEART, HEXAGON], [ACCENT, PRIMARY, PRIMARY], 12, 10),
-    interleaved(P_GAP, [CIRCLE, DIAMOND], [PRIMARY, ACCENT, ACCENT], 12, 1),
-    interleaved(P_GAP, [SQUARE, FLOWER], [ACCENT, ACCENT, PRIMARY], 12, 5),
-    interleaved(P_GAP, [TRIANGLE, STAR], [PRIMARY, ACCENT, PRIMARY], 12, 7),
-    interleaved(P_GAP, [HEXAGON, CIRCLE], [ACCENT, PRIMARY, ACCENT], 12, 4),
-    interleaved(P_GAP, [DIAMOND, HEART], [PRIMARY, PRIMARY, ACCENT], 12, 11),
+    clock(P_READ, 3, 0, "read"),
+    clock(P_READ, 7, 30, "read"),
+    clock(P_TIME, 2, 0, "after", 3),
+    clock(P_TIME, 11, 0, "after", 2),
+    clock(P_TIME, 6, 30, "before", 2),
+    weekday(P_DAY, "after", "Saturday", 2),
+    weekday(P_DAY, "ago", "Monday", 1),
 ]
 
 S423 = [
-    interleaved(P_NEXT, [FLOWER, TRIANGLE], [ACCENT, PRIMARY, PRIMARY], 11, 10),
-    interleaved(P_GAP, [STAR, SQUARE], [PRIMARY, ACCENT, ACCENT], 12, 6),
-    odd_by(P_ODD, [_TRy, _TR, _TRy, _FL, _TR, _TRy], "kind"),
-    interleaved(P_GAP, [HEART, TRIANGLE], [ACCENT, PRIMARY, ACCENT], 11, 5),
-    interleaved(P_NEXT, [CIRCLE, HEXAGON], [PRIMARY, ACCENT, PRIMARY], 12, 11),
-    odd_by(P_ODD, [_DI, _DIy, _HE, _DI, _DIy], "kind"),
-    interleaved(P_GAP, [SQUARE, HEART], [PRIMARY, PRIMARY, ACCENT], 11, 9),
+    month(P_MONTH, "November", 2),
+    month(P_MONTH, "September", 1),
+    month(P_MONTH, "January", -1),
+    clock(P_TIME, 9, 30, "after", 4),
+    clock(P_TIME, 1, 0, "before", 3),
+    weekday(P_DAY, "today", "Wednesday"),
+    weekday(P_DAY, "tomorrow", "Saturday"),
 ]
 
 S424 = [
-    interleaved(P_GAP, [HEXAGON, DIAMOND], [ACCENT, PRIMARY, PRIMARY], 12, 8),
-    interleaved(P_NEXT, [STAR, CIRCLE], [PRIMARY, ACCENT, ACCENT], 11, 10),
-    odd_by(P_ODD, [_SQy, _SQ, _SQy, _HX, _SQ, _SQy], "kind"),
-    interleaved(P_GAP, [FLOWER, HEART], [PRIMARY, ACCENT, PRIMARY], 12, 3),
-    interleaved(P_GAP, [TRIANGLE, CIRCLE], [ACCENT, ACCENT, PRIMARY], 11, 6),
-    interleaved(P_NEXT, [DIAMOND, FLOWER], [PRIMARY, PRIMARY, ACCENT], 12, 11),
+    weekday(P_DAY, "ago", "Sunday", 3),
+    clock(P_READ, 12, 30, "read"),
+    month(P_MONTH, "August", 2),
+    clock(P_TIME, 8, 0, "after", 5),
+    weekday(P_DAY, "after", "Wednesday", 4),
+    month(P_MONTH, "May", -1),
 ]
 
-# ---- 4.3 Putting it together -----------------------------------------------
-# Every idea in the skill, shuffled, so no stop can be answered by knowing which
-# screen comes next. The last boss is the last thing in the skill.
+# ---- 4.3 Think it through ---------------------------------------------------
+# "How many ways" first -- possible combinations is on the Class 3 syllabus --
+# then every kind of puzzle in the skill, shuffled.
 
 S431 = [
-    interleaved(P_NEXT, [HEART, STAR], [ACCENT, PRIMARY, ACCENT], 9, 8),
-    odd_by(P_ODD, [_FL, _FLy, _FL, _HX, _FLy, _FL], "kind"),
-    code_read(P_CODE, _K4a, [HEART, DIAMOND, STAR]),
-    sort_two(P_SORT, [_DIy, _DI, _CIy, _CI, _STy, _ST],
-             lambda c: _pointy(c) and _y(c), "YELLOW, POINTY", "THE REST"),
-    analogy2(P_AN, item(CIRCLE), item(TRIANGLE), rel_colour, rel_count(2)),
-    skip_line(P_LAND, 50, 4, 6, 7),
-    yes_no("Is it NOT a hexagon? Move each shape.",
-           [_HX, _HXy, _CI, _ST, _HXy, _TR],
-           lambda c: c["kind"] != HEXAGON),
+    combos(P_WAYS, "Riya", 3, "tops", 2, "skirts"),
+    combos(P_WAYS, "Om", 2, "caps", 4, "shirts"),
+    combos(P_WAYS, "Zoya", 3, "breads", 3, "fillings"),
+    combos(P_WAYS, "Kabir", 4, "cones", 3, "flavours"),
+    story(P_STORY, "join", "Isha", "shells", 26, 8),
+    rank("Tap who is the fastest.", "fast", ["Dev", "Sara", "Tom"],
+         [("Sara", "Tom", "more"), ("Dev", "Sara", "less")], "top"),
+    relation(rel("Kavya", "Nikhil"), [("Kavya", "wife", "Aman"), ("Aman", "father", "Nikhil")],
+             "Kavya", "Nikhil"),
 ]
 
 S432 = [
-    code_pick(P_CODEGAP, _K4b, [SQUARE, TRIANGLE], 1, 11, _O4b),
-    interleaved(P_GAP, [CIRCLE, FLOWER], [ACCENT, PRIMARY, PRIMARY], 10, 5),
-    size_order(P_SMALL, [0.2, 0.45, 0.7, 1.0], DIAMOND),
-    analogy(P_AN, item(HEART), item(TRIANGLE), rel_turn,
-            [item(TRIANGLE, rotation=90), item(TRIANGLE), item(HEART, rotation=90),
-             item(TRIANGLE, rotation=180)]),
-    odd_by(P_ODD, [_ST, _CI, _TR, _HEy, _DI], "color"),
-    array("Count them. Tap the number.", 7, 7, STAR),
-    sort_two(P_SORT, [_HEy, _HE, _FLy, _FL, _SQy, _SQ],
-             lambda c: not _y(c) and c["kind"] != SQUARE, "PURPLE, NO SQUARE", "THE REST"),
+    combos(P_WAYS, "Neha", 2, "hairbands", 2, "clips"),
+    combos(P_WAYS, "Arjun", 4, "shirts", 4, "shorts"),
+    equation(P_BOX, 16, "-", 9, 7, "right"),
+    queue_calc(P_CLUE, "total", 4, 7, "Mia"),
+    turns(face("Sahil"), "Sahil", "West", ["left"]),
+    word_analogy(P_AN, "colour", "tomato", "sky"),
+    alphabet("Tap the letter just before W.", "W", -1),
 ]
 
 S433 = [
-    yes_no("Is it a yellow diamond? Move each shape.",
-           [_DIy, _DI, _DIy, _STy, _CI, _DI],
-           lambda c: c["kind"] == DIAMOND and _y(c)),
-    code_read(P_CODE, _K4c, [HEXAGON, SQUARE, STAR]),
-    interleaved(P_GAP, [DIAMOND, TRIANGLE], [PRIMARY, ACCENT, ACCENT], 12, 7),
-    skip_line(P_LAND, 50, 45, -6, 7),
-    analogy2(P_AN, item(STAR), item(HEXAGON), rel_bigger, rel_colour),
-    odd_by(P_ODD, [cell(HEART, PRIMARY, 180), cell(STAR, ACCENT, 180),
-                   cell(TRIANGLE, PRIMARY, 180), cell(HEART, ACCENT),
-                   cell(TRIANGLE, ACCENT, 180)], "rotation"),
-    array("Count them. Tap the number.", 6, 9, HEART),
+    series(P_MISS, [8, 10, 12, 14, 16, 18], 1),
+    odd_word(P_ODD, ["guava", "cherry", "bus", "apple"]),
+    weekday(P_DAY, "after", "Tuesday", 5),
+    riddle(P_RID, [("add", 7)], 20),
+    queue_who("Tap who is 2nd from the back.", ["Veer", "Anu", "Raj", "Rani"], 2, "back"),
+    number_analogy(P_NAN, "add", 5, [1, 6], 10),
+    shelf("Tap two places left of the circle.", ["heart", "square", "circle", "star", "triangle"], "circle", "left", 2),
 ]
 
 S434 = [
-    interleaved(P_NEXT, [SQUARE, HEXAGON], [ACCENT, PRIMARY, ACCENT], 11, 10),
-    code_pick(P_CODEGAP, _K4c, [STAR, HEART, SQUARE], 2, 14, _O4c),
-    analogy2(P_AN, item(TRIANGLE, ACCENT), item(HEART), rel_turn, rel_count(3)),
-    yes_no("Is it purple and pointy? Move each shape.",
-           [_STy, _ST, _TRy, _TR, _DIy, _DI],
-           lambda c: _pointy(c) and not _y(c)),
-    sort_two(P_SORT, [_CIy, _CI, _HXy, _HX, _TRy, _TR],
-             lambda c: _y(c) and not _round(c), "YELLOW, NOT ROUND", "THE REST"),
-    odd_by(P_ODD, [_CI, _CIy, _CI, _HX, _CIy, _CI], "kind"),
+    relation_who("Tap Nina's aunt.",
+                 [("Asha", "sister", "Karan"), ("Karan", "father", "Nina"), ("Rohan", "brother", "Nina")],
+                 "Nina", "aunt"),
+    story(P_STORY, "groups", "", "pencils", 4, 5),
+    rank("Tap who is the second oldest.", "old", ["Ali", "Lila", "Yash", "Priya"],
+         [("Lila", "Ali", "more"), ("Yash", "Ali", "less"), ("Priya", "Yash", "less")], "second"),
+    letter_code(P_CODE, "LOG", "SIP", ("shift", 1)),
+    clock(P_TIME, 10, 30, "after", 3),
+    weekday(P_DAY, "ago", "Friday", 4),
 ]
