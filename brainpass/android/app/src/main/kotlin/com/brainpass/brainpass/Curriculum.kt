@@ -108,6 +108,48 @@ object Curriculum {
         val choices: List<Int> = o.optJSONArray("choices")?.let { a ->
             (0 until a.length()).map { a.optInt(it) }
         } ?: emptyList()
+        // Band d answers that are DRAWINGS rather than words: four nets, four
+        // cuts, four solids, four side views, four rows of bulbs. Each is its
+        // own array because each draws differently; a single "options" holding
+        // any of them would need the reader to guess which.
+        val optionNets: List<List<Pair<Int, Int>>> = o.optJSONArray("optionNets")?.let { a ->
+            (0 until a.length()).mapNotNull { i ->
+                (a.opt(i) as? JSONArray)?.let { net ->
+                    (0 until net.length()).mapNotNull { k ->
+                        (net.opt(k) as? JSONArray)?.let { it.optInt(0) to it.optInt(1) }
+                    }
+                }
+            }
+        } ?: emptyList()
+        val optionSections: List<Pic> = o.optJSONArray("optionSections")?.let { a ->
+            (0 until a.length()).mapNotNull { (a.opt(it) as? JSONObject)?.let(::Pic) }
+        } ?: emptyList()
+        val optionCubes: List<List<Triple<Int, Int, Int>>> =
+            o.optJSONArray("optionCubes")?.let { a ->
+                (0 until a.length()).mapNotNull { i ->
+                    (a.opt(i) as? JSONArray)?.let { set ->
+                        (0 until set.length()).mapNotNull { k ->
+                            (set.opt(k) as? JSONArray)?.let {
+                                Triple(it.optInt(0), it.optInt(1), it.optInt(2))
+                            }
+                        }
+                    }
+                }
+            } ?: emptyList()
+        val optionViews: List<List<Int>> = o.optJSONArray("optionViews")?.let { a ->
+            (0 until a.length()).mapNotNull { i ->
+                (a.opt(i) as? JSONArray)?.let { v -> (0 until v.length()).map { v.optInt(it) } }
+            }
+        } ?: emptyList()
+        val optionBits: List<List<Boolean>> = o.optJSONArray("optionBits")?.let { a ->
+            (0 until a.length()).mapNotNull { i ->
+                (a.opt(i) as? JSONArray)?.let { r ->
+                    (0 until r.length()).map { r.optInt(it) != 0 }
+                }
+            }
+        } ?: emptyList()
+        val optionShapes: List<String> = o.strings("optionShapes")
+
         val blocks = o.strings("blocks")
         val slots = o.optInt("slots", 0)
 
@@ -248,9 +290,17 @@ object Curriculum {
             }
         } ?: emptyList()
 
-        /** pattern / oddOneOut / sort — the cells, and where the gap is. */
+        /**
+         * pattern / oddOneOut / sort — the cells, and where the gap is.
+         *
+         * Only the entries that ARE drawn things are taken. A cube net also
+         * calls its squares "cells", but writes them as [column, row] pairs;
+         * reading those as CellSpec threw, and the throw happened inside
+         * Skill(), which allSkills() catches per file — so one band d question
+         * would have silently cost a child the whole skill.
+         */
         val cells: List<CellSpec> = o.optJSONArray("cells")?.let { a ->
-            (0 until a.length()).map { CellSpec(a.getJSONObject(it)) }
+            (0 until a.length()).mapNotNull { (a.opt(it) as? JSONObject)?.let(::CellSpec) }
         } ?: emptyList()
         val gapAt: Int = o.optInt("gapAt", -1)
         val leftLabel: String = o.optString("leftLabel", "YES")
@@ -345,6 +395,107 @@ object Curriculum {
         val numPairs: List<Pair<Int?, Int?>> = o.pairsOf { a, i ->
             (if (a.isNull(i)) null else a.optInt(i))
         }
+
+        // ------------------------------------------------------------- band d
+        //
+        // Reasoning (11-12) turns solids over, cuts them and codes words.
+        //
+        // Seven of its JSON keys are also band b keys holding something else:
+        // "start" is a compass direction there and a grid square here, "steps"
+        // a count there and sentences here, "target" a shape there and a number
+        // here, "word" a string there and a row of symbols here, "who" and
+        // "what" can be null here, and "cells" is CellSpecs in band a but
+        // [column, row] pairs here. Each of those gets its OWN field below
+        // rather than a shared one that would have to guess: a reader that
+        // guesses wrong on a skill it was not written for is how one bad
+        // question costs a child every question.
+
+        /** sequence: which position is being asked about, or which value. */
+        val askPosition: Int = o.optInt("askPosition", 0)
+        val askValue: Int = if (o.has("askValue")) o.optInt("askValue") else Int.MIN_VALUE
+
+        /** claim: the statement being judged, and how it is worded. */
+        val claimText: String = o.optJSONObject("claim")?.optString("text").orEmpty()
+
+        /** deduce: the people, the things they could have, and the noun. */
+        val people: List<String> = o.strings("people")
+        val things: List<String> = o.strings("things")
+        val noun: String = o.optString("noun")
+
+        /** ifThen and knights: the rules, and who says what. */
+        val rules: List<List<String>> = o.rows("rules")
+        val says: List<List<String>> = o.rows("says")
+
+        /** binary: the place values, which bulbs are lit, and what is asked. */
+        val bulbValues: List<Int> = o.optJSONArray("values")?.let { a ->
+            (0 until a.length()).map { a.optInt(it) }
+        } ?: emptyList()
+        val on: List<Boolean> = o.optJSONArray("on")?.let { a ->
+            (0 until a.length()).map { a.optInt(it) != 0 }
+        } ?: emptyList()
+        val askPlus: Boolean = o.optInt("askPlus", 0) != 0
+        /** "target" is a shape name in band b and a number here. */
+        val targetNum: Int = o.optInt("target", 0)
+
+        /** cipher: how far the alphabet is shifted. */
+        val shift: Int = o.optInt("shift", 0)
+
+        /** symbolCode: the key, and the word written in those symbols. */
+        class Sym(o: JSONObject) {
+            val glyph: String = o.optString("glyph", "circle")
+            val colour: String = o.optString("color", "primary")
+            val letter: String = o.optString("letter")
+        }
+        val symKey: List<Sym> = o.syms("key")
+        /** "word" is a plain string in band b; here it can be a row of symbols. */
+        val symWord: List<Sym> = o.syms("word")
+
+        /** letterCode: the numbers standing for the letters. */
+        val codes: List<String> = o.optJSONArray("codes")?.let { a ->
+            (0 until a.length()).map { a.optString(it) }
+        } ?: emptyList()
+
+        /** net: the squares of the net, what is drawn on each, which to find. */
+        val netCells: List<Pair<Int, Int>> = o.optJSONArray("cells")?.let { a ->
+            (0 until a.length()).mapNotNull { i ->
+                (a.opt(i) as? JSONArray)?.let { it.optInt(0) to it.optInt(1) }
+            }
+        } ?: emptyList()
+        val marks: List<String> = o.strings("marks")
+
+        /** polycube: the little cubes the shape is made of. */
+        val cubes: List<Triple<Int, Int, Int>> = o.triples("cubes")
+
+        /** stack: how tall the pile is on each square of the floor. */
+        val heights: List<List<Int>> = o.optJSONArray("heights")?.let { a ->
+            (0 until a.length()).mapNotNull { i ->
+                (a.opt(i) as? JSONArray)?.let { r ->
+                    (0 until r.length()).map { r.optInt(it) }
+                }
+            }
+        } ?: emptyList()
+
+        /** roll: the floor, where the dice starts, and which faces show. */
+        val gridW: Int = o.optInt("w", 0)
+        val gridH: Int = o.optInt("h", 0)
+        /** "start" is a compass direction in band b and a square here. */
+        val startCell: Pair<Int, Int>? = o.cell("start")
+        val faceTop: Int = o.optInt("top", 0)
+        val faceFront: Int = o.optInt("front", 0)
+        val faceRight: Int = o.optInt("right", 0)
+
+        /** turnCube: what the turns are, in words. "steps" is a count in band b. */
+        val stepLines: List<String> = o.strings("steps")
+
+        /** section: the solid, and the plane cutting it. */
+        val solid: String = o.optString("solid")
+        val cut: String = o.optString("cut")
+        val point: List<Float> = o.floats("point")
+        val normal: List<Float> = o.floats("normal")
+
+        /** stack and deduce: which side is being looked at, and who or what. */
+        val who: String = o.optString("who")
+        val what: String = o.optString("what")
     }
 
     /** One drawn thing inside a pattern, tray or odd-one-out row. */
@@ -941,6 +1092,41 @@ private fun <T> JSONObject.pairsOf(read: (JSONArray, Int) -> T?): List<Pair<T?, 
     val a = optJSONArray("pairs") ?: return emptyList()
     return (0 until a.length()).mapNotNull { i ->
         a.optJSONArray(i)?.let { pr -> read(pr, 0) to read(pr, 1) }
+    }
+}
+
+/** An array of arrays of strings, e.g. the rules of an if-then question. */
+private fun JSONObject.rows(key: String): List<List<String>> {
+    val a = optJSONArray(key) ?: return emptyList()
+    return (0 until a.length()).mapNotNull { i ->
+        (a.opt(i) as? JSONArray)?.let { r -> (0 until r.length()).map { r.optString(it) } }
+    }
+}
+
+/** An array of [x, y, z] whole numbers, e.g. the cubes of a solid. */
+private fun JSONObject.triples(key: String): List<Triple<Int, Int, Int>> {
+    val a = optJSONArray(key) ?: return emptyList()
+    return (0 until a.length()).mapNotNull { i ->
+        (a.opt(i) as? JSONArray)?.let { Triple(it.optInt(0), it.optInt(1), it.optInt(2)) }
+    }
+}
+
+/** An array of numbers, e.g. a point or a direction in space. */
+private fun JSONObject.floats(key: String): List<Float> {
+    val a = optJSONArray(key) ?: return emptyList()
+    return (0 until a.length()).map { a.optDouble(it, 0.0).toFloat() }
+}
+
+/**
+ * Symbols, taken only where they ARE symbols.
+ *
+ * "word" is a plain string in band b and a row of symbol objects in band d, so
+ * this reads nothing at all rather than throwing when it meets the string.
+ */
+private fun JSONObject.syms(key: String): List<Curriculum.Pic.Sym> {
+    val a = optJSONArray(key) ?: return emptyList()
+    return (0 until a.length()).mapNotNull {
+        (a.opt(it) as? JSONObject)?.let(Curriculum.Pic::Sym)
     }
 }
 

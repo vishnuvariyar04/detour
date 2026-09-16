@@ -23,10 +23,22 @@ what a band-c child sees if nothing better exists.
 | Band | Ages | Skill | Stops | Questions | Status |
 |---|---|---|---|---|---|
 | a | 5–6 | Number Sense | 48 | 324 | shipped |
-| **b** | **7–8** | **Puzzles & Logic** | 48 | 324 | **rebuilt and authored; needs its views** |
+| **b** | **7–8** | **Puzzles & Logic** | 48 | 324 | **authored and drawn; plays on an emulator** |
 | c | 9–10 | Think Like a Coder | 48 | 324 | shipped |
-| **d** | **11–12** | **Reasoning** | 48 | 324 | **authored; needs its views** |
+| **d** | **11–12** | **Reasoning** | 48 | 324 | **authored and drawn; plays on an emulator** |
 
+> **Status, 2026-09-16 (branch `bands-b-and-d`).** Both new skills are now
+> DRAWN as well as authored, and the second half of the job has its own
+> document: **[05_NATIVE_VIEWS.md](05_NATIVE_VIEWS.md)**. Read that for where
+> the native work stands and what is left. Band b renders, taps, grades and
+> advances inside the real gate on a phone-shaped emulator, and every drawing
+> of both bands has been looked at on a screen. Both still wait in
+> `assets/curriculum_pending/` — §5 of that document is the switch.
+>
+> **Superseded below.** The paragraph that follows was written when neither
+> skill had any views at all. Its reasoning still holds and is why the pending
+> folder exists; its conclusion ("needs its views") no longer describes band b.
+>
 > **Status, 2026-09-15 (branch `bands-b-and-d`).** Both new skills are authored,
 > and every gate is green: band b through `pz_simulate.py` / `pz_grade.py`, band d
 > through `rs_simulate.py` / `rs_grade.py`. Both wait in

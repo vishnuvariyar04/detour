@@ -90,9 +90,24 @@ class PuzzlePreviewActivity : Activity() {
             // them: the first of a kind is the one its teach card just led up
             // to, so it is the one worth looking at hardest.
             val seen = mutableSetOf<String>()
+            val onlyShape = intent?.getStringExtra("shape")
+            // Every kind once, in the order a child meets them: the first of a
+            // kind is the one its teach card has just led up to.
+            //
+            // Paged, because band d draws eighteen solids and a whole page of
+            // them is more than a software-rendered emulator will do inside
+            // one frame — the page came up, then the system offered to close
+            // it. `--ei skip N --ei limit M` walks through instead.
+            val skip = intent?.getIntExtra("skip", 0) ?: 0
+            val limit = intent?.getIntExtra("limit", 6) ?: 6
             val firsts = skill.sections
                 .flatMap { it.units }.flatMap { it.stops }.flatMap { it.questions }
+                .filter { onlyShape == null || it.shape == onlyShape }
                 .filter { seen.add(it.shape + "/" + (it.pic?.kind ?: "-")) }
+                .drop(skip).take(limit)
+
+            col.addView(caption("showing ${skip + 1}-${skip + firsts.size}" +
+                "   ·   next:  --ei skip ${skip + firsts.size}", Ink.primary))
 
             for (q in firsts) {
                 col.addView(caption("${q.shape}   ·   ${q.pic?.kind ?: "no picture"}"))
@@ -105,12 +120,21 @@ class PuzzlePreviewActivity : Activity() {
                         black = true).apply { setLineSpacing(3f * den, 1f) })
                     addView(gap((12 * den).toInt()))
 
-                    q.pic?.takeIf { PuzzlePicView.draws(it) }?.let { pic ->
-                        addView(PuzzlePicView(this@PuzzlePreviewActivity, fonts)
-                            .apply { this.pic = pic },
-                            LinearLayout.LayoutParams(
-                                ViewGroup.LayoutParams.MATCH_PARENT,
-                                ViewGroup.LayoutParams.WRAP_CONTENT))
+                    // Both bands, chosen the way the gate chooses.
+                    val pic = q.pic
+                    val drawing: View? = when {
+                        PuzzlePicView.draws(pic) ->
+                            PuzzlePicView(this@PuzzlePreviewActivity, fonts)
+                                .apply { this.pic = pic }
+                        ReasonPicView.draws(pic) ->
+                            ReasonPicView(this@PuzzlePreviewActivity, fonts)
+                                .apply { this.pic = pic }
+                        else -> null
+                    }
+                    if (drawing != null) {
+                        addView(drawing, LinearLayout.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.WRAP_CONTENT))
                         addView(gap((14 * den).toInt()))
                     }
 
@@ -120,7 +144,14 @@ class PuzzlePreviewActivity : Activity() {
                     when {
                         q.answerType == "number" -> addView(numberRow(fonts, q, den))
                         q.optionCells.isNotEmpty() -> addView(cellRow(fonts, q, den))
-                        else -> addView(textRow(fonts, q, den))
+                        q.optionsText.isNotEmpty() -> addView(textRow(fonts, q, den))
+                        // Band d answers that are drawings. The gallery says
+                        // which kind rather than redrawing them: how they look
+                        // is checked in the gate itself, where they are the
+                        // real buttons and not a second copy that could differ.
+                        else -> addView(label(this@PuzzlePreviewActivity, fonts,
+                            "answers are drawings — check these in `--es mode gate`",
+                            13f, Ink.muted))
                     }
 
                     addView(gap((10 * den).toInt()))

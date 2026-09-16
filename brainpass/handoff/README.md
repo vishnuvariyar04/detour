@@ -19,6 +19,11 @@ scripts before it is allowed anywhere near a phone.
 That last point is the job. You are writing content and the drawings for it, not
 rebuilding the app.
 
+> **Picking this up mid-way?** Both new skills are written and checked; band b
+> also draws and plays on a phone. Go straight to
+> [05_NATIVE_VIEWS.md](05_NATIVE_VIEWS.md) §1 for where things stand and §6 for
+> what is left. Work happens on branch `bands-b-and-d`.
+
 ## The files here
 
 | Read | File | What it is |
@@ -27,6 +32,7 @@ rebuilding the app.
 | 2nd | **[02_SPINES.md](02_SPINES.md)** | The topic source for the two new bands, from the original curriculum plan. Your proposed spine gets approved before you write 324 questions. |
 | 3rd | **[03_ENVIRONMENT.md](03_ENVIRONMENT.md)** | Getting the toolchain running, and the commands you will type every day. |
 | 4th | **[04_REVIEW_LOOP.md](04_REVIEW_LOOP.md)** | How the wall actually reaches Vishnu for approval, and how his feedback comes back. Read before you build the wall the first time. |
+| 5th | **[05_NATIVE_VIEWS.md](05_NATIVE_VIEWS.md)** | The second half of the job: making the phone able to DRAW the new questions, and proving it does. Where the work stands, the traps already paid for, and the one switch that turns a skill on. |
 | when reviewing | **question_wall.html** | Every question in both shipped skills, drawn the way the phone draws it. Open it in a browser — no server, no build. |
 
 ## The order of work

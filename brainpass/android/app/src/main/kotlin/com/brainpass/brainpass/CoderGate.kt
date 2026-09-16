@@ -796,10 +796,14 @@ class CoderGate(
      */
     private fun renderPuzzle(q: Curriculum.Question) {
         val pic = q.pic
-        if (PuzzlePicView.draws(pic)) {
-            val v = PuzzlePicView(ctx, fonts).apply { this.pic = pic }
-            picView = v
-            body.addView(v, LinearLayout.LayoutParams(
+        val drawing: View? = when {
+            PuzzlePicView.draws(pic) -> PuzzlePicView(ctx, fonts).apply { this.pic = pic }
+            ReasonPicView.draws(pic) -> ReasonPicView(ctx, fonts).apply { this.pic = pic }
+            else -> null
+        }
+        if (drawing != null) {
+            picView = drawing
+            body.addView(drawing, LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT))
             body.addView(space(16))
@@ -813,7 +817,181 @@ class CoderGate(
                 body.addView(cellOptions(q))
                 caption("Tap a shape.")
             }
+            // Band d answers that are themselves drawings. Each is its own row
+            // because each needs a different amount of room: four nets or four
+            // solids need two columns to stay readable, four side views and
+            // four flat shapes fit in one line.
+            q.optionNets.isNotEmpty() -> {
+                body.addView(drawnGrid(q.optionNets.size) { c, box, i ->
+                    Solid.netCells(c, gridPaint, fonts, ctx.dpf(1f), q.optionNets[i],
+                        box.left + dp(10), box.top + dp(10),
+                        box.width() - dp(20), box.height() - dp(20),
+                        ctx.dpf(26f), emptyList(), "", Solid.TOP)
+                })
+                caption("Tap a net.")
+            }
+            q.optionSections.isNotEmpty() -> {
+                body.addView(drawnGrid(q.optionSections.size) { c, box, i ->
+                    Solid.solidCut(c, gridPaint, q.optionSections[i],
+                        box.left + dp(8), box.top + dp(8),
+                        box.width() - dp(16), box.height() - dp(16))
+                })
+                caption("Tap a cut.")
+            }
+            q.optionCubes.isNotEmpty() -> {
+                body.addView(drawnGrid(q.optionCubes.size) { c, box, i ->
+                    Solid.voxels(c, gridPaint, q.optionCubes[i],
+                        box.left + dp(12), box.top + dp(10),
+                        box.width() - dp(24), box.height() - dp(20), ctx.dpf(22f))
+                })
+                caption("Tap a shape.")
+            }
+            q.optionViews.isNotEmpty() -> {
+                body.addView(drawnRow(q.optionViews.size, 94) { c, box, i ->
+                    paintSideView(c, box, q.optionViews[i])
+                })
+                caption("Tap a view.")
+            }
+            q.optionShapes.isNotEmpty() -> {
+                body.addView(drawnRow(q.optionShapes.size, 76) { c, box, i ->
+                    Solid.flat(c, gridPaint, q.optionShapes[i],
+                        box.centerX(), box.centerY(),
+                        minOf(box.width(), box.height()) * 0.26f)
+                })
+                caption("Tap a shape.")
+            }
+            q.optionBits.isNotEmpty() -> {
+                body.addView(drawnStack(q.optionBits.size, 50) { c, box, i ->
+                    paintBitRow(c, box, q.optionBits[i], q.pic?.bulbValues.orEmpty())
+                })
+                caption("Tap a row of bulbs.")
+            }
             else -> body.addView(textOptions(q.optionsText))
+        }
+    }
+
+    /** One paint for every drawn option; they are painted one at a time. */
+    private val gridPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+
+    /** Answer cards two to a row, for drawings that need the room. */
+    private fun drawnGrid(
+        count: Int, paint: (Canvas, RectF, Int) -> Unit,
+    ): View = LinearLayout(ctx).apply {
+        orientation = LinearLayout.VERTICAL
+        var i = 0
+        while (i < count) {
+            val row = LinearLayout(ctx).apply { orientation = LinearLayout.HORIZONTAL }
+            for (k in 0 until 2) {
+                val idx = i + k
+                if (idx >= count) {
+                    row.addView(View(ctx), LinearLayout.LayoutParams(0, dp(124), 1f).apply {
+                        marginStart = if (k == 0) 0 else dp(10)
+                    })
+                    continue
+                }
+                val b = PushButton(ctx, fonts).apply {
+                    radius = 14f
+                    face = Ink.surface; ledgeColor = Ink.ledge
+                    painter = { c, box -> paint(c, box, idx) }
+                }
+                b.onTap = { pickedOption = idx; repaintOptions(); refreshAction() }
+                optionButtons.add(b)
+                row.addView(b, LinearLayout.LayoutParams(0, dp(124), 1f).apply {
+                    marginStart = if (k == 0) 0 else dp(10)
+                })
+            }
+            addView(row, LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT).apply {
+                topMargin = if (i == 0) 0 else dp(12)
+            })
+            i += 2
+        }
+        layoutParams = LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+    }
+
+    /** Answer cards side by side, for drawings that stay readable small. */
+    private fun drawnRow(
+        count: Int, heightDp: Int, paint: (Canvas, RectF, Int) -> Unit,
+    ): View = LinearLayout(ctx).apply {
+        orientation = LinearLayout.HORIZONTAL
+        for (i in 0 until count) {
+            val b = PushButton(ctx, fonts).apply {
+                radius = 14f
+                face = Ink.surface; ledgeColor = Ink.ledge
+                painter = { c, box -> paint(c, box, i) }
+            }
+            b.onTap = { pickedOption = i; repaintOptions(); refreshAction() }
+            optionButtons.add(b)
+            addView(b, LinearLayout.LayoutParams(0, dp(heightDp), 1f).apply {
+                marginStart = if (i == 0) 0 else dp(10)
+            })
+        }
+        layoutParams = LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+    }
+
+    /** Answer cards one above another, for rows of bulbs. */
+    private fun drawnStack(
+        count: Int, heightDp: Int, paint: (Canvas, RectF, Int) -> Unit,
+    ): View = LinearLayout(ctx).apply {
+        orientation = LinearLayout.VERTICAL
+        for (i in 0 until count) {
+            val b = PushButton(ctx, fonts).apply {
+                radius = 14f
+                face = Ink.surface; ledgeColor = Ink.ledge
+                painter = { c, box -> paint(c, box, i) }
+            }
+            b.onTap = { pickedOption = i; repaintOptions(); refreshAction() }
+            optionButtons.add(b)
+            addView(b, LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, dp(heightDp)).apply {
+                topMargin = if (i == 0) 0 else dp(10)
+            })
+        }
+        layoutParams = LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+    }
+
+    /** What a pile of cubes looks like from one side: columns of squares. */
+    private fun paintSideView(c: Canvas, box: RectF, heights: List<Int>) {
+        if (heights.isEmpty()) return
+        val n = heights.size
+        val tallest = maxOf(3, heights.max())
+        val sz = minOf((box.width() - dp(14)) / n, (box.height() - dp(14)) / tallest)
+        val ox = box.left + (box.width() - n * sz) / 2f
+        val base = box.bottom - dp(7)
+        heights.forEachIndexed { col, h ->
+            for (z in 0 until h) {
+                Draw.rrect(c, gridPaint, ox + col * sz + 0.5f, base - (z + 1) * sz + 0.5f,
+                    sz - 1f, sz - 1f, 2f, Solid.FRONT, Ink.primaryLedge, 1f)
+            }
+        }
+    }
+
+    /** One candidate row of lit and unlit bulbs. */
+    private fun paintBitRow(c: Canvas, box: RectF, bits: List<Boolean>, values: List<Int>) {
+        val n = bits.size
+        if (n == 0) return
+        val inset = dp(24)
+        val w = box.width() - inset * 2
+        val cell = w / n
+        val r = minOf(cell * 0.3f, ctx.dpf(20f))
+        for (i in 0 until n) {
+            val cx = box.left + inset + i * cell + cell / 2f
+            val cy = box.centerY()
+            if (bits[i]) {
+                gridPaint.style = Paint.Style.FILL; gridPaint.color = 0x47FDC703
+                c.drawCircle(cx, cy, r + ctx.dpf(6f), gridPaint)
+            }
+            gridPaint.style = Paint.Style.FILL
+            gridPaint.color = if (bits[i]) Ink.accent else 0xFFE4E6EF.toInt()
+            c.drawCircle(cx, cy, r, gridPaint)
+            gridPaint.style = Paint.Style.STROKE; gridPaint.strokeWidth = ctx.dpf(1.5f)
+            gridPaint.color = if (bits[i]) Ink.accentLedge else Ink.ledge
+            c.drawCircle(cx, cy, r, gridPaint)
+            gridPaint.style = Paint.Style.FILL
         }
     }
 
@@ -1583,11 +1761,25 @@ class CoderGate(
         // Puzzles and Logic and Reasoning. A child who got it wrong is told
         // WHICH answer was right in the words of the question, not just that
         // theirs was not: "The answer is 45" beats a red mark and nothing.
-        in PuzzleShapes.all ->
-            if (q.answerType == "number") "The answer is ${q.answerInt}."
-            else q.optionsText.getOrNull(q.answerInt)
-                ?.let { "The answer is $it." }
-                ?: "Look at the picture again."
+        in PuzzleShapes.all -> when {
+            q.answerType == "number" -> "The answer is ${q.answerInt}."
+            q.optionsText.isNotEmpty() ->
+                q.optionsText.getOrNull(q.answerInt)?.let { "The answer is $it." }.orEmpty()
+            // A drawn answer has no words to quote, so it is pointed at
+            // instead. Saying only "not quite" would leave a child who cannot
+            // see which net folds no wiser than before they answered.
+            q.optionCells.isNotEmpty() ->
+                q.optionCells.getOrNull(q.answerInt)?.kind
+                    ?.let { "The answer is the $it." } ?: ""
+            q.optionShapes.isNotEmpty() ->
+                q.optionShapes.getOrNull(q.answerInt)
+                    ?.let { "The cut makes a $it." } ?: ""
+            q.optionBits.isNotEmpty() -> "It is row ${q.answerInt + 1}."
+            q.optionViews.isNotEmpty() || q.optionNets.isNotEmpty() ||
+                q.optionSections.isNotEmpty() || q.optionCubes.isNotEmpty() ->
+                "It is the ${Draw.ordinal(q.answerInt + 1)} one."
+            else -> "Look at the picture again."
+        }
         else -> ""
     }
 
@@ -1885,7 +2077,23 @@ object PuzzleShapes {
         "shelf",
     )
 
-    val all: Set<String> = bandB
+    /** Ages 11-12: sequences, argument, codes, and solids in space. */
+    val bandD = setOf(
+        // the answer is one of four numbers
+        "sequence", "nthTerm", "termPosition", "binaryRead", "roll",
+        "sectionSides", "stackCount",
+        // the answer is one of several sentences
+        "seqRule", "claim", "ifThen", "deduce", "knights", "cipher",
+        "cipherWrite", "crackCode", "symbolCode", "letterCode", "mirrorCode",
+        "mirrorWrite",
+        // the answer is one of four drawn shapes
+        "netFace", "cubeTurn",
+        // the answer is one of four drawings of its own kind
+        "netPick", "sectionShape", "sectionWhich", "sameShape", "stackView",
+        "binaryPick",
+    )
+
+    val all: Set<String> = bandB + bandD
 }
 
 interface GateUi {

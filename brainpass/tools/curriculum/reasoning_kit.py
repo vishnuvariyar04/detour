@@ -588,8 +588,12 @@ def binary_read(prompt, values, on, hint=None):
     return _q("binaryRead", prompt, hint or "Add up only the bulbs that are lit.",
               {"kind": "binary", "values": values, "on": on},
               {"type": "number", "value": ans},
+              # These bulbs cannot show more than all of them lit. Offering a
+              # bigger number is a free elimination, and with five bulbs it was
+              # worse than that: 31, 32, 33, 34 has exactly one possible answer.
               **_numbers(ans, [backwards, unlit, lit_count, ans - smallest_lit,
-                                     ans + smallest_lit], seed, lo=0))
+                                     ans + smallest_lit], seed, lo=0,
+                         allowed=set(range(0, sum(values) + 1))))
 
 
 def binary_pick(prompt, values, number, hint=None, show=None, plus=0):
@@ -921,7 +925,8 @@ def dice(prompt, top, front, right, moves, w, h, start, hint=None):
               {"kind": "roll", "w": w, "h": h, "start": list(start), "moves": moves,
                "top": top, "front": front, "right": right},
               {"type": "number", "value": ans},
-              **_numbers(ans, mistakes, seed, lo=1))
+              # A dice has six faces. 7 and 8 were being offered as tops.
+              **_numbers(ans, mistakes, seed, lo=1, allowed={1, 2, 3, 4, 5, 6}))
 
 
 # ============================================================ space: stacks

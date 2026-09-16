@@ -241,6 +241,7 @@ def check_answerable(qid, q):
             bad(qid, "the answer is not among the numbers offered")
         if ch != sorted(ch):
             bad(qid, "number keys are not in order")
+        check_possible(qid, q, ch)
         return
     opts = (q.get("optionsText") or q.get("optionCells") or q.get("optionBits")
             or q.get("optionNets") or q.get("optionViews") or q.get("optionCubes")
@@ -270,6 +271,41 @@ REQUIRED = {
     "section": ("solid", "point", "normal"), "mirrorAlpha": ("word", "mode"),
     "example": ("example", "word", "mode"),
 }
+
+
+def check_possible(qid, q, ch):
+    """Every number offered must be one the question could actually produce.
+
+    An option the child can rule out without doing the question is a free
+    elimination, and once three of the four go the question answers itself.
+    Three were being shipped: a dice offering 7 and 8 as its top face, four
+    bulbs offering 16 when they stop at 15, and five bulbs offering 31, 32, 33
+    and 34 when they stop at 31 -- that last one had exactly one possible
+    answer and needed no thought at all.
+    """
+    sh, pic = q["shape"], q.get("pic") or {}
+    if sh == "roll":
+        out = [c for c in ch if not 1 <= c <= 6]
+        if out:
+            bad(qid, f"a dice has six faces, but {out} are offered")
+    elif sh == "sectionSides":
+        out = [c for c in ch if c not in (3, 4, 5, 6, 8)]
+        if out:
+            bad(qid, f"a flat cut of these solids never has {out} sides")
+    elif sh == "binaryRead":
+        cap = sum(pic.get("values") or [])
+        out = [c for c in ch if not 0 <= c <= cap]
+        if out:
+            bad(qid, f"these bulbs show 0 to {cap}, but {out} are offered")
+    elif sh == "stackCount":
+        hs = pic.get("heights") or []
+        if hs:
+            tallest = max(max(r) for r in hs)
+            floor = sum(1 for r in hs for v in r if v)
+            out = [c for c in ch if c < max(tallest, floor)]
+            if out:
+                bad(qid, f"the pile has at least {max(tallest, floor)} cubes, "
+                         f"but {out} are offered")
 
 
 def check_render(qid, q):
