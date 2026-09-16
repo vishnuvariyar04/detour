@@ -27,7 +27,7 @@ from PIL import ImageFont
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.join(HERE, "..", "..")
-PATH = os.path.join(ROOT, "assets", "curriculum_pending", "puzzles_and_logic.json")
+PATH = os.path.join(ROOT, "assets", "curriculum", "puzzles_and_logic.json")
 FONTS = os.path.join(ROOT, "assets", "fonts")
 
 W, H, M = 360, 797, 16
@@ -306,7 +306,7 @@ def main():
             bad(qid, f"the same puzzle as {seen_puzzle[pk]}, retold")
         seen_puzzle[pk] = qid
     for folder, other in (("curriculum", "number_sense.json"), ("curriculum", "think_like_a_coder.json"),
-                          ("curriculum_pending", "reasoning.json")):
+                          ("curriculum", "reasoning.json")):
         o = json.load(open(os.path.join(ROOT, "assets", folder, other), encoding="utf-8"))
         for sec in o["sections"]:
             for u in sec["units"]:

@@ -245,6 +245,14 @@ class CoderGate(
             body.addView(v, LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT))
+            // The answer, under the example. A teach card whose picture still
+            // has its gap in it is a question, and the child has been given no
+            // idea yet with which to answer it.
+            if (tp.reveal.isNotEmpty()) {
+                body.addView(space(12))
+                body.addView(label(ctx, fonts, "Answer:  ${tp.reveal}", 17f,
+                    Ink.good, black = true, align = Gravity.CENTER))
+            }
             val replayP = PushButton(ctx, fonts).apply {
                 face = Ink.surface; ledgeColor = Ink.ledge; textColor = Ink.primary
                 label = "Watch again"; textSize = 15f; radius = 18f; depth = 5
@@ -1071,7 +1079,15 @@ class CoderGate(
             leftLabel = pic.leftLabel; rightLabel = pic.rightLabel
             items = pic.cells.map { cellOf(it) }
         }
-        else -> View(ctx)
+        // Puzzles and Logic and Reasoning. Without these the teach card for
+        // every stop in both new skills showed its words over empty space:
+        // "Find the step between two numbers, then check it works for every
+        // pair" with no pair of numbers under it, which teaches nothing.
+        else -> when {
+            PuzzlePicView.draws(pic) -> PuzzlePicView(ctx, fonts).apply { this.pic = pic }
+            ReasonPicView.draws(pic) -> ReasonPicView(ctx, fonts).apply { this.pic = pic }
+            else -> View(ctx)
+        }
     }
 
     /** Replays whichever picture this is. */

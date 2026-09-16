@@ -14,22 +14,27 @@ happens on branch **`bands-b-and-d`** of the Android repo.
 | Band | Ages | Skill | Questions | Authored | Drawn | On a phone | Served to children |
 |---|---|---|---|---|---|---|---|
 | a | 5–6 | Number Sense | 324 | yes | yes | yes | **yes** |
-| **b** | **7–8** | **Puzzles & Logic** | 324 | yes | **yes** | **verified on an emulator** | not yet |
+| **b** | **7–8** | **Puzzles & Logic** | 324 | yes | yes | verified on an emulator | **yes** |
 | c | 9–10 | Think Like a Coder | 324 | yes | yes | yes | **yes** |
-| **d** | **11–12** | **Reasoning** | 324 | yes | **yes** | **verified on an emulator** | not yet |
+| **d** | **11–12** | **Reasoning** | 324 | yes | yes | verified on an emulator | **yes** |
 
-> **Status, 2026-09-16.** Both skills are finished and checked on a
-> phone-shaped emulator: every drawing of both bands has been looked at, and
-> band b has been played through the real gate (tap, grade, verdict, Continue).
-> Neither is served to any child yet — see §5 for the single switch that does
-> that, and §6 for what is left before it should be thrown. What remains is a
-> run on Sai's own phone.
+> **Status, 2026-09-16 — both skills are SERVED.** Sai approved the questions
+> and both files were moved into `assets/curriculum/`. Every band now gets the
+> skill written for it, checked by running the gate's own chooser on a device
+> (`--es mode bands`), and a band b and band d child both get a real session
+> off the real ladder: teach card, worked answer, then questions that grade and
+> advance. What remains is a run on Sai's own phone (§6).
+>
+> §2 and §5 below describe the pending folder, which is now empty. Both are
+> kept: the reasoning is why the folder exists, and the next skill authored
+> should wait there too.
 
-### What "served" means, and why neither is
+### What "served" means, and how the pending folder worked
 
-`Curriculum.allSkills()` scans **`assets/curriculum/` only**. Both new skills
-live in **`assets/curriculum_pending/`**, which is bundled into the APK (so the
-preview screen can read it on a real phone) but which that scan never looks at.
+`Curriculum.allSkills()` scans **`assets/curriculum/` only**. Until they were
+approved both new skills lived in **`assets/curriculum_pending/`**, which was
+bundled into the APK (so the preview screen could read it on a real phone) but
+which that scan never looks at.
 
 This matters more than it sounds. The gate serves **the most advanced skill
 whose band the child has reached**, and `CoderGate`'s `when (q.shape)` has no
@@ -83,6 +88,7 @@ screen, never a wrong answer marked right. That is the safe direction.
 | `PuzzlePreviewActivity.kt` | Debug-only. Two modes, see §4. |
 | `tools/curriculum/pz_fits.py` | Measures band b against the real card with the real font. |
 | `tools/curriculum/rs_fits.py` | The same for band d. Its solids are not measured; they scale to fit. |
+| `tools/curriculum/drawable.py` | Reads the drawable shapes out of `CoderGate.kt`, so `authored` cannot go stale. |
 
 Every drawing is a port of the one on the **review wall**
 (`tools/curriculum/wall_template.html`), which is the page the questions were
@@ -138,6 +144,28 @@ one had exactly one possible answer. `choices4(..., allowed=...)` exists for
 this and simply was not being passed. `rs_simulate.py`'s `check_possible` now
 fails the build on it.
 
+**Turning a skill on exposed three things that "done" had hidden.** Every one
+of them looked fine until a real session was built for a real band:
+
+- **The ladder was empty, so the skill served nothing at all.** A stop only
+  reaches `Skill.ladder` when its `authored` flag is true, and that flag was
+  computed in Python from a hand-written `DRAWN_TODAY` set listing the shapes
+  the gate could draw *before* the views existed. All 48 stops in both skills
+  were marked unplayable. There is no hand-written set any more: `drawable.py`
+  reads the shape names out of `CoderGate.kt`, so a shape the gate cannot draw
+  can never be marked playable and a shape it gains becomes playable on the
+  next emit.
+- **`pz_emit.py` would have deleted its own output.** It had an `OLD` path that
+  removed the band b file from `assets/curriculum` after writing — correct
+  while the rebuilt skill waited in the pending folder, fatal the moment `OUT`
+  became that same path.
+- **Every teach card showed its words over empty space.** `pictureFor()` knew
+  only band a's pictures, so both new skills taught "Find the step between two
+  numbers, then check it works for every pair" with nothing underneath. And 26
+  teach cards carried a `reveal` — the worked answer — that nothing read, so
+  even once they drew, they showed `26 + ? = 34` and no answer: a question, not
+  a lesson.
+
 **The gate scrolls.** `CoderGate` wraps its body in a `ScrollView`, so a tall
 drawing is not clipped. Width is the real constraint: **320dp** usable
 (360 minus the body's 20dp padding each side).
@@ -163,7 +191,20 @@ adb shell am start -n app.nupo.kid/com.brainpass.brainpass.PuzzlePreviewActivity
 (`number_sense`, `think_like_a_coder`). Each page prints the `--ei skip` for the
 next one. Add `--es shape relation` for one kind only.
 
-**The real gate**, over a session built from a pending skill:
+**What each age is served** — the gate's own chooser, run for all four bands:
+```bash
+adb shell am start -n app.nupo.kid/com.brainpass.brainpass.PuzzlePreviewActivity \
+  --es mode bands
+```
+
+**Exactly what a child of one age gets** — the real chooser, the real ladder,
+the real progress cursor:
+```bash
+adb shell am start -n app.nupo.kid/com.brainpass.brainpass.PuzzlePreviewActivity \
+  --es mode gate --es band d
+```
+
+**One shape at a time**, over a session built by hand:
 ```bash
 adb shell am start -n app.nupo.kid/com.brainpass.brainpass.PuzzlePreviewActivity \
   --es mode gate --es skill reasoning --es shape sectionShape
@@ -203,7 +244,7 @@ finds skills by scanning the folder.
 In order.
 
 **1. Play both skills on Sai's own phone**, through the real gate, not the
-emulator. Only he has one. This is the only thing standing between here and §5.
+emulator. Only he has one. Everything else is done.
 
 Checked already, on a 1080x2400 emulator with `-gpu host`:
 - band b: every drawing; equation, shelf and text questions played end to end —
@@ -215,8 +256,6 @@ Checked already, on a 1080x2400 emulator with `-gpu host`:
 - the yellow cutting sheet stays a plain square whatever the cut, so it never
   traces the answer
 - the shipped skills still draw: band c its board, band a its tap targets
-
-**2. Then, and only then, §5.**
 
 ### Things that turned out NOT to be needed
 

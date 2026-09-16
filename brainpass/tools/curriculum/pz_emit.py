@@ -3,7 +3,9 @@
 
 Run:  python pz_emit.py && python pz_simulate.py && python pz_grade.py
 
-WHERE IT GOES. assets/curriculum_pending/, which pubspec.yaml does not bundle.
+WHERE IT GOES. assets/curriculum/, which the gate scans and children are served.
+A stop reaches the ladder only when CoderGate can draw every shape in it, and
+that set is read from CoderGate rather than copied -- see drawable.py.
 Every question in the rebuilt skill uses a drawing CoderGate cannot make yet --
 a clue card, a line of children, a compass, a clock -- and CoderGate's
 when(q.shape) has no else branch, so in assets/curriculum a band b child would
@@ -15,16 +17,16 @@ band d until its views exist.
 import io, json, os
 
 import pz_units as U
+import drawable
 import puzzles_kit as K
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-OUT = os.path.join(HERE, "..", "..", "assets", "curriculum_pending", "puzzles_and_logic.json")
-OLD = os.path.join(HERE, "..", "..", "assets", "curriculum", "puzzles_and_logic.json")
+OUT = os.path.join(HERE, "..", "..", "assets", "curriculum", "puzzles_and_logic.json")
 
-DRAWN_TODAY = {
-    "pattern", "numberLine", "countObjects", "array", "oddOneOut", "sortTwo",
-    "sizeOrder", "count", "choose", "chooseText", "complete", "yesno",
-}
+# What CoderGate can draw, read from CoderGate. Never hand-written: the
+# hand-written version went stale the moment the views were built, and every
+# stop in this skill was marked unplayable while looking fine.
+DRAWN_TODAY = drawable.gate_shapes("b")
 
 SECTIONS = [
     (1, "Number thinking", "Work out the number a puzzle is hiding."),
@@ -211,9 +213,6 @@ if __name__ == "__main__":
     skill = build()
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     io.open(OUT, "w", encoding="utf-8").write(json.dumps(skill, indent=1, ensure_ascii=False))
-    if os.path.exists(OLD):
-        os.remove(OLD)
-        print("removed the old band b asset from assets/curriculum")
     stops = [st for s in skill["sections"] for u in s["units"] for st in u["stops"]]
     print(f"stops={len(stops)} questions={sum(len(st['questions']) for st in stops)} "
           f"teach={sum(1 for st in stops if st.get('teach'))} "

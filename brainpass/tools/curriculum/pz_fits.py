@@ -185,7 +185,7 @@ def check_pic(qid, q):
 
 
 def main():
-    path = os.path.join(HERE, "..", "..", "assets", "curriculum_pending",
+    path = os.path.join(HERE, "..", "..", "assets", "curriculum",
                         "puzzles_and_logic.json")
     d = json.load(open(path, encoding="utf-8"))
     n = 0

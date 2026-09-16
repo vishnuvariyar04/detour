@@ -40,11 +40,11 @@ KEEP = ("shape", "prompt", "hint", "pic", "visual", "truth", "choices",
 
 SKILLS = [("coder", "Think Like a Coder", "think_like_a_coder.json"),
           ("number", "Number Sense", "number_sense.json"),
-          ("puzzles", "Puzzles & Logic", os.path.join("..", "curriculum_pending",
+          ("puzzles", "Puzzles & Logic", os.path.join("..", "curriculum",
                                                     "puzzles_and_logic.json")),
           # Band d is not bundled with the app yet (see rs_emit.py), but it is
           # exactly what needs reviewing, so the wall reads it from where it waits.
-          ("reasoning", "Reasoning", os.path.join("..", "curriculum_pending",
+          ("reasoning", "Reasoning", os.path.join("..", "curriculum",
                                                   "reasoning.json"))]
 
 # NUPO_SKILLS=reasoning builds a wall of just those skills, for reviewing one

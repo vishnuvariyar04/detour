@@ -11,24 +11,24 @@ so those questions would render a prompt and nothing else. Dropping this file
 into assets/curriculum would switch every band d child from a working skill to a
 skill with no playable stop in it.
 
-So it is written to assets/curriculum_pending/, which pubspec.yaml does not
-bundle. The review wall reads it from there. When the views exist, add their
-shape names to DRAWN_TODAY and move the file across; the stops switch themselves
-on as their shapes become drawable.
+It is written to assets/curriculum/, which the gate scans, so these questions
+reach children. A stop is only put on the ladder when every shape in it is one
+CoderGate can draw, and that set is read from CoderGate rather than copied --
+see drawable.py for why.
 """
 import io, json, os
 
+import drawable
 import rs_units as U
 import reasoning_kit as K
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-OUT = os.path.join(HERE, "..", "..", "assets", "curriculum_pending", "reasoning.json")
+OUT = os.path.join(HERE, "..", "..", "assets", "curriculum", "reasoning.json")
 
-# Shapes CoderGate draws today. None of band d's are among them yet.
-DRAWN_TODAY = {
-    "pattern", "numberLine", "countObjects", "array", "oddOneOut", "sortTwo",
-    "sizeOrder", "count", "choose", "chooseText", "complete", "yesno",
-}
+# What CoderGate can draw, read from CoderGate. Never hand-written: the
+# hand-written version went stale the moment the views were built, and every
+# stop in this skill was marked unplayable while looking fine.
+DRAWN_TODAY = drawable.gate_shapes("d")
 
 SECTIONS = [
     (1, "Sequences", "Every pattern has a rule. Find it, then push it further."),

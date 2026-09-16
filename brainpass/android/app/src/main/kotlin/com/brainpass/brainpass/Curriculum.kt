@@ -493,6 +493,24 @@ object Curriculum {
         val point: List<Float> = o.floats("point")
         val normal: List<Float> = o.floats("normal")
 
+        /**
+         * A teach card's answer, worked out, as a line to read.
+         *
+         * The picture on a teach card is the same picture a question uses, so
+         * it has the same gap in it. Left alone it asks rather than teaches:
+         * "Both sides of the equals sign must be the same" over 26 + ? = 34.
+         * Twenty-six teach cards carry the answer and nothing was reading it.
+         *
+         * It arrives as a number, a word, or a list of numbers depending on
+         * the picture, so it is kept as the line to print rather than as a
+         * value fifteen drawings would each have to know how to place.
+         */
+        val reveal: String = when (val r = o.opt("reveal")) {
+            null, JSONObject.NULL -> ""
+            is JSONArray -> (0 until r.length()).joinToString(", ") { r.optString(it) }
+            else -> r.toString()
+        }
+
         /** stack and deduce: which side is being looked at, and who or what. */
         val who: String = o.optString("who")
         val what: String = o.optString("what")

@@ -14,7 +14,7 @@ import itertools, json, math, os, sys
 from fractions import Fraction as F
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-PATH = os.path.join(HERE, "..", "..", "assets", "curriculum_pending", "reasoning.json")
+PATH = os.path.join(HERE, "..", "..", "assets", "curriculum", "reasoning.json")
 
 FAILS, COUNT = [], {}
 

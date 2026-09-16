@@ -207,7 +207,7 @@ def wrap_rows(lines):
 
 
 def main():
-    path = os.path.join(HERE, "..", "..", "assets", "curriculum_pending", "reasoning.json")
+    path = os.path.join(HERE, "..", "..", "assets", "curriculum", "reasoning.json")
     d = json.load(open(path, encoding="utf-8"))
     n = 0
     for s in d["sections"]:

@@ -20,7 +20,7 @@ import calendar, datetime, itertools, json, os, re, sys
 from puzzles_kit import REL, CATEGORIES      # facts only; see the docstring
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-PATH = os.path.join(HERE, "..", "..", "assets", "curriculum_pending", "puzzles_and_logic.json")
+PATH = os.path.join(HERE, "..", "..", "assets", "curriculum", "puzzles_and_logic.json")
 FAILS, COUNT = [], {}
 
 

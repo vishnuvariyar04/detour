@@ -58,6 +58,18 @@ class PuzzlePreviewActivity : Activity() {
             setPadding(0, pad, 0, pad / 2)
         }
 
+        // Which skill each age actually gets.
+        //
+        // Curriculum.skillFor() decides what EVERY child sees, and with four
+        // skills installed rather than two it is the thing most worth checking
+        // after turning the new ones on. This runs the real function against
+        // the real assets for each band in turn and prints what came back.
+        //   adb shell am start -n app.nupo.kid/...PuzzlePreviewActivity --es mode bands
+        if (intent?.getStringExtra("mode") == "bands") {
+            showBands()
+            return
+        }
+
         // The real gate, not a gallery of its parts.
         //
         // A drawing that renders is not the same as a question that WORKS: the
@@ -66,23 +78,48 @@ class PuzzlePreviewActivity : Activity() {
         // in CoderGate, so testing it means running CoderGate, not a copy of
         // its layout code that could agree with itself while both are wrong.
         if (intent?.getStringExtra("mode") == "gate") {
+            // With a band, this is exactly what a child of that age gets: the
+            // gate's own chooser picks the skill and Curriculum.session()
+            // builds the session off the real progress cursor, review queue
+            // and all. Without one, a named skill is walked question by
+            // question, which is how a single shape is looked at.
+            val band = intent.getStringExtra("band")
+            if (band != null) {
+                EnginePrefs.setAgeBand(this, band)
+                val skill = Curriculum.skillFor(this)
+                val items = Curriculum.session(this, 5)
+                if (skill == null || items.isEmpty()) {
+                    setContentView(TextView(this).apply {
+                        setText("band $band got " +
+                            "${skill?.id ?: "no skill"} and ${items.size} questions")
+                    })
+                    return
+                }
+                android.util.Log.d("NupoGate",
+                    "session band=$band skill=${skill.id} items=${items.size} " +
+                        "first=${items.first().question?.shape ?: "teach"}")
+                setContentView(CoderGate(this, 10, items, skill, {}, {}).root)
+                return
+            }
             showGate(intent.getStringExtra("skill") ?: "puzzles_and_logic",
                 intent.getStringExtra("shape"))
             return
         }
 
         val want = intent?.getStringExtra("skill")
-        val files = assets.list(DIR).orEmpty()
+        val files = (assets.list(DIR)?.toList().orEmpty() +
+            assets.list(SHIPPED)?.toList().orEmpty())
             .filter { it.endsWith(".json") }
             .filter { want == null || it.startsWith(want) }
             .sorted()
 
         if (files.isEmpty()) {
-            col.addView(caption("Nothing in $DIR", Ink.bad))
+            col.addView(caption("Nothing in $DIR or $SHIPPED", Ink.bad))
         }
 
         for (file in files) {
-            val text = assets.open("$DIR/$file").bufferedReader().use { it.readText() }
+            val dir = if (assets.list(DIR).orEmpty().contains(file)) DIR else SHIPPED
+            val text = assets.open("$dir/$file").bufferedReader().use { it.readText() }
             val skill = Curriculum.Skill(JSONObject(text))
             col.addView(caption("${skill.name.uppercase()}  ·  band ${skill.band}", Ink.primary))
 
@@ -170,6 +207,47 @@ class PuzzlePreviewActivity : Activity() {
             addView(col, ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT))
+        })
+    }
+
+    /** What each age band is served, asked of the gate's own chooser. */
+    private fun showBands() {
+        val fonts = Fonts(this)
+        val den = resources.displayMetrics.density
+        val was = EnginePrefs.ageBand(this)
+        val col = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setBackgroundColor(Ink.bg)
+            setPadding((16 * den).toInt(), (24 * den).toInt(),
+                (16 * den).toInt(), (16 * den).toInt())
+        }
+        val expected = mapOf(
+            "a" to "number_sense", "b" to "puzzles_and_logic",
+            "c" to "think_like_a_coder", "d" to "reasoning")
+        var allWell = true
+        col.addView(label(this, fonts,
+            "installed: " + Curriculum.allSkills(this)
+                .joinToString(", ") { "${it.band}=${it.id}" },
+            13f, Ink.muted))
+        for (band in listOf("a", "b", "c", "d")) {
+            EnginePrefs.setAgeBand(this, band)
+            val got = Curriculum.skillFor(this)
+            val ok = got?.id == expected[band]
+            if (!ok) allWell = false
+            col.addView(label(this, fonts,
+                "band $band  ->  ${got?.id ?: "NOTHING"}" +
+                    if (ok) "   OK" else "   WRONG, expected ${expected[band]}",
+                16f, if (ok) Ink.good else Ink.bad, black = true))
+        }
+        EnginePrefs.setAgeBand(this, was)
+        col.addView(label(this, fonts,
+            if (allWell) "every band gets the skill written for it"
+            else "AT LEAST ONE BAND IS SERVED THE WRONG SKILL",
+            17f, if (allWell) Ink.good else Ink.bad, black = true))
+        android.util.Log.d("NupoGate", "bands " + (if (allWell) "OK" else "WRONG"))
+        setContentView(ScrollView(this).apply {
+            setBackgroundColor(Ink.bg)
+            addView(col)
         })
     }
 
@@ -273,6 +351,9 @@ class PuzzlePreviewActivity : Activity() {
         }
 
     private companion object {
+        // Both new skills were served on 2026-09-16, so there is one folder
+        // again. DIR is kept pointing at a pending folder so that the next
+        // skill authored can sit there and still be previewed.
         const val DIR = "flutter_assets/assets/curriculum_pending"
         const val SHIPPED = "flutter_assets/assets/curriculum"
     }
