@@ -89,6 +89,11 @@ flutter:
     - assets/nupo/
     - assets/videos/
     - assets/curriculum/
+    # Bundled so the preview screen can draw them on a real phone, NOT served.
+    # Curriculum.allSkills() scans assets/curriculum only, so a skill sitting
+    # here is invisible to the gate: it ships as bytes and reaches no child
+    # until its file is moved across. That is the switch that turns a skill on.
+    - assets/curriculum_pending/
 
   fonts:
     - family: Nunito

@@ -111,6 +111,14 @@
             android:exported="true"
             android:theme="@android:style/Theme.Light.NoTitleBar" />
 
+        <!-- The same, for the two skills that are authored but not yet served.
+             Exported so adb can launch it; it finishes at once unless the build
+             is debuggable. -->
+        <activity
+            android:name=".PuzzlePreviewActivity"
+            android:exported="true"
+            android:theme="@android:style/Theme.Light.NoTitleBar" />
+
         <service
             android:name=".GuardService"
             android:exported="false"

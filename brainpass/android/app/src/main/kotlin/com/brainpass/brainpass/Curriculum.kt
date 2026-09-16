@@ -274,6 +274,77 @@ object Curriculum {
                 e.getInt(0) to e.getInt(1)
             }
         } ?: emptyList()
+
+        // ---------------------------------------------------------- bands b and d
+        //
+        // Puzzles and Logic (7-8) and Reasoning (11-12) ask about order,
+        // relation and rule rather than quantity, so their drawings need
+        // words, sequences and solids that no counting picture had a field
+        // for. Everything below is additive: the two shipped skills read
+        // none of it, and a picture reads only the handful its kind needs.
+
+        /** The sentences a card, a compass or a clock keeps on screen. */
+        val lines: List<String> = o.strings("lines")
+
+        /** A run of numbers, null where the gap is. */
+        val terms: List<Int?> = o.optJSONArray("terms")?.let { a ->
+            (0 until a.length()).map { if (a.isNull(it)) null else a.optInt(it) }
+        } ?: emptyList()
+
+        /** equation: the two sides, the sign, and which part is hidden. */
+        val op: String = o.optString("op", "+")
+        val hide: String = o.optString("hide")
+        val result: Int = o.optInt("result", 0)
+
+        /** bars: the two children, their amounts, and what each label shows. */
+        val names: List<String> = o.strings("names")
+        val values: List<Int> = o.optJSONArray("values")?.let { a ->
+            (0 until a.length()).map { a.optInt(it) }
+        } ?: emptyList()
+        private val shown: JSONObject? = o.optJSONObject("shown")
+        val shownTop: Int? = shown?.takeIf { !it.isNull("top") }?.optInt("top")
+        val shownLow: Int? = shown?.takeIf { !it.isNull("low") }?.optInt("low")
+        val shownDiff: Int? = shown?.takeIf { !it.isNull("diff") }?.optInt("diff")
+
+        /** line: how many in the queue, which one is marked, and their names. */
+        val mark: Int = o.optInt("mark", 0)
+        val name: String = o.optString("name")
+
+        /** shelf: the row of shapes and which way the question points. */
+        val items: List<String> = o.strings("items")
+        val side: String = o.optString("side")
+        val stepCount: Int = o.optInt("steps", 0)
+
+        /** compass: which way the child faces, and the turns they make. */
+        val start: String = o.optString("start")
+        val moves: List<String> = o.strings("moves")
+
+        /** letter and month: the one given, and how far from it to go. */
+        val base: String = o.optString("base")
+        val offset: Int = o.optInt("offset", 0)
+
+        /** code: one worked example, the word to put through it, which way. */
+        val example: List<String> = o.strings("example")
+        val word: String = o.optString("word")
+        val mode: String = o.optString("mode")
+
+        /** The four things an odd-one-out is choosing between. */
+        val words: List<String> = o.strings("words")
+
+        /** clock: the time the hands show. */
+        val h: Int = o.optInt("h", 12)
+        val m: Int = o.optInt("m", 0)
+
+        /**
+         * Pairs, as an analogy shows them: `cow -> calf`, then `dog -> ?`.
+         * The missing half is null, which is what makes it the question.
+         */
+        val wordPairs: List<Pair<String?, String?>> = o.pairsOf { a, i ->
+            (if (a.isNull(i)) null else a.optString(i))
+        }
+        val numPairs: List<Pair<Int?, Int?>> = o.pairsOf { a, i ->
+            (if (a.isNull(i)) null else a.optInt(i))
+        }
     }
 
     /** One drawn thing inside a pattern, tray or odd-one-out row. */
@@ -858,6 +929,19 @@ private fun JSONObject.cells(key: String): Set<Pair<Int, Int>> {
     return (0 until a.length()).mapNotNull { i ->
         a.optJSONArray(i)?.let { it.optInt(0) to it.optInt(1) }
     }.toSet()
+}
+
+/**
+ * The "pairs" array as two-element pairs, with null kept as null.
+ *
+ * An analogy's missing half is the question, so a pair reader that turned a
+ * JSON null into 0 or "" would quietly draw an answer where a gap belongs.
+ */
+private fun <T> JSONObject.pairsOf(read: (JSONArray, Int) -> T?): List<Pair<T?, T?>> {
+    val a = optJSONArray("pairs") ?: return emptyList()
+    return (0 until a.length()).mapNotNull { i ->
+        a.optJSONArray(i)?.let { pr -> read(pr, 0) to read(pr, 1) }
+    }
 }
 
 private fun JSONObject.strings(key: String): List<String> =

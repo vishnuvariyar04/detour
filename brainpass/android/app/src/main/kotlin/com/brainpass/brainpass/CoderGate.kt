@@ -774,6 +774,7 @@ class CoderGate(
                     else "Tap the steps to fill the boxes, then run it."
                 )
             }
+            in PuzzleShapes.all -> renderPuzzle(q)
         }
         body.addView(space(8))
 
@@ -782,6 +783,38 @@ class CoderGate(
         action.tint(Ink.primary, Ink.primaryLedge)
         action.onTap = { submit(q) }
         refreshAction()
+    }
+
+    /**
+     * A Puzzles and Logic or Reasoning question: the drawing, then the answer.
+     *
+     * Which answer row appears is decided by the QUESTION, not by its shape —
+     * a question that stores four numbers gets number buttons, one that stores
+     * drawn shapes gets shape buttons. That way a new shape needs a drawing and
+     * nothing else, and no shape can end up with an answer row that cannot
+     * express its answer.
+     */
+    private fun renderPuzzle(q: Curriculum.Question) {
+        val pic = q.pic
+        if (PuzzlePicView.draws(pic)) {
+            val v = PuzzlePicView(ctx, fonts).apply { this.pic = pic }
+            picView = v
+            body.addView(v, LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT))
+            body.addView(space(16))
+        }
+        when {
+            q.answerType == "number" -> {
+                body.addView(numberChoices(q.choices))
+                caption("Tap the number.")
+            }
+            q.optionCells.isNotEmpty() -> {
+                body.addView(cellOptions(q))
+                caption("Tap a shape.")
+            }
+            else -> body.addView(textOptions(q.optionsText))
+        }
     }
 
     /** Turns a [Curriculum.CellSpec] into something the views can draw. */
@@ -1378,6 +1411,10 @@ class CoderGate(
         // Sorting starts with everything in the left tray, which is a valid
         // answer to "none of these are round" — so it is always submittable.
         "sortTwo" -> true
+        // Puzzles and Logic and Reasoning: whichever row the question put on
+        // screen is the one that has to have been touched.
+        in PuzzleShapes.all ->
+            if (q.answerType == "number") pickedNumber >= 0 else pickedOption >= 0
         else -> false
     }
 
@@ -1450,6 +1487,12 @@ class CoderGate(
             "mirror" -> pickedCells == q.answerCells
             // answerInts holds which tray each item belongs in.
             "sortTwo" -> pickedSides.toList() == q.answerInts
+            // Graded against the stored answer, which a second program worked
+            // out from the words the child reads (tools/curriculum/pz_grade.py)
+            // rather than from the data the question was built from.
+            in PuzzleShapes.all ->
+                if (q.answerType == "number") pickedNumber == q.answerInt
+                else pickedOption == q.answerInt
             else -> false
         }
         grade(q, correct)
@@ -1476,6 +1519,15 @@ class CoderGate(
             "oddOneOut", "fractionWall" ->
                 (picView as? NumberView)?.showVerdict(correct)
             // the chosen number is already tinted; mark it right or wrong
+            in PuzzleShapes.all -> if (q.answerType == "number") {
+                optionButtons.getOrNull(q.choices.indexOf(pickedNumber))?.tint(
+                    if (correct) Ink.goodWash else Ink.badWash,
+                    if (correct) Ink.good else Ink.bad, Ink.text)
+            } else {
+                optionButtons.getOrNull(pickedOption)?.tint(
+                    if (correct) Ink.goodWash else Ink.badWash,
+                    if (correct) Ink.good else Ink.bad, Ink.text)
+            }
             "count", "trace", "countObjects", "tenFrame", "rods", "dice",
             "bond", "shapeCount", "array", "groups", "barModel" -> optionButtons
                 .getOrNull(q.choices.indexOf(pickedNumber))?.tint(
@@ -1528,6 +1580,14 @@ class CoderGate(
         "fix", "constrain" ->
             "Those steps do not get there. Watch where Nupo stops."
         "inverse" -> "Follow the dots one square at a time."
+        // Puzzles and Logic and Reasoning. A child who got it wrong is told
+        // WHICH answer was right in the words of the question, not just that
+        // theirs was not: "The answer is 45" beats a red mark and nothing.
+        in PuzzleShapes.all ->
+            if (q.answerType == "number") "The answer is ${q.answerInt}."
+            else q.optionsText.getOrNull(q.answerInt)
+                ?.let { "The answer is $it." }
+                ?: "Look at the picture again."
         else -> ""
     }
 
@@ -1796,6 +1856,38 @@ class CoderGate(
 }
 
 /** What [GuardService] needs from whichever gate is on screen. */
+/**
+ * The question shapes of Puzzles and Logic (7-8) and Reasoning (11-12).
+ *
+ * These two skills have fifty-five shapes between them, but only four ways to
+ * answer: pick a number, pick a sentence, pick a drawn shape, or pick one of
+ * several drawn pictures. So the gate serves them from ONE branch that asks
+ * the question which of the four it is, rather than fifty-five branches that
+ * would each repeat the same wiring and each be a place to get it wrong.
+ *
+ * A shape is listed here only once its drawing exists. A shape that is not
+ * listed falls through to the gate's `else`, which draws nothing and offers
+ * nothing — so forgetting to add one is a blank screen, never a wrong answer
+ * marked right.
+ */
+object PuzzleShapes {
+
+    /** Ages 7-8: number thinking, order and position, relations, logic. */
+    val bandB = setOf(
+        // the answer is one of four numbers
+        "equation", "riddle", "story", "bars", "series", "queueBack",
+        "queueCalc", "rankCount", "numberAnalogy", "combos",
+        // the answer is one of several sentences
+        "seriesRule", "rank", "queueWho", "turns", "relation", "relationWho",
+        "wordAnalogy", "wordCode", "numCode", "alphabet", "oddWord",
+        "oddNumber", "weekday", "month", "clock",
+        // the answer is one of four drawn shapes
+        "shelf",
+    )
+
+    val all: Set<String> = bandB
+}
+
 interface GateUi {
     val root: FrameLayout
     fun release()
