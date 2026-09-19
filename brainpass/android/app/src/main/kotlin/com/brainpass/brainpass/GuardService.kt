@@ -224,6 +224,10 @@ class GuardService : Service() {
         hideChip()
     }
 
+    /** Gated activities still on screen — covers floating windows / split screen. */
+    private val visibility = GatedVisibility()
+    private var lastCovered: String? = null
+
     private fun currentForegroundApp(): String? {
         try {
             val usm = getSystemService(USAGE_STATS_SERVICE) as UsageStatsManager
@@ -231,25 +235,49 @@ class GuardService : Service() {
             // 60s window: OEMs can flush usage events late; a short window can
             // miss a late-stamped MOVE_TO_FOREGROUND entirely, leaving lastFg
             // stuck on the launcher. We always take the newest event, so
-            // re-reading old ones is harmless.
-            val ev = usm.queryEvents(end - 60_000, end)
+            // re-reading old ones is harmless. [visibility] widens the start
+            // back to the previous query so no "paused" event is ever skipped.
+            val ev = usm.queryEvents(visibility.beginQuery(end), end)
+            val gated = EnginePrefs.gatedApps(this)
             val e = UsageEvents.Event()
             var newestPkg: String? = null
             var newestT = 0L
             while (ev.hasNextEvent()) {
                 ev.getNextEvent(e)
-                if (e.eventType == UsageEvents.Event.MOVE_TO_FOREGROUND) {
-                    if (e.timeStamp >= newestT) {
-                        newestT = e.timeStamp
-                        newestPkg = e.packageName
+                when (e.eventType) {
+                    UsageEvents.Event.MOVE_TO_FOREGROUND -> {
+                        // Only the last minute decides "the" foreground app, as before.
+                        if (e.timeStamp >= end - 60_000 && e.timeStamp >= newestT) {
+                            newestT = e.timeStamp
+                            newestPkg = e.packageName
+                        }
+                        if (e.packageName in gated) {
+                            visibility.onResumed(e.packageName, e.className, e.timeStamp)
+                        }
                     }
+                    // (STOPPED always precedes DESTROYED, which is a hidden constant.)
+                    UsageEvents.Event.ACTIVITY_PAUSED,
+                    UsageEvents.Event.ACTIVITY_STOPPED ->
+                        visibility.onGone(e.packageName, e.className)
                 }
             }
+            visibility.endQuery(end)
             if (newestPkg != null) lastFg = newestPkg
         } catch (e: Throwable) {
             Log.e(TAG, "usage query failed", e)
         }
-        return lastFg
+
+        val fg = lastFg
+        // Normal case, unchanged: the newest app is itself gated.
+        if (fg != null && EnginePrefs.isGated(this, fg)) return fg
+        // A different app (floating window, sidebar, split screen) is newest, but
+        // a gated app is still on screen underneath it: it is still in front.
+        val covered = visibility.newest { EnginePrefs.isGated(this, it) }
+        if (covered != lastCovered) {
+            lastCovered = covered
+            if (covered != null) Log.d(TAG, "$covered still on screen under $fg — keeping it gated")
+        }
+        return covered ?: fg
     }
 
     /**
