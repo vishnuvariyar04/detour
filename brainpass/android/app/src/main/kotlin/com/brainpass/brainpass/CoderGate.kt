@@ -222,6 +222,12 @@ class CoderGate(
 
     private fun renderTeach(stop: Curriculum.Stop) {
         hintButton.visibility = View.GONE
+        // A teach card has nothing to answer, so "Got it" must always be tappable.
+        // The action button is shared with the questions and can arrive disabled:
+        // submitting a build-a-program answer disables it and nothing re-enables
+        // it, and most teach layouts below never do either.
+        action.tint(Ink.primary, Ink.primaryLedge)
+        action.enabledLook = true
         progress.value = answered
 
         body.addView(label(ctx, fonts, "NEW IDEA", 12f, Ink.primary, black = true).apply {
