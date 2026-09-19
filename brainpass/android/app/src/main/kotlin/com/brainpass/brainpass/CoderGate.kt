@@ -60,7 +60,8 @@ class CoderGate(
     private var pickedCell: Pair<Int, Int>? = null
     private var pickedBlock = -1
     private var pickedOption = -1
-    private var pickedNumber = -1
+    // Answers can be negative ("Below zero"), so -1 can't mean "nothing picked".
+    private var pickedNumber = NO_NUMBER
 
     // Number Sense pictures, and what the child has done to them.
     private var picView: android.view.View? = null
@@ -201,7 +202,7 @@ class CoderGate(
         board = null; list = null; bank = null; hintCard = null
         boardRowView = null; boardView = null; boxesView = null
         pickedCell = null; pickedBlock = -1; pickedOption = -1
-        pickedNumber = -1; pickedBool = null; builtProgram = emptyList()
+        pickedNumber = NO_NUMBER; pickedBool = null; builtProgram = emptyList()
         picView = null
         pickedSet = mutableSetOf(); pickedOrder = mutableListOf()
         pickedCells = mutableSetOf(); pickedSides = IntArray(0)
@@ -1591,12 +1592,12 @@ class CoderGate(
     private fun hasAnswer(q: Curriculum.Question): Boolean = when (q.shape) {
         "predict" -> pickedCell != null
         "spot", "debug" -> pickedBlock >= 0
-        "count", "trace" -> pickedNumber >= 0
+        "count", "trace" -> pickedNumber != NO_NUMBER
         "choose", "chooseText", "complete", "compare", "yesno" -> pickedOption >= 0
         "fix", "inverse", "constrain" -> bank?.complete() == true
         "countObjects", "tenFrame", "rods", "dice", "bond",
-        "shapeCount", "array", "groups", "barModel" -> pickedNumber >= 0
-        "numberLine" -> pickedNumber >= 0
+        "shapeCount", "array", "groups", "barModel" -> pickedNumber != NO_NUMBER
+        "numberLine" -> pickedNumber != NO_NUMBER
         "balance", "oddOneOut", "pattern", "fraction",
         "fractionWall" -> pickedOption >= 0
         "shapeHunt" -> pickedSet.isNotEmpty()
@@ -1608,7 +1609,7 @@ class CoderGate(
         // Puzzles and Logic and Reasoning: whichever row the question put on
         // screen is the one that has to have been touched.
         in PuzzleShapes.all ->
-            if (q.answerType == "number") pickedNumber >= 0 else pickedOption >= 0
+            if (q.answerType == "number") pickedNumber != NO_NUMBER else pickedOption >= 0
         else -> false
     }
 
@@ -1988,6 +1989,9 @@ class CoderGate(
     private fun dp(v: Int) = (v * ctx.resources.displayMetrics.density).toInt()
 
     private companion object {
+        /** `pickedNumber` before a tap. Not -1: negative answers are real answers. */
+        const val NO_NUMBER = Int.MIN_VALUE
+
         /** The size a board would like to be when there is room. */
         const val MIN_BOARD = 210
 
