@@ -62,6 +62,10 @@ class CoderGate(
     private var pickedOption = -1
     // Answers can be negative ("Below zero"), so -1 can't mean "nothing picked".
     private var pickedNumber = NO_NUMBER
+    // The order the number choices were actually drawn in. The authored lists are
+    // ascending, which put the right answer in the same slot every time, so they
+    // are shuffled per showing; buttons and the verdict tint are indexed by THIS.
+    private var shownChoices: List<Int> = emptyList()
 
     // Number Sense pictures, and what the child has done to them.
     private var picView: android.view.View? = null
@@ -203,6 +207,7 @@ class CoderGate(
         boardRowView = null; boardView = null; boxesView = null
         pickedCell = null; pickedBlock = -1; pickedOption = -1
         pickedNumber = NO_NUMBER; pickedBool = null; builtProgram = emptyList()
+        shownChoices = emptyList()
         picView = null
         pickedSet = mutableSetOf(); pickedOrder = mutableListOf()
         pickedCells = mutableSetOf(); pickedSides = IntArray(0)
@@ -1439,7 +1444,8 @@ class CoderGate(
      */
     private fun numberChoices(choices: List<Int>): View = LinearLayout(ctx).apply {
         orientation = LinearLayout.HORIZONTAL
-        choices.forEachIndexed { i, n ->
+        val order = choices.shuffled().also { shownChoices = it }
+        order.forEachIndexed { i, n ->
             val b = PushButton(ctx, fonts).apply {
                 label = "$n"; textSize = 22f; radius = 16f
                 face = Ink.surface; ledgeColor = Ink.ledge; textColor = Ink.text
@@ -1721,7 +1727,7 @@ class CoderGate(
                 (picView as? NumberView)?.showVerdict(correct)
             // the chosen number is already tinted; mark it right or wrong
             in PuzzleShapes.all -> if (q.answerType == "number") {
-                optionButtons.getOrNull(q.choices.indexOf(pickedNumber))?.tint(
+                optionButtons.getOrNull(shownChoices.indexOf(pickedNumber))?.tint(
                     if (correct) Ink.goodWash else Ink.badWash,
                     if (correct) Ink.good else Ink.bad, Ink.text)
             } else {
@@ -1731,7 +1737,7 @@ class CoderGate(
             }
             "count", "trace", "countObjects", "tenFrame", "rods", "dice",
             "bond", "shapeCount", "array", "groups", "barModel" -> optionButtons
-                .getOrNull(q.choices.indexOf(pickedNumber))?.tint(
+                .getOrNull(shownChoices.indexOf(pickedNumber))?.tint(
                     if (correct) Ink.goodWash else Ink.badWash,
                     if (correct) Ink.good else Ink.bad, Ink.text)
             else -> optionButtons.getOrNull(pickedOption)?.tint(
