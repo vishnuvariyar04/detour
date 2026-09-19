@@ -51,8 +51,14 @@ class CoderGate(
 
     // Session state
     private var index = 0
-    private var answered = 0          // resolved items, for the progress bar
+    private var answered = 0          // attempts, right or wrong, for the score line
     private var correctCount = 0
+    private var completed = 0         // questions finished RIGHT, for the progress bar
+
+    // What is actually walked. A wrong answer sends the same question to the back
+    // of this queue, so the gate only ends once every question has been answered
+    // correctly; [items] stays the session as it was built.
+    private val queue = GateQueue(items) { Curriculum.Item(it.stop, it.question, review = it.review) }
     private var hintShown = false
     private var locked = false        // true between answering and Continue
 
@@ -216,7 +222,7 @@ class CoderGate(
         drawer.removeAllViews()
 
         generation++
-        val item = items.getOrNull(index)
+        val item = queue[index]
         if (item == null) { renderFinish(); return }
 
         if (item.isTeach) renderTeach(item.teachStop!!) else renderQuestion(item.question!!)
@@ -233,7 +239,7 @@ class CoderGate(
         // it, and most teach layouts below never do either.
         action.tint(Ink.primary, Ink.primaryLedge)
         action.enabledLook = true
-        progress.value = answered
+        progress.value = completed
 
         body.addView(label(ctx, fonts, "NEW IDEA", 12f, Ink.primary, black = true).apply {
             letterSpacing = 0.14f
@@ -524,7 +530,7 @@ class CoderGate(
         hintButton.visibility = if (q.hint.isBlank()) View.GONE else View.VISIBLE
         hintButton.enabledLook = true
         hintButton.tint(Ink.surface, Ink.ledge, Ink.muted)
-        progress.value = answered
+        progress.value = completed
 
         body.addView(label(ctx, fonts, q.prompt, 19f, Ink.text, black = true).apply {
             setLineSpacing(dp(3).toFloat(), 1f)
@@ -1626,7 +1632,7 @@ class CoderGate(
     }
 
     private fun refreshAction() {
-        val q = items.getOrNull(index)?.question ?: return
+        val q = queue[index]?.question ?: return
         action.enabledLook = !locked && hasAnswer(q)
     }
 
@@ -1634,7 +1640,7 @@ class CoderGate(
 
     private fun revealHint() {
         if (hintShown) return
-        val q = items.getOrNull(index)?.question ?: return
+        val q = queue[index]?.question ?: return
         hintShown = true
         hintButton.enabledLook = false
         val card = label(ctx, fonts, q.hint, 15f, Ink.text).apply {
@@ -1709,13 +1715,17 @@ class CoderGate(
         android.util.Log.d("NupoGate", "grade ${q.id} ${q.shape} correct=$correct")
         locked = true
         answered++
-        if (correct) correctCount++
-        progress.value = answered
+        if (correct) { correctCount++; completed++ }
+        progress.value = completed
 
         Curriculum.Progress.resolve(ctx, q, correct)
-        // Only ladder questions move the cursor. A review question is a repeat of
-        // one already passed, so advancing on it would skip fresh content.
-        if (!isReviewItem()) Curriculum.Progress.advance(ctx, skill)
+        // Only ladder questions move the cursor, and only the FIRST time they are
+        // shown (a miss waits in the review queue until it is answered right). A
+        // review question or a retry is a repeat of one already passed, so
+        // advancing on it would skip fresh content.
+        if (!isReviewItem() && !queue.isRetry(index)) Curriculum.Progress.advance(ctx, skill)
+        // A wrong answer is not the end of the question: it comes back at the end.
+        if (!correct) queue.requeue(index)
 
         // Show the verdict on whatever the child actually touched.
         when (q.shape) {
@@ -1750,7 +1760,7 @@ class CoderGate(
     }
 
     /** The first item of a session can be a repeat pulled from the review queue. */
-    private fun isReviewItem(): Boolean = items.getOrNull(index)?.review == true
+    private fun isReviewItem(): Boolean = queue[index]?.review == true
 
     private fun praise(): String = listOf(
         "Exactly right.", "That is the one.", "Sharp thinking.",
@@ -1831,9 +1841,15 @@ class CoderGate(
                 setLineSpacing(dp(3).toFloat(), 1f)
             })
         }
+        if (!correct) {
+            sheet.addView(space(6))
+            sheet.addView(label(ctx, fonts, "You'll see this one again at the end.", 14f, Ink.text).apply {
+                typeface = fonts.body
+            })
+        }
         sheet.addView(space(14))
         val cont = PushButton(ctx, fonts).apply {
-            label = if (index >= items.size - 1) "Finish" else "Continue"
+            label = if (index >= queue.size - 1) "Finish" else "Continue"
             textSize = 17f; radius = 18f; depth = 6
             face = if (correct) Ink.good else Ink.bad
             ledgeColor = if (correct) Ink.goodLedge else Ink.badLedge
