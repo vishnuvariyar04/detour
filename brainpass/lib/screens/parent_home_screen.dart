@@ -510,7 +510,10 @@ class _ParentHomeScreenState extends State<ParentHomeScreen>
 /// is not up (it never throws into the build).
 String _signedInAs() {
   try {
-    return AuthService.currentUser?.phoneNumber ?? AuthService.email ?? '';
+    // A Google account reports an EMPTY phone number, not a missing one, so
+    // `??` alone would show nothing.
+    final phone = AuthService.currentUser?.phoneNumber ?? '';
+    return phone.isNotEmpty ? phone : (AuthService.email ?? '');
   } catch (_) {
     return '';
   }
