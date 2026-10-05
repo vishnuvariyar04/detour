@@ -234,7 +234,14 @@ class GuardService : Service() {
                 hideChip()
                 trackedPkg = null
                 Log.d(TAG, "$pkg time up -> home (lock on next open)")
-                goHome() // just close to home; questions appear on next open
+                // Pause the video BEFORE leaving it: a player that is still
+                // playing when it is sent home jumps into picture-in-picture
+                // and keeps going in a floating window.
+                silenceOthers()
+                handler.postDelayed({
+                    goHome() // just close to home; questions appear on next open
+                    handler.postDelayed({ if (lockView == null) releaseSilence() }, 1500)
+                }, 350)
                 return
             }
         }
@@ -383,6 +390,11 @@ class GuardService : Service() {
             lockView = ui.root
             lockUi = ui
             lockAddedAt = System.currentTimeMillis()
+            // The app under the lock may already be playing a video (YouTube
+            // resumes where it left off). Taking audio focus pauses it, and a
+            // paused player does not drop into picture-in-picture when the
+            // child presses Home — which, playing, it did, outside the lock.
+            silenceOthers()
             // Logged only once the view is actually attached, so the event
             // means "a child saw a lesson", not "we tried".
             Analytics.lessonShown(this, pkg, mode, target)
@@ -407,10 +419,65 @@ class GuardService : Service() {
     private var parkedUi: GateUi? = null
     private var parkedPkg: String? = null
 
+    // ---- audio focus
+
+    private var focusRequest: android.media.AudioFocusRequest? = null
+    private var focusHeld = false
+
+    /**
+     * Take audio focus for good, so whatever is playing (the gated app's video)
+     * pauses and stays paused. Permanent focus loss is the signal players treat
+     * as "stop", not "duck". Our own lesson sounds play through SoundPool and
+     * do not need focus.
+     */
+    private fun silenceOthers() {
+        if (focusHeld) return
+        try {
+            val am = getSystemService(AUDIO_SERVICE) as android.media.AudioManager
+            val granted = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val req = android.media.AudioFocusRequest.Builder(
+                    android.media.AudioManager.AUDIOFOCUS_GAIN
+                ).setAudioAttributes(
+                    android.media.AudioAttributes.Builder()
+                        .setUsage(android.media.AudioAttributes.USAGE_GAME)
+                        .setContentType(android.media.AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                        .build()
+                ).setOnAudioFocusChangeListener { }.build()
+                focusRequest = req
+                am.requestAudioFocus(req)
+            } else {
+                @Suppress("DEPRECATION")
+                am.requestAudioFocus(null, android.media.AudioManager.STREAM_MUSIC,
+                    android.media.AudioManager.AUDIOFOCUS_GAIN)
+            }
+            focusHeld = granted == android.media.AudioManager.AUDIOFOCUS_REQUEST_GRANTED
+            Log.d(TAG, "audio focus requested: granted=$focusHeld")
+        } catch (t: Throwable) {
+            Log.w(TAG, "audio focus request failed", t)
+        }
+    }
+
+    /** Give focus back. Players that lost it permanently stay paused. */
+    private fun releaseSilence() {
+        if (!focusHeld) return
+        focusHeld = false
+        try {
+            val am = getSystemService(AUDIO_SERVICE) as android.media.AudioManager
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                focusRequest?.let { am.abandonAudioFocusRequest(it) }
+            } else {
+                @Suppress("DEPRECATION") am.abandonAudioFocus(null)
+            }
+        } catch (_: Throwable) {
+        }
+        focusRequest = null
+    }
+
     /** Detach the lock. The gate object survives so the child keeps their place. */
     private fun hideLock() {
         val v = lockView ?: return
         lockView = null
+        releaseSilence()
         val pkg = lockPkg
         lockPkg = null
         val ui = lockUi
