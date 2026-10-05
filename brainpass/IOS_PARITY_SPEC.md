@@ -2,11 +2,11 @@
 
 **What iOS must look like and do so it matches Nupo for Android 1.4.3 (October 2026).**
 
-This document describes **outputs only**: what each screen shows, what the parent or child can do on it, what gets saved, and what the result must be. It does not say how to build anything. iOS gates apps differently (Shortcuts automations), so the implementation is yours. Where this document and the Android behaviour disagree, the Android build and its source files win. The repo is shared with you, and each section names the files to look at.
+This document describes **outputs only**: what each screen shows, what the parent or child can do on it, what gets saved, and what the result must be, as it works on Android today. It does not say how to build anything on iOS. Where this document and the Android behaviour disagree, the Android build and its source files win. The repo is shared with you, and each section names the files to look at.
 
-**Already on iOS, out of scope here:** PostHog analytics, RevenueCat payments, and the three-step paywall. Keep them. §12 lists the analytics events iOS still needs to add.
+**Out of scope:** the PostHog setup, payments and the paywall. §12 lists the analytics events the new screens send.
 
-**The gap is large.** iOS currently has the old scroll-story onboarding and the old random quiz (`lib/screens/quiz/`). Android replaced both with:
+**What Android has today:**
 
 1. A new **tapped onboarding story** with a real demo lesson (§3).
 2. A new **setup flow** after sign-in (§5).
@@ -66,9 +66,9 @@ All copy quoted below is the exact Android text. Use it word for word.
 
 1. **Splash:** solid logo yellow with the owl.
 2. **Onboarding story** (§3). Shown until it has been seen once. A returning parent can tap "I already have an account" to skip straight to sign-in.
-3. **Sign-in.** Mandatory: Apple or Google on iOS. If the story picked a course, the header says "Save <course name>".
-4. **Setup** (§5). Skipped entirely if the account already has a saved setup (§11). In that case only the parent PIN and the device setup are asked, then the parent goes straight home.
-5. **Paywall** (existing iOS paywall), if the account has no Pro.
+3. **Sign-in.** Mandatory (Android: Google, or email and password). If the story picked a course, the header says "Save <course name>".
+4. **Setup** (§5). Skipped entirely if the account already has a saved setup (§11). In that case only the parent PIN and the permissions are asked, then the parent goes straight home.
+5. **Paywall**, if the account has no Pro (only while the paywall switch is on).
 6. **Home:** two tabs, Learning (§9) and Parent (§10).
 
 ---
@@ -94,7 +94,7 @@ There is no scrolling. Each screen has one button, and a thin 10-segment progres
 
 ## 4. Demo lesson per age band (must equal the real curriculum)
 
-The demo is a **real lesson from the child's own course**. The teach line and the question are copied from the curriculum, and the idea shown is exactly what the question asks. Full content, outcomes, and path copy are in `demo_lessons.dart`. Android has a test that fails if the demo drifts from the JSON; iOS should guarantee the same.
+The demo is a **real lesson from the child's own course**. The teach line and the question are copied from the curriculum, and the idea shown is exactly what the question asks. Full content, outcomes, and path copy are in `demo_lessons.dart`. Android has a test that fails if the demo drifts from the JSON.
 
 | Band | Course | Lesson | Teach line | Question | Answer |
 |---|---|---|---|---|---|
@@ -119,7 +119,7 @@ A back circle and a slim progress track sit at the top. Order (`onboarding_flow.
    - **Mistakes come back**: "Until they stick."
    - a boss row: "One to finish every unit."
 5. **Their path.** **"<child>'s path"** on purple. Milestones run from **STARTS TODAY** through **WEEK 2, WEEK 3…** Button **Set up <child>'s course** (amber).
-6. **Apps.** The parent picks which apps need a lesson first. The app picked in the story is pre-selected. iOS uses its own picker.
+6. **Apps.** The parent picks which apps need a lesson first. The app picked in the story is pre-selected.
 7. **The trade:**
    - **Each lesson earns** N min (5–60 in steps of 5; default 15).
    - **Daily limit** per app (steps of 15; default 60; never less than the per-lesson minutes), labelled "per app, then done for today".
@@ -129,7 +129,7 @@ A back circle and a slim progress track sit at the top. Order (`onboarding_flow.
      - time **to finish the course** = 324 ÷ (3 × lessons a day), shown as "~N days", "~N wks" or "~N mo"
    - Footer: "Change it any time." The values are saved to **every** chosen app's rule.
 8. **Parent PIN.** Four digits, entered twice.
-9. **Device setup.** Android shows four permission screens here. iOS keeps its own Shortcuts or automation setup, restyled in this visual language.
+9. **Permissions.** A short intro, then one screen per permission (display over other apps, usage access, background battery, and auto-start on phones that have it). Each shows an illustration, says what it is for, opens the setting, and moves on by itself once it is granted.
 10. **Ready.** The owl with a trophy. **"Lesson 1 starts the next time they open <first app>."** It shows "<minutes> min · <limit>" per app. Button **Go to dashboard** (amber). This is where "setup complete" is recorded.
 
 ---
@@ -301,7 +301,7 @@ Lilac background. Reference: `roadmap_screen.dart`. Top to bottom:
 **Parent tab** (reference: `parent_home_screen.dart`):
 
 1. **Greeting:** eyebrow **PARENT**, then **"Hi, <parent name>"** or **"Dashboard"**, and a yellow initial avatar.
-2. **Permission alert** (only when something is off): a red card, **"A permission is off"** / "Lessons are not showing. Tap to fix." On iOS, use the equivalent for a broken automation or setup.
+2. **Permission alert** (only when something is off): a red card, **"A permission is off"** / "Lessons are not showing. Tap to fix."
 3. **Status hero card:**
    - On: purple gradient, shield icon, **"Learning is on"** / "A lesson before N apps", and a switch with a yellow track.
    - Off: white card, pause icon, **"Nupo is paused"** / "Apps open with no lesson".
@@ -315,13 +315,13 @@ Lilac background. Reference: `roadmap_screen.dart`. Top to bottom:
 5. **Nupo Pro card:**
    - Active: dark ink card with **NUPO PRO · ACTIVE** in yellow, **"Every skill, every day"**, "Manage subscription", and the `cool` owl. Tap opens subscription management.
    - Not active: yellow card with **NUPO PRO**, **"Try every skill free"**, "7 days free, cancel anytime", and the `star-student` owl. Tap opens the (closable) paywall.
-6. **Learning** group (iOS Settings style rows: a solid colour tile with a white glyph, then title, value, chevron):
+6. **Learning** group (settings-style rows: a solid colour tile with a white glyph, then title, value, chevron):
    - Child: "<name>" / "Age N" (orange)
    - Rules per app: count (blue)
-   - Permissions or setup: "All on" or "Fix" (green or red)
+   - Permissions: "All on" or "Fix" (green or red)
    - Parent PIN: •••• (purple)
 7. **Account** group:
-   - Signed in: shows the email; for Apple private relay, show the relay address
+   - Signed in: shows the account email
    - Sign out
    - **Delete account**, alone in its own group, in red
 8. **Confirm dialogs:** rounded cards with an owl (`shrug`, or `ohno` for delete), the title, a line, a chunky confirm button, and Cancel.
@@ -329,22 +329,22 @@ Lilac background. Reference: `roadmap_screen.dart`. Top to bottom:
 
 ---
 
-## 11. Saved setup and restore (cross-platform)
+## 11. Saved setup and restore
 
-The account document stores the setup so a reinstall or new phone restores it. Write the **same fields** on iOS so one account works on both platforms:
+The account document stores the setup so a reinstall or new phone restores it. Android writes these fields:
 
 - `setup.childName`, `setup.owlName`, `setup.childAge` (years), `setup.ageBand` (a/b/c/d), `setup.subject` (curriculum id, e.g. `reasoning`), `setup.gatedApps`, `setup.appRules` ({app: {q, m, c}}), `setup.updatedAt`
 - Plus `email`, `displayName`, `provider`, `lastActive`, `appVersion`, device model and OS version, `onboardingComplete`, `createdAt`
 
 Not saved, by design: the parent PIN and the child's learning progress.
 
-On restore, the parent signs in, the setup comes back, only the PIN and device setup are asked again, and **Pro comes back automatically** because it follows the account.
+On restore, the parent signs in, the setup comes back, only the PIN and the permissions are asked again, and **Pro comes back automatically** because it follows the account.
 
 ---
 
-## 12. Analytics events to add on iOS (PostHog is already set up)
+## 12. Analytics events the new screens send
 
-Use the same event names and properties so the shared PostHog project compares platforms directly. Full list and meanings: `ANALYTICS.md`. The ones the new screens need:
+Event names and properties as Android sends them to the shared PostHog project. Full list and meanings: `ANALYTICS.md`. The ones the new screens need:
 
 - **Story:**
   - `story_shown`
