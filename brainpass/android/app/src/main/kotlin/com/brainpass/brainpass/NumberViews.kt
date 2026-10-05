@@ -223,13 +223,22 @@ class NumberLineView(ctx: Context, private val fonts: Fonts) : NumberView(ctx) {
         set(v) { field = v; invalidate() }
 
     /**
+     * How far one hop goes. A teach card for counting in twos has to show
+     * hops of two; walked one number at a time it looked like counting on.
+     */
+    var step = 1
+        set(v) { field = v.coerceAtLeast(1); invalidate() }
+
+    private fun hopCount(m: Int, start: Int) = Math.abs(m - start) / step
+
+    /**
      * Hops one whole number at a time from [hopFrom] to [marker].
      *
      * Counting on is a movement before it is a sum, and four hops look like
      * "add four" in a way that a jump straight to the answer never does.
      */
     fun play() {
-        val steps = marker?.let { m -> hopFrom?.let { Math.abs(m - it) } } ?: 0
+        val steps = marker?.let { m -> hopFrom?.let { hopCount(m, it) } } ?: 0
         anim.play(if (steps > 0) (170L * steps).coerceAtMost(1100L) else 420L)
     }
 
@@ -278,13 +287,13 @@ class NumberLineView(ctx: Context, private val fonts: Fonts) : NumberView(ctx) {
             var mx = xFor(m)
             var lift = 0f
             if (start != null && start != m) {
-                val steps = Math.abs(m - start)
+                val steps = hopCount(m, start)
                 val walked = anim.t * steps
                 val whole = Math.floor(walked.toDouble()).toFloat()
                 val frac = walked - whole
                 val dir = if (m > start) 1f else -1f
-                val at = start + dir * whole
-                val next = at + dir * (if (whole < steps) 1f else 0f)
+                val at = start + dir * whole * step
+                val next = at + dir * step * (if (whole < steps) 1f else 0f)
                 mx = xFor(0) + (at + (next - at) * frac - from) *
                     ((xFor(to) - xFor(from)) / (to - from).coerceAtLeast(1))
                 // A hop arcs; a slide would read as one long move, not four steps.

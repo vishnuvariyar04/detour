@@ -38,7 +38,10 @@ class MainActivity : FlutterFragmentActivity() {
                         result.success(true)
                     }
                     "setAgeBand" -> {
-                        EnginePrefs.setAgeBand(this, call.argument<String>("band") ?: "b")
+                        val oldBand = EnginePrefs.ageBand(this)
+                        val newBand = call.argument<String>("band") ?: "b"
+                        EnginePrefs.setAgeBand(this, newBand)
+                        if (oldBand != newBand) GuardService.ageBandChanged(this)
                         result.success(true)
                     }
                     "setPin" -> {

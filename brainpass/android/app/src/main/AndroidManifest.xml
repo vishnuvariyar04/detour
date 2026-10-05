@@ -98,6 +98,46 @@
             android:name="google_analytics_ssaid_collection_enabled"
             android:value="false" />
 
+        <!-- PostHog, alongside Firebase, on PostHog Cloud EU
+             (eu.i.posthog.com). The project token comes from
+             android/posthog.properties at build time; empty means PostHog
+             stays off.
+
+             The plugin's own AUTO_INIT is off: PostHogInit (a ContentProvider,
+             the same trick Firebase uses) starts the SDK once per process with
+             the child-safe settings in Analytics.kt, before any Activity or the
+             guard runs. A guard started at boot has no Flutter engine, so the
+             plugin could not be the one to start it. -->
+        <meta-data
+            android:name="com.posthog.posthog.AUTO_INIT"
+            android:value="false" />
+        <meta-data
+            android:name="app.nupo.posthog.HOST"
+            android:value="${posthogHost}" />
+        <meta-data
+            android:name="app.nupo.posthog.TOKEN"
+            android:value="${posthogToken}" />
+        <!-- Trial reminder (lib/trial_reminder.dart): flutter_local_notifications
+             fires the "your free trial ends tomorrow" notification the paywall
+             promises, and re-arms it after a reboot or an app update. -->
+        <receiver android:exported="false"
+            android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver" />
+        <receiver android:exported="false"
+            android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationBootReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED"/>
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+                <action android:name="com.htc.intent.action.QUICKBOOT_POWERON"/>
+            </intent-filter>
+        </receiver>
+
+        <provider
+            android:name=".PostHogInit"
+            android:authorities="${applicationId}.posthoginit"
+            android:exported="false"
+            android:initOrder="90" />
+
         <!-- ===============================================================
              The guard: a foreground service that polls UsageStats to detect
              gated apps, runs the live countdown, and shows the lock. This is

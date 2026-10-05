@@ -10,7 +10,8 @@ Kotlin that draws them. If the two ever disagree about how many triangles a
 figure has, this fails — which is exactly the drift that would otherwise mark a
 child's correct answer wrong.
 """
-import json, os, re, sys
+import json
+import ns_emit as EMIT, os, re, sys
 from collections import Counter
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -331,15 +332,33 @@ def main():
                 check_choices(qid, q)
             check_pic(qid, q)
         st["_shapes"] = seen_shapes
-        # One idea, at least three pictures. Seven of the same question stops
-        # being about the idea and becomes about clicking: a child learns the
-        # shape of the screen instead of the thing on it.
-        if len(seen_shapes) < 3:
-            bad(st["id"], f"only {len(seen_shapes)} kind(s) of question: "
-                          f"{sorted(seen_shapes)}")
-        top = max(Counter(q["shape"] for q in st["questions"]).values())
-        if top > 4:
-            bad(st["id"], f"one kind of question appears {top} times")
+        # One idea per stop. Every question practises what the stop's teach
+        # card shows; a question of another kind is practising some other
+        # stop's idea, which is how "Two dice" ended up with no dice in it.
+        # (This replaced an "at least three kinds of question" rule, which is
+        # what pushed unrelated questions into stops in the first place.)
+        allowed = EMIT.STOP_SHAPES.get(st["id"])
+        if allowed is not None:
+            for i, q in enumerate(st["questions"]):
+                if q["shape"] not in allowed:
+                    bad(f"{st['id']}#{i}",
+                        f"a {q['shape']} question does not practise this "
+                        f"stop's idea (allowed: {sorted(allowed)})")
+
+    # A boss reviews its own unit and nothing it has not taught yet.
+    for sec in d["sections"]:
+        for u in sec["units"]:
+            taught = set()
+            for st in u["stops"]:
+                if not st["boss"]:
+                    taught |= EMIT.STOP_SHAPES.get(st["id"], set())
+            for st in u["stops"]:
+                if st["boss"] and taught:
+                    for i, q in enumerate(st["questions"]):
+                        if q["shape"] not in taught:
+                            bad(f"{st['id']}#{i}",
+                                f"the boss asks a {q['shape']} question its "
+                                f"unit never taught")
 
     # Variety is judged per unit, not per stop: a stop that teaches number
     # bonds should be allowed to use bonds throughout, but a child must not
@@ -349,7 +368,7 @@ def main():
             kinds = set()
             for st in u["stops"]:
                 kinds |= st.get("_shapes", set())
-            if len(kinds) < 3:
+            if len(kinds) < 2:
                 bad(f"unit {sec['n']}.{u['n']}",
                     f"only {len(kinds)} kind(s) of picture in the whole unit: "
                     f"{sorted(kinds)}")

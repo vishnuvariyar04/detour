@@ -169,19 +169,38 @@ def check_pic(qid, q):
     elif k == "card":
         # The card wraps, so nothing clips; but a card that wraps to many rows
         # pushes the answer buttons off the first screen.
-        rows = 0
-        for line in (pic.get("lines") or []):
-            words, cur, n = line.split(" "), "", 1
-            for w in words:
-                t = (cur + " " + w) if cur else w
-                if width(t, 15, 700) > BODY - 28 and cur:
-                    n += 1
-                    cur = w
-                else:
-                    cur = t
-            rows += n
+        rows = wrap_rows(pic.get("lines") or [])
         if rows > 5:
             bad(qid, "clue card wraps to %d rows" % rows)
+
+
+def wrap_rows(lines):
+    """Rows the clue card (Draw.clueCard, Oct 2026) wraps [lines] to.
+
+    Mirrors the Kotlin layout: two or more clues get a 22dp number badge and a
+    10dp gap; a closing question is its own row at weight 900 beside a "?"
+    badge; and 18dp is held back on every row so the number pills fit.
+    """
+    lines = [str(l) for l in lines]
+    ask = lines[-1] if len(lines) >= 2 and lines[-1].strip().endswith("?") else None
+    facts = lines[:-1] if ask is not None else lines
+    badge = 32 if len(facts) >= 2 else 0
+
+    def rows_of(line, room, weight):
+        cur, n = "", 1
+        for w in line.split(" "):
+            t = (cur + " " + w) if cur else w
+            if width(t, 15, weight) > room and cur:
+                n += 1
+                cur = w
+            else:
+                cur = t
+        return n
+
+    rows = sum(rows_of(l, BODY - 28 - badge - 18, 700) for l in facts)
+    if ask is not None:
+        rows += rows_of(ask, BODY - 28 - 32 - 18, 900)
+    return rows
 
 
 def main():

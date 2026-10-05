@@ -104,9 +104,8 @@ S412 = [
    "Count the squares between Nupo and the flag.",
    opt(1), visual=_b5, optionsText=["2", "3", "4"]),
 
- q("count", "How many moves does the broken list actually make? Tap the "
-            "number.",
-   "Blocked steps still count as steps, but they move him nowhere.",
+ q("count", "How many steps run, blocked ones too? Tap the number.",
+   "Count every step in the list, even the ones that bump.",
    moves_made(_b4), visual=_b4, kind="moves"),
 ]
 
@@ -175,8 +174,8 @@ S414 = [
    "The step inside runs four times, but one of those runs bumps.",
    fails_at(_d3), visual=_d3),
 
- q("count", "How many moves does the loop make in total? Tap the number.",
-   "Blocked runs still count as moves.",
+ q("count", "How many times does UP run, blocked ones too? Tap the number.",
+   "Count every run of UP, even the ones that bump.",
    moves_made(_d3), visual=_d3, kind="moves"),
 
  q("choose", "Tap the list that gets round this wall to the flag.",

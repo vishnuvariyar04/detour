@@ -13,6 +13,7 @@ import '../analytics.dart';
 import '../engine.dart';
 import '../theme.dart';
 import '../widgets.dart';
+import 'onboarding/onb_kit.dart';
 
 class PermissionStepScreen extends StatefulWidget {
   final IconData icon;
@@ -59,6 +60,16 @@ class PermissionStepScreen extends StatefulWidget {
   final int total;
   final VoidCallback onNext;
 
+  /// An illustration of the exact switch to find. When set it replaces the
+  /// icon hero and the "find Nupo" card, which it already shows.
+  final Widget? hero;
+
+  /// The tint behind [hero].
+  final Color? heroTint;
+
+  /// "1 of 4" — where this switch sits among the permission steps.
+  final String? stepLabel;
+
   const PermissionStepScreen({
     super.key,
     required this.icon,
@@ -79,6 +90,9 @@ class PermissionStepScreen extends StatefulWidget {
     this.videoKey,
     this.returnKind,
     this.footnote,
+    this.hero,
+    this.heroTint,
+    this.stepLabel,
   });
 
   @override
@@ -169,7 +183,11 @@ class _PermissionStepScreenState extends State<PermissionStepScreen>
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           _hero(),
-                          const SizedBox(height: 26),
+                          if (!_granted && widget.stepLabel != null) ...[
+                            const SizedBox(height: 18),
+                            Chip2(widget.stepLabel!, background: Colors.white, foreground: AppColors.primary),
+                          ],
+                          SizedBox(height: widget.hero != null ? 12 : 26),
                           Text(
                             _granted ? 'Done' : widget.title,
                             textAlign: TextAlign.center,
@@ -183,7 +201,7 @@ class _PermissionStepScreenState extends State<PermissionStepScreen>
                           ),
                           if (!_granted && widget.videoKey != null)
                             SetupVideoCard(widget.videoKey!),
-                          if (!_granted && widget.showFindCard) ...[
+                          if (!_granted && widget.showFindCard && widget.hero == null) ...[
                             const SizedBox(height: 26),
                             _findCard(),
                           ],
@@ -201,9 +219,8 @@ class _PermissionStepScreenState extends State<PermissionStepScreen>
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     if (!_granted) ...[
-                      PrimaryButton(
+                      ChunkyButton(
                         label: widget.buttonLabel,
-                        icon: widget.icon,
                         onPressed: _onButton,
                       ),
                       if (widget.skippable)
@@ -252,6 +269,18 @@ class _PermissionStepScreenState extends State<PermissionStepScreen>
           child: const Icon(Icons.check_rounded,
               color: AppColors.correct, size: 72),
         ),
+      );
+    }
+    if (widget.hero != null) {
+      return Container(
+        height: 230,
+        width: double.infinity,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: widget.heroTint ?? AppColors.primarySoft,
+          borderRadius: BorderRadius.circular(28),
+        ),
+        child: widget.hero,
       );
     }
     if (widget.mascot != null) {

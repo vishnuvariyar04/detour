@@ -665,6 +665,12 @@ _Brand _brandFor(String package) {
   if (p.contains('roblox')) {
     return const _Brand(Color(0xFF393B3D), Icons.extension_rounded, 'Games');
   }
+  if (p.contains('minecraft')) {
+    return const _Brand(Color(0xFF62A33A), Icons.grass_rounded, 'Games');
+  }
+  if (p.contains('netflix')) {
+    return const _Brand(Color(0xFFE50914), Icons.movie_rounded, 'Videos');
+  }
   if (p.contains('subwaysurf')) {
     return const _Brand(Color(0xFFFF9800), Icons.run_circle_rounded, 'Games');
   }

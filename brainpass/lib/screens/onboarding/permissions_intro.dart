@@ -1,110 +1,72 @@
-// screens/onboarding/permissions_intro.dart
-//
-// Android-only: the iOS design has no permission steps (it uses Screen Time),
-// but the gating engine here cannot work without them. Lifted out of the
-// retired survey_screens.dart when the onboarding was ported from the iOS
-// build.
+// screens/onboarding/permissions_intro.dart — what is coming, before Android
+// asks. Android-only: the gating engine cannot work without these switches.
 
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 import '../../theme.dart';
-import '../../widgets.dart';
-import 'onb_widgets.dart';
+import 'onb_kit.dart';
 
 class PermissionsIntroScreen extends StatelessWidget {
   final VoidCallback onNext;
+  final VoidCallback? onBack;
   final bool autostart;
-  final int? step;
-  final int? total;
+  final double progress;
   const PermissionsIntroScreen({
     super.key,
     required this.onNext,
     required this.autostart,
-    this.step,
-    this.total,
+    required this.progress,
+    this.onBack,
   });
 
   @override
   Widget build(BuildContext context) {
-    final count = autostart ? 4 : 3;
-    final rows = <(IconData, Color, Color, String)>[
-      (
-        Symbols.layers_rounded,
-        AppColors.primary,
-        AppColors.primarySoft,
-        'Show lessons over the apps you picked',
-      ),
-      (
-        Symbols.visibility_rounded,
-        AppColors.accentDeep,
-        AppColors.accentSoft,
-        'Notice when one of those apps opens',
-      ),
-      (
-        Symbols.bolt_rounded,
-        AppColors.correct,
-        AppColors.correctSoft,
-        'Keep working in the background',
-      ),
-      if (autostart)
-        (
-          Symbols.rocket_launch_rounded,
-          Color(0xFFE0642F),
-          Color(0xFFFFEFE6),
-          'Restart if the phone closes it',
-        ),
+    final rows = <(IconData, Color, String)>[
+      (Symbols.layers_rounded, AppColors.primary, 'Show lessons over apps'),
+      (Symbols.visibility_rounded, AppColors.done, 'Notice when an app opens'),
+      (Symbols.bolt_rounded, AppColors.accentDeep, 'Stay on in the background'),
+      if (autostart) (Symbols.restart_alt_rounded, AppColors.correct, 'Restart if the phone closes it'),
     ];
-    return OnbScaffold(
-      step: step ?? 1,
-      total: total ?? 1,
-      buttonLabel: 'Let’s do it',
-      onButton: onNext,
-      mascot: 'assets/nupo/focused.png',
-      line: 'A few switches and I can get to work.',
-      eyebrow: 'ALMOST THERE',
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Last thing. $count quick switches.', style: kStepTitle),
-          const SizedBox(height: 8),
-          const Text(
-            'Android needs your permission for Nupo to do its job. Each takes '
-            'a few seconds and brings you straight back.',
-            style: AppText.body,
-          ),
-          const SizedBox(height: 18),
+    return OnbPage(
+      top: StepChrome(progress: progress, onBack: onBack),
+      bottom: [ChunkyButton(label: 'Let’s do it', onPressed: onNext)],
+      content: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Image.asset(Nupo.focused, width: 90, semanticLabel: 'Nupo'),
+            const SizedBox(width: 8),
+            const Flexible(child: SpeechBubble('Last step. Under a minute.')),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Text('${rows.length} quick switches', style: OnbText.titleSm),
+        const SizedBox(height: 16),
+        for (var i = 0; i < rows.length; i++) ...[
           Container(
-            padding: const EdgeInsets.all(18),
-            decoration: AppColors.cardDecoration(),
-            child: Column(
+            padding: const EdgeInsets.fromLTRB(10, 10, 16, 10),
+            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(18)),
+            child: Row(
               children: [
-                for (var i = 0; i < rows.length; i++) ...[
-                  if (i > 0) const Divider(height: 22),
-                  Row(
-                    children: [
-                      IconBadge(
-                        rows[i].$1,
-                        size: 19,
-                        color: rows[i].$2,
-                        background: rows[i].$3,
-                      ),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Text(rows[i].$4, style: AppText.cardTitle),
-                      ),
-                    ],
-                  ),
-                ],
+                Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(color: tint(rows[i].$2, 0.14), borderRadius: BorderRadius.circular(13)),
+                  child: Icon(rows[i].$1, color: rows[i].$2, size: 22),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Text(rows[i].$3, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800)),
+                ),
+                Text('${i + 1}', style: const TextStyle(fontWeight: FontWeight.w900, color: AppColors.textMuted)),
               ],
             ),
           ),
+          const SizedBox(height: 9),
         ],
-      ),
+        const Spacer(),
+      ],
     );
   }
 }
-
-// ---------------------------------------------------------------------------
-// S34 — attribution
-// ---------------------------------------------------------------------------

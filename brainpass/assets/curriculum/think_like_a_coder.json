@@ -210,7 +210,7 @@
         {
          "shape": "fix",
          "prompt": "Put the steps in order so Nupo gets the star.",
-         "hint": "The star is two squares up and one across. Do both UP steps first.",
+         "hint": "Find the star. Count the squares up and across to it.",
          "answer": {
           "type": "order",
           "value": [
@@ -1208,7 +1208,7 @@
         {
          "shape": "fix",
          "prompt": "Put the steps in order to get round the wall.",
-         "hint": "Go up first, then across, then back down.",
+         "hint": "The wall is in the straight way. Go over it, then back down.",
          "answer": {
           "type": "order",
           "value": [
@@ -2140,7 +2140,7 @@
         {
          "shape": "predict",
          "prompt": "Tap the square this list ends on.",
-         "hint": "Two across, then two up.",
+         "hint": "Trace each step with your finger, from the top.",
          "answer": {
           "type": "cell",
           "value": [
@@ -2465,7 +2465,7 @@
         {
          "shape": "fix",
          "prompt": "Build a list that gets both stars and then the flag.",
-         "hint": "Both stars sit on the way. Go across, up, across, up.",
+         "hint": "Both stars sit on the way. Plan a path through each one.",
          "answer": {
           "type": "order",
           "value": [
@@ -3825,7 +3825,7 @@
         {
          "shape": "count",
          "prompt": "How many moves does this loop make? Tap the number.",
-         "hint": "One step inside, four times round.",
+         "hint": "Count the steps inside. Then count how many times it runs.",
          "answer": {
           "type": "number",
           "value": 4
@@ -4224,7 +4224,7 @@
         {
          "shape": "predict",
          "prompt": "Three steps inside, twice round. Tap where he ends.",
-         "hint": "Up, up, across. Then up, up, across again.",
+         "hint": "Trace the three steps inside once. Then do them again.",
          "answer": {
           "type": "cell",
           "value": [
@@ -5311,7 +5311,7 @@
         {
          "shape": "count",
          "prompt": "How many times does the UP row run altogether? Tap the number.",
-         "hint": "Three lots of four.",
+         "hint": "Outside count times inside count.",
          "answer": {
           "type": "number",
           "value": 12
@@ -5484,7 +5484,7 @@
         {
          "shape": "predict",
          "prompt": "Outside 2, inside 3, UP inside. Tap where he ends.",
-         "hint": "Six ups altogether.",
+         "hint": "Outside count times inside count. How many ups is that?",
          "answer": {
           "type": "cell",
           "value": [
@@ -7157,7 +7157,7 @@
         {
          "shape": "count",
          "prompt": "Checks are not moves. How many moves does Nupo make? Tap the number.",
-         "hint": "Three rows, and all three shift him.",
+         "hint": "Count only the rows that move him. Checks do not.",
          "answer": {
           "type": "number",
           "value": 3
@@ -7420,7 +7420,7 @@
         {
          "shape": "count",
          "prompt": "The list checks on every square he lands on. How many times does it say yes? Tap the number.",
-         "hint": "Three landings, and a star waiting on each of them.",
+         "hint": "Count each square he lands on. Is a star there?",
          "answer": {
           "type": "number",
           "value": 3
@@ -7630,7 +7630,7 @@
         {
          "shape": "yesno",
          "prompt": "Is the way up clear for Nupo? Tap Yes or No.",
-         "hint": "There is a wall drawn in the square above him.",
+         "hint": "Look at the square just above him. Is a wall or the edge there?",
          "answer": {
           "type": "bool",
           "value": true
@@ -10130,8 +10130,8 @@
         },
         {
          "shape": "count",
-         "prompt": "How many moves does the broken list actually make? Tap the number.",
-         "hint": "Blocked steps still count as steps, but they move him nowhere.",
+         "prompt": "How many steps run, blocked ones too? Tap the number.",
+         "hint": "Count every step in the list, even the ones that bump.",
          "answer": {
           "type": "number",
           "value": 4
@@ -10583,8 +10583,8 @@
         },
         {
          "shape": "count",
-         "prompt": "How many moves does the loop make in total? Tap the number.",
-         "hint": "Blocked runs still count as moves.",
+         "prompt": "How many times does UP run, blocked ones too? Tap the number.",
+         "hint": "Count every run of UP, even the ones that bump.",
          "answer": {
           "type": "number",
           "value": 4
@@ -10682,7 +10682,7 @@
        "authored": true,
        "teach": {
         "line": "A box holds a number. You can look inside, and you can change it.",
-        "demo": "A box labelled COINS shows 0, then 1, then 2 as stars are collected.",
+        "demo": "A box labelled STARS goes 0, 1, 2, 3 as each ADD row runs.",
         "board": {
          "w": 4,
          "h": 4,
@@ -10691,12 +10691,12 @@
           0
          ],
          "vars": {
-          "COINS": 0
+          "STARS": 0
          },
          "program": [
-          "add:COINS:1",
-          "add:COINS:4",
-          "add:COINS:2"
+          "add:STARS:1",
+          "add:STARS:1",
+          "add:STARS:1"
          ]
         }
        },
@@ -11474,7 +11474,7 @@
         {
          "shape": "count",
          "prompt": "And what is in KEYS? Tap the number.",
-         "hint": "Only one row in this list touches KEYS.",
+         "hint": "Read only the rows that say KEYS.",
          "answer": {
           "type": "number",
           "value": 1
@@ -11960,14 +11960,15 @@
         },
         {
          "shape": "fix",
-         "prompt": "Build just the first part: get to the key and pick it up.",
-         "hint": "Two steps across, then pick it up.",
+         "prompt": "Build the first two jobs: get the key, then open the door.",
+         "hint": "The key comes first. The door will not open without it.",
          "answer": {
           "type": "order",
           "value": [
            "right",
            "right",
            "pick",
+           "right",
            "open"
           ]
          },
@@ -11983,7 +11984,7 @@
            0
           ],
           "door": [
-           2,
+           3,
            0
           ]
          },
@@ -11991,9 +11992,10 @@
           "right",
           "pick",
           "right",
-          "open"
+          "open",
+          "right"
          ],
-         "slots": 4
+         "slots": 5
         },
         {
          "shape": "choose",
@@ -12052,7 +12054,7 @@
         },
         {
          "shape": "count",
-         "prompt": "How many steps does the whole level take? Tap the number.",
+         "prompt": "How many steps to the flag? Tap the number.",
          "hint": "Count the shortest way from Nupo to the flag.",
          "answer": {
           "type": "number",

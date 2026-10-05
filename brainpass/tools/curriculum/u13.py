@@ -28,7 +28,7 @@ S131 = [
    ends(_a1), visual=_a1),
 
  q("predict", "Tap the square this list ends on.",
-   "Two across, then two up.",
+   "Trace each step with your finger, from the top.",
    ends(_a2), visual=_a2),
 
  q("count", "How many stars does Nupo collect? Tap the number.",
@@ -81,7 +81,7 @@ S132 = [
    opt(0), visual=_b3, optionsText=["RIGHT", "DOWN", "LEFT"]),
 
  q("fix", "Build a list that gets both stars and then the flag.",
-   "Both stars sit on the way. Go across, up, across, up.",
+   "Both stars sit on the way. Plan a path through each one.",
    route(_b4, [R, U, R, U]), visual=_b4, blocks=[U, R, U, R], slots=4),
 
  q("compare", "Do the two lists leave Nupo on the same square? Tap your "

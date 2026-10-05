@@ -189,7 +189,7 @@ S314 = [
 
     q("count", "Checks are not moves. How many moves does Nupo make? Tap "
       "the number.",
-      "Three rows, and all three shift him.",
+      "Count only the rows that move him. Checks do not.",
       moves_made(_z5), visual=_z5, kind="moves"),
 
     q("chooseText", "The PICK UP never happened. Tap the reason why.",

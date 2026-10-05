@@ -19,8 +19,9 @@ import 'subscription_service.dart';
 import 'screens/paywall_gate_screen.dart';
 import 'screens/login/login_flow.dart';
 import 'screens/onboarding/onboarding_flow.dart';
-import 'screens/onboarding/story_screen.dart';
+import 'screens/onboarding/story_flow.dart';
 import 'screens/splash_screen.dart';
+import 'screens/permissions_screen.dart';
 import 'screens/pin_create_screen.dart';
 import 'screens/home_shell.dart';
 import 'storage.dart';
@@ -36,10 +37,8 @@ const _previewOnboarding = bool.fromEnvironment(
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // The scroll story derives its position from the viewport HEIGHT
-  // (t = 1 + offset / vh), so a rotation mid-story rescales t past the last
-  // beat and the screen goes blank. The whole parent UI is designed portrait;
-  // lock it here as well as in the manifest.
+  // The whole parent UI is designed portrait; lock it here as well as in the
+  // manifest.
   await SystemChrome.setPreferredOrientations(
     [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown],
   );
@@ -86,7 +85,7 @@ class BrainPassApp extends StatelessWidget {
 // ---------------------------------------------------------------------------
 // Root router — decides what to show after the splash, and reacts to login /
 // logout / entitlement changes so every gate is always enforced.
-//   story not seen        -> StoryScreen (the scroll story; sells the app)
+//   story not seen        -> OnboardingStory (the tapped story; sells the app)
 //   not signed in         -> LoginFlow (mandatory)
 //   signed in, no setup    -> OnboardingFlow
 //   set up, no Nupo Pro     -> PaywallGateScreen (hard paywall)
@@ -107,6 +106,12 @@ class _RootRouterState extends State<RootRouter> {
   /// this the router paints OnboardingFlow for a frame or two and a returning
   /// parent sees the questions flash past before landing home.
   bool _restoring = false;
+  /// Whether the lock's two permissions (draw over apps, usage access) are
+  /// on. Null until checked. A reinstall (and HyperOS on every update) clears
+  /// them, while a restored setup marks onboarding done, so a returning parent
+  /// used to land on home with a lock that silently did nothing.
+  bool? _permsOk;
+  bool _permsChecking = false;
   bool _previewStoryDone = false;
   bool _previewFlowDone = false;
   StreamSubscription<Object?>? _sub;
@@ -163,6 +168,20 @@ class _RootRouterState extends State<RootRouter> {
     await ProfileService.sync();
   }
 
+  Future<void> _checkPermissions() async {
+    if (_permsChecking) return;
+    _permsChecking = true;
+    bool ok = true;
+    try {
+      // A parent who switched Nupo off has no lock to protect.
+      if (Storage.masterEnabled) {
+        ok = await Engine.canDrawOverlays() && await Engine.hasUsageAccess();
+      }
+    } catch (_) {}
+    _permsChecking = false;
+    if (mounted) setState(() => _permsOk = ok);
+  }
+
   void _onGateChanged() {
     Analytics.setProfile(hasPro: SubscriptionService.hasPro.value);
     if (mounted) setState(() {});
@@ -192,7 +211,7 @@ class _RootRouterState extends State<RootRouter> {
     }
     // Signed in, and their saved setup is on its way down.
     if (_restoring) return const _RestoringScreen();
-    // The scroll story runs before anything else for a brand-new install —
+    // The story runs before anything else for a brand-new install —
     // a returning parent who taps "I already have an account" skips it too.
     if (!_storySeen && !_loggedIn) {
       return OnboardingStory(
@@ -223,6 +242,21 @@ class _RootRouterState extends State<RootRouter> {
         onNext: () async {
           await syncToEngine(); // push the new PIN down to the native lock
           if (mounted) setState(() {});
+        },
+      );
+    }
+    // Permissions, checked once per launch. Missing ones get the same steps
+    // onboarding uses; the parent can still skip them from there.
+    if (_permsOk == null) {
+      _checkPermissions();
+      return const _RestoringScreen();
+    }
+    if (_permsOk == false) {
+      return PermissionsScreen(
+        key: const ValueKey('perms-after-restore'),
+        onNext: () async {
+          await syncToEngine(); // restart the guard with the new permissions
+          if (mounted) setState(() => _permsOk = true);
         },
       );
     }

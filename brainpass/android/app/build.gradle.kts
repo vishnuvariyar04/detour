@@ -17,6 +17,23 @@ if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 }
 
+// PostHog runs on PostHog Cloud EU (data stored in Frankfurt). The project
+// token comes from android/posthog.properties (gitignored; copy
+// posthog.properties.example) or the POSTHOG_PROJECT_TOKEN environment
+// variable, and reaches the app as manifest meta-data, read once by
+// PostHogInit. With no token PostHog stays off: the build still runs, with
+// Firebase as the only analytics.
+val posthogHost = "https://eu.i.posthog.com"
+val posthogProperties = Properties()
+val posthogPropertiesFile = rootProject.file("posthog.properties")
+if (posthogPropertiesFile.exists()) {
+    posthogProperties.load(FileInputStream(posthogPropertiesFile))
+}
+fun posthogSetting(key: String, env: String): String =
+    (posthogProperties.getProperty(key) ?: System.getenv(env) ?: "").trim()
+
+val nupoPreview = project.hasProperty("nupoPreview")
+
 android {
     namespace = "com.brainpass.brainpass"
     compileSdk = flutter.compileSdkVersion
@@ -25,6 +42,9 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+        // flutter_local_notifications (the trial reminder) uses java.time on
+        // older Android versions through library desugaring.
+        isCoreLibraryDesugaringEnabled = true
     }
 
     defaultConfig {
@@ -38,6 +58,9 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        manifestPlaceholders["posthogHost"] = posthogHost
+        manifestPlaceholders["posthogToken"] =
+            if (nupoPreview) "" else posthogSetting("projectToken", "POSTHOG_PROJECT_TOKEN")
     }
 
     signingConfigs {
@@ -52,6 +75,10 @@ android {
     }
 
     buildTypes {
+        // `-PnupoPreview` makes a debug build that installs NEXT TO the Play
+        // app (its own package, its own data) with analytics off, for checking
+        // the lesson on a real phone via GatePreviewActivity.
+        if (nupoPreview) getByName("debug") { applicationIdSuffix = ".preview" }
         release {
             // Use the real upload key when key.properties is present,
             // otherwise fall back to debug so `flutter run --release` still works.
@@ -61,6 +88,11 @@ android {
                 signingConfigs.getByName("debug")
         }
     }
+}
+
+// The preview package is not in google-services.json, so Firebase stays off.
+if (nupoPreview) {
+    tasks.matching { it.name.contains("GoogleServices") }.configureEach { enabled = false }
 }
 
 kotlin {
@@ -92,6 +124,13 @@ dependencies {
     // `FirebaseSDKVersion` in that plugin's android/gradle.properties.
     implementation(platform("com.google.firebase:firebase-bom:34.15.0"))
     implementation("com.google.firebase:firebase-analytics")
+
+    // PostHog, alongside Firebase. posthog_flutter declares the Android SDK as
+    // `implementation`, so like Firebase the app needs its own line to compile
+    // Analytics.kt against it. Keep the range the plugin's own build.gradle uses.
+    implementation("com.posthog:posthog-android:[3.71.0,4.0.0)")
+
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 
     // Unit tests for the curriculum simulator. android.jar on the unit-test
     // classpath is a stub whose org.json methods all throw, so a real

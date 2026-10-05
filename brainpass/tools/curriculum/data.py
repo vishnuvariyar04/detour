@@ -469,7 +469,7 @@ SECTIONS = [
  ("Variables", [
   ("4.2.1", "A box that holds a number",
    "A variable is a labelled box. You can look in it, and you can change what is inside.",
-   "A box labelled COINS shows 0, then 1, then 2 as stars are collected.",
+   "A box labelled STARS goes 0, 1, 2, 3 as each ADD row runs.",
    [("tracetable","COINS starts at 0. Nupo collects 3 stars. COINS now?","3"),
     ("predict","After this program, what is in COINS?","5"),
     ("choose","Which step changes the value in the box?","ADD 1"),

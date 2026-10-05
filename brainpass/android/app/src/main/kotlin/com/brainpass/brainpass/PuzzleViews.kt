@@ -170,28 +170,137 @@ object Draw {
 
     /**
      * The clue card: the sentences the question is about, kept on screen while
-     * the child works. Cream rather than white, so it reads as "what you were
-     * told" and not as another thing to tap.
+     * the child works (October 2026 look).
+     *
+     * Each sentence is its own numbered clue, and every number in it sits in a
+     * lilac pill, so "Riya has 38 marbles. She gets 27 more." reads as two facts
+     * and two numbers at a glance instead of a paragraph. A closing question
+     * ("How many now?") is set apart in a band at the foot of the card. Only the
+     * presentation is decided here: the words are exactly the question's lines.
      */
     fun clueCard(
         c: Canvas, p: Paint, fonts: Fonts, d: Float,
         lines: List<String>, x: Float, y: Float, w: Float,
-    ): Float {
-        val rows = lines.flatMap { lineBreaks(p, fonts, it, w - 28f * d, 15f * d) }
-        val h = (28f + 22f * rows.size) * d
-        rrect(c, p, x, y, w, h, 16f * d, 0xFFFFFCEF.toInt(), 0xFFF2E3B3.toInt(), 1.5f * d)
-        rows.forEachIndexed { i, r ->
-            text(c, p, fonts, r, x + 14f * d, y + (14f + 11f + i * 22f) * d, 15f * d, Ink.text, 700)
-        }
-        return h
-    }
+    ): Float = clueLayout(c, p, fonts, d, lines, x, y, w)
 
     /** The height a clue card will take, without drawing it. */
     fun clueCardHeight(
         p: Paint, fonts: Fonts, d: Float, lines: List<String>, w: Float,
+    ): Float = clueLayout(null, p, fonts, d, lines, 0f, 0f, w)
+
+    private val NUMBER = Regex("""(?<![A-Za-z])-?\d+(?:st|nd|rd|th)?(?![A-Za-z])""")
+    private const val CLUE_SIZE = 15f
+    private const val ROW = 23f
+    /** Room each side of a number pill, so it never touches its neighbours. */
+    private const val PILL_GAP = 3f
+
+    /**
+     * Lays the card out once, for measuring ([c] null) and for drawing, so the
+     * height a view asks for is always the height that gets drawn.
+     */
+    private fun clueLayout(
+        c: Canvas?, p: Paint, fonts: Fonts, d: Float,
+        lines: List<String>, x: Float, y: Float, w: Float,
     ): Float {
-        val rows = lines.flatMap { lineBreaks(p, fonts, it, w - 28f * d, 15f * d) }
-        return (28f + 22f * rows.size) * d
+        val ask = if (lines.size >= 2 && lines.last().trim().endsWith("?")) lines.last() else null
+        val facts = if (ask != null) lines.dropLast(1) else lines
+        val badges = facts.size >= 2
+        val padX = 14f * d
+        val badge = 22f * d
+        val textX = padX + if (badges) badge + 10f * d else 0f
+        val wrapW = w - textX - padX - 18f * d
+        val size = CLUE_SIZE * d
+
+        val factRows = facts.map { lineBreaks(p, fonts, it, wrapW, size) }
+        val askX = padX + badge + 10f * d
+        val askRows = ask?.let { lineBreaks(p, fonts, it, w - askX - padX - 18f * d, size, 900) }
+
+        var body = 14f * d
+        factRows.forEachIndexed { i, r ->
+            if (i > 0) body += 8f * d
+            body += ROW * d * r.size
+        }
+        body += 14f * d
+        val askH = askRows?.let { 12f * d + ROW * d * it.size + 12f * d } ?: 0f
+        val h = body + askH
+        val ledge = 3f * d
+        if (c == null) return h + ledge
+
+        val rad = 18f * d
+        // A white card on a short ledge, like every tappable thing in the gate
+        // but in the quiet grey that says "read me", not "press me".
+        rrect(c, p, x, y + ledge, w, h, rad, Ink.ledge)
+        rrect(c, p, x, y, w, h, rad, Ink.surface, Ink.line, 2f * d)
+
+        var cy = y + 14f * d
+        factRows.forEachIndexed { i, rows ->
+            if (i > 0) cy += 8f * d
+            if (badges) {
+                val bx = x + padX + badge / 2
+                val by = cy + ROW * d / 2
+                p.style = Paint.Style.FILL
+                p.color = 0xFFEDE6FF.toInt()
+                c.drawCircle(bx, by, badge / 2, p)
+                text(c, p, fonts, "${i + 1}", bx, by, 12f * d, Ink.primary, 900, Paint.Align.CENTER)
+            }
+            rows.forEach { r ->
+                richRow(c, p, fonts, d, r, x + textX, cy + ROW * d / 2, size, 700, Ink.text)
+                cy += ROW * d
+            }
+        }
+
+        if (askRows != null) {
+            // The question band: a lilac foot with rounded bottom corners.
+            val top = y + body
+            p.style = Paint.Style.FILL
+            p.color = 0xFFF4F0FF.toInt()
+            val path = android.graphics.Path().apply {
+                addRoundRect(
+                    android.graphics.RectF(x + d, top, x + w - d, y + h - d),
+                    floatArrayOf(0f, 0f, 0f, 0f, rad - d, rad - d, rad - d, rad - d),
+                    android.graphics.Path.Direction.CW,
+                )
+            }
+            c.drawPath(path, p)
+            p.color = Ink.line
+            c.drawRect(x + d, top, x + w - d, top + 2f * d, p)
+            var qy = top + 12f * d
+            val bx = x + padX + badge / 2
+            p.color = Ink.primary
+            c.drawCircle(bx, qy + ROW * d / 2, badge / 2, p)
+            text(c, p, fonts, "?", bx, qy + ROW * d / 2, 13f * d, Ink.surface, 900, Paint.Align.CENTER)
+            askRows.forEach { r ->
+                richRow(c, p, fonts, d, r, x + askX, qy + ROW * d / 2, size, 900, Ink.primary)
+                qy += ROW * d
+            }
+        }
+        return h + ledge
+    }
+
+    /** One line of a clue, with each number drawn in a lilac pill. */
+    private fun richRow(
+        c: Canvas, p: Paint, fonts: Fonts, d: Float, row: String,
+        x: Float, cy: Float, size: Float, weight: Int, ink: Int,
+    ) {
+        var cx = x
+        var last = 0
+        fun plain(t: String) {
+            if (t.isEmpty()) return
+            text(c, p, fonts, t, cx, cy, size, ink, weight)
+            p.typeface = face(fonts, weight); p.textSize = size
+            cx += p.measureText(t)
+        }
+        for (m in NUMBER.findAll(row)) {
+            plain(row.substring(last, m.range.first))
+            p.typeface = face(fonts, 900); p.textSize = size
+            val tw = p.measureText(m.value)
+            cx += PILL_GAP * d
+            rrect(c, p, cx - 4f * d, cy - 10.5f * d, tw + 8f * d, 21f * d, 7f * d, 0xFFEDE6FF.toInt())
+            text(c, p, fonts, m.value, cx, cy, size, Ink.primary, 900)
+            cx += tw + PILL_GAP * d
+            last = m.range.last + 1
+        }
+        plain(row.substring(last))
     }
 }
 

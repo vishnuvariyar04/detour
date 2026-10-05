@@ -1,15 +1,17 @@
 # -*- coding: utf-8 -*-
 """Number Sense — 48 stops, 324 questions, band a, ages 5-6.
 
-The docstring said "ages 7-8" while ns_emit.py emits band "a" / ages "5-6".
-Corrected to match the asset, which is what the gate actually serves. 7-8 is
-band b (Puzzles & Logic) and must not overlap this file.
-
 Three rules hold everywhere in this file.
 
-ONE IDEA, AT LEAST THREE PICTURES. A stop is not the same question seven times;
-a child who meets seven identical bonds learns the shape of the screen instead
-of the idea on it. Each stop keeps one idea and shows it several ways.
+ONE IDEA PER STOP. Every question in a stop practises the idea its teach card
+shows, and nothing else. The skill used to mix three or four topics into each
+stop ("Two dice" asked no dice questions, "Cut into pieces" taught fractions
+and then asked about hops), so the idea a child had just been shown was
+missing from most of the questions after it. Variety now comes from showing
+the SAME idea several ways (a full ten frame, two parts that make ten, 5 + 5
+on a line), and mixing happens only in the boss stop, which reviews its own
+unit. `ns_emit.py` lists the question kinds each stop may use, and
+`ns_simulate.py` fails the build if a question lands in the wrong stop.
 
 NO QUESTION APPEARS TWICE. Not once in 324. The checker enforces it on the
 prompt, the picture and the options together, so a near-copy fails the build.
@@ -18,9 +20,9 @@ EVERY PROMPT SAYS WHAT TO DO. "Start at 2 and hop on 3" told a child nothing
 about what to touch. "Start at 2. Take 3 hops forward. Tap where you land."
 does. The checker refuses a prompt with no instruction verb in it.
 
-The climb: count and compare to 20, then build numbers to 100, then learn to
-look, then use all of it for groups, sharing and fractions. Section 4 is where
-the skill gets genuinely hard, because by then a child has the tools.
+The climb: count and compare to 20, then build numbers with parts, tens and
+same-size hops, then learn to look, then use all of it for groups, sharing and
+fractions.
 """
 from numkit import (
     STAR, HEART, CIRCLE, SQUARE, TRIANGLE, DIAMOND, HEXAGON, FLOWER,
@@ -43,11 +45,42 @@ _DIy, _FLy = cell(DIAMOND, ACCENT), cell(FLOWER, ACCENT)
 C_COUNT = "Count the {}. Tap the number."
 C_DICE = "Add the two dice. Tap the total."
 C_FRAME = "Count the counters. Tap the number."
+C_TWO = "Count the counters in both frames. Tap the number."
+C_GAP = "How many more counters would fill the frame? Tap the number."
+C_PAN = "Which pan goes down? Tap it, or tap Same."
+C_MORE = "How many more does the top bar have? Tap the number."
+C_FEWER = "How many fewer does the bottom bar have? Tap the number."
+C_SIZE = "Tap them from smallest to biggest."
+C_HOP = "Start at {}. Take {} hops forward. Tap where you land."
+C_FOLD = "Fold on the line. Tap the squares that finish the picture."
+C_PART = "{} is {} and what? Tap the missing part."
+C_WHOLE = "Both parts are here. Tap the whole."
+C_OTHER = "The whole and one part are here. Tap the other part."
+C_RODS = "Each tall stick is ten. Count the blocks. Tap the number."
+C_SKIP = "Start at {}. Take {} hops of {}. Tap where you land."
+C_ODD = "Three are alike. Tap the one that is not."
+C_NEXT = "What comes next? Tap it."
+C_GAPPAT = "One is missing. Tap what belongs in the gap."
+C_ROWS = "{} rows of {}. Tap how many altogether."
+C_BAGS = "{} bags with {} in each. Tap how many altogether."
+C_SHARE = "{} shared into {} equal bags. Tap how many in one bag."
+C_CIRCLE = "Which circle has more coloured in? Tap it."
+C_BIG = "Same length strips. Tap the one with the biggest pieces."
+
+
+def hop(start, n, to=10):
+    return number_line(C_HOP.format(start, n), 0, to, start, n,
+                       label_every=1 if to <= 10 else 5)
+
+
+def skip(start, hops_, step, to=20):
+    return skip_line(C_SKIP.format(start, hops_, step), to, start, step, hops_)
 
 
 # ================================================================ SECTION 1
 # Counting and comparing, up to twenty.
 
+# 1.1.1 Count them: touch each one as you say the number.
 S111 = [
     count_objects(C_COUNT.format("stars"), 4, STAR),
     dice("Count the dots. Tap the number.", [3]),
@@ -58,556 +91,555 @@ S111 = [
     count_objects(C_COUNT.format("flowers"), 3, FLOWER),
 ]
 
+# 1.1.2 Count them all: every one, and only once each.
 S112 = [
-    ten_frame("A full frame is ten. Count them all. Tap the number.", 10, 3),
     count_objects(C_COUNT.format("circles"), 8, CIRCLE),
     dice(C_DICE, [5, 4]),
-    ten_frame("Count the counters in both frames. Tap the number.", 10, 7),
-    array("2 rows of 4. Tap how many altogether.", 2, 4),
     count_objects(C_COUNT.format("stars"), 10, STAR),
+    array("2 rows of 4. Count them all. Tap the number.", 2, 4),
+    count_objects(C_COUNT.format("hearts"), 10, HEART),
     dice(C_DICE, [6, 6]),
+    count_objects(C_COUNT.format("flowers"), 9, FLOWER),
 ]
 
+# 1.1.3 A full frame is ten: five in a row, two rows make ten.
 S113 = [
-    dice("Count the dots. Tap the number.", [6]),
-    array("3 rows of 3. Tap how many altogether.", 3, 3),
-    ten_frame("Count the counters in both frames. Tap the number.", 10, 9),
-    dice(C_DICE, [2, 3]),
-    array("2 rows of 5. Tap how many altogether.", 2, 5),
-    count_objects(C_COUNT.format("hearts"), 9, HEART),
-    frame_gap("How many more counters would fill the frame? Tap the number.", 6),
+    ten_frame(C_FRAME, 8),
+    ten_frame("Is the frame full? Count the counters. Tap the number.", 10),
+    ten_frame(C_TWO, 10, 9),
+    ten_frame("A full frame is ten. Count them all. Tap the number.", 10, 3),
+    ten_frame(C_TWO, 10, 7),
+    frame_gap(C_GAP, 6),
+    frame_gap(C_GAP, 8),
 ]
 
-S114 = [  # boss
+S114 = [  # boss: how many
     count_objects(C_COUNT.format("flowers"), 5, FLOWER),
     dice(C_DICE, [3, 6]),
-    ten_frame("Count the counters in both frames. Tap the number.", 10, 5),
-    array("3 rows of 4. Tap how many altogether.", 3, 4),
-    frame_gap("How many more counters would fill the frame? Tap the number.", 3),
+    ten_frame(C_TWO, 10, 5),
+    array("3 rows of 4. Count them all. Tap the number.", 3, 4),
+    frame_gap(C_GAP, 3),
     dice("Count the dots. Tap the number.", [4]),
 ]
 
+# 1.2.1 Which side is heavier: the heavier side goes down.
 S121 = [
-    balance("Which pan goes down? Tap the heavier side.", 6, 2),
-    count_colour("Count only the yellow ones. Tap the number.", 7, 4, glyph=STAR),
-    balance("Which pan goes down? Tap the heavier side.", 3, 7, HEART),
-    bar_model("How many more does the top bar have? Tap the number.", 9, 5),
-    balance("The pans are level. Tap Same.", 5, 5),
-    count_colour("Count only the purple ones. Tap the number.", 8, 5,
-                 yellow=False, glyph=HEART),
-    balance("Which pan goes down? Tap the heavier side.", 8, 3),
+    balance(C_PAN, 6, 2),
+    balance(C_PAN, 3, 7, HEART),
+    balance(C_PAN, 5, 5),
+    balance(C_PAN, 8, 3),
+    balance(C_PAN, 4, 8, HEART),
+    balance(C_PAN, 6, 6, FLOWER),
+    balance(C_PAN, 1, 6),
 ]
 
+# 1.2.2 More and fewer: the longer bar has more; the extra bit is how many more.
 S122 = [
-    bar_model("How many more does the top bar have? Tap the number.", 12, 8),
-    balance("Which pan goes down? Tap the heavier side.", 4, 6),
-    bar_model("Put the two bars end to end. Tap the total.", 7, 6, ask="total"),
-    count_colour("Count only the yellow ones. Tap the number.", 9, 6, glyph=CIRCLE),
-    balance("The pans are level. Tap Same.", 7, 7, HEART),
-    bar_model("How many more does the top bar have? Tap the number.", 15, 9),
-    balance("Which pan goes down? Tap the heavier side.", 2, 8, STAR),
+    bar_model(C_MORE, 12, 8),
+    bar_model(C_MORE, 15, 9),
+    bar_model(C_FEWER, 10, 7),
+    bar_model(C_MORE, 13, 6),
+    bar_model(C_FEWER, 11, 9),
+    bar_model(C_MORE, 16, 10),
+    bar_model(C_FEWER, 14, 11),
 ]
 
+# 1.2.3 Big and small: smallest first, then the next one up.
 S123 = [
-    size_order("Tap them from smallest to biggest.", [0.5, 1.0, 0.3]),
-    balance("Which pan goes down? Tap the heavier side.", 7, 4),
-    size_order("Tap them from smallest to biggest.", [0.9, 0.4, 0.65, 0.25]),
-    bar_model("Put the two bars end to end. Tap the total.", 9, 4, ask="total"),
-    size_order("Tap them from smallest to biggest.", [0.35, 0.8, 1.0, 0.55], HEART),
-    count_colour("Count only the yellow ones. Tap the number.", 6, 2, glyph=FLOWER),
-    size_order("Tap them from smallest to biggest.", [0.6, 0.35, 0.9], STAR),
+    size_order(C_SIZE, [0.5, 1.0, 0.3]),
+    size_order(C_SIZE, [0.9, 0.4, 0.65, 0.25]),
+    size_order(C_SIZE, [0.35, 0.8, 1.0, 0.55], HEART),
+    size_order(C_SIZE, [0.6, 0.35, 0.9], STAR),
+    size_order(C_SIZE, [0.45, 0.9, 0.2], CIRCLE),
+    size_order(C_SIZE, [1.0, 0.6, 0.35, 0.8], SQUARE),
+    size_order(C_SIZE, [0.3, 0.55, 0.85], HEART),
 ]
 
-S124 = [  # boss
-    balance("Which pan goes down? Tap the heavier side.", 8, 5),
-    size_order("Tap them from smallest to biggest.", [0.4, 1.0, 0.7, 0.25]),
-    bar_model("How many more does the top bar have? Tap the number.", 14, 6),
-    count_colour("Count only the purple ones. Tap the number.", 10, 4,
-                 yellow=False, glyph=STAR),
-    size_order("Tap them from smallest to biggest.", [0.95, 0.5, 0.3], HEXAGON),
-    balance("Which pan goes down? Tap the heavier side.", 3, 8, HEART),
+S124 = [  # boss: more or fewer
+    balance(C_PAN, 8, 5),
+    size_order(C_SIZE, [0.4, 1.0, 0.7, 0.25]),
+    bar_model(C_MORE, 14, 6),
+    balance(C_PAN, 7, 7, HEART),
+    size_order(C_SIZE, [0.95, 0.5, 0.3], HEXAGON),
+    bar_model(C_FEWER, 13, 5),
 ]
 
+# 1.3.1 Hop along the line: each hop is one step to the next number.
 S131 = [
-    number_line("Start at 2. Take 3 hops forward. Tap where you land.", 0, 10, 2, 3),
-    dice(C_DICE, [2, 2]),
-    number_line("Start at 5. Take 4 hops forward. Tap where you land.", 0, 10, 5, 4),
-    count_objects(C_COUNT.format("circles"), 6, CIRCLE),
-    number_line("Start at 0. Take 7 hops forward. Tap where you land.", 0, 10, 0, 7),
-    ten_frame(C_FRAME, 4),
-    number_line("Start at 3. Take 5 hops forward. Tap where you land.", 0, 10, 3, 5),
+    hop(2, 3),
+    hop(5, 4),
+    hop(0, 7),
+    hop(3, 5),
+    hop(1, 6),
+    hop(6, 3),
+    hop(4, 5),
 ]
 
+# 1.3.2 Longer hops: count each hop out loud as it lands.
 S132 = [
-    number_line("Start at 8. Take 6 hops forward. Tap where you land.", 0, 20, 8, 6,
-                label_every=5),
-    ten_frame("Count the counters in both frames. Tap the number.", 10, 2),
-    number_line("Start at 11. Take 7 hops forward. Tap where you land.", 0, 20, 11, 7,
-                label_every=5),
-    array("4 rows of 3. Tap how many altogether.", 4, 3),
-    number_line("Start at 6. Take 9 hops forward. Tap where you land.", 0, 20, 6, 9,
-                label_every=5),
-    bar_model("How many more does the top bar have? Tap the number.", 17, 11),
-    number_line("Start at 14. Take 5 hops forward. Tap where you land.", 0, 20, 14, 5,
-                label_every=5),
+    hop(8, 6, 20),
+    hop(11, 7, 20),
+    hop(6, 9, 20),
+    hop(14, 5, 20),
+    hop(9, 8, 20),
+    hop(4, 6, 20),
+    hop(12, 7, 20),
 ]
 
+# 1.3.3 Fold it over: each square has a partner across the line.
 S133 = [
-    mirror("Fold on the line. Tap the squares that finish the picture.",
-           [(0, 1), (1, 1), (2, 2)]),
-    number_line("Start at 9. Take 8 hops forward. Tap where you land.", 0, 20, 9, 8,
-                label_every=5),
-    mirror("Fold on the line. Tap the squares that finish the picture.",
-           [(1, 0), (1, 1), (2, 3)]),
-    size_order("Tap them from smallest to biggest.", [0.8, 0.3, 0.55], SQUARE),
-    mirror("Fold on the line. Tap the squares that finish the picture.",
-           [(0, 2), (2, 0), (2, 4)]),
-    number_line("Start at 4. Take 6 hops forward. Tap where you land.", 0, 20, 4, 6,
-                label_every=5),
-    mirror("Fold on the line. Tap the squares that finish the picture.",
-           [(2, 2), (1, 4)]),
+    mirror(C_FOLD, [(0, 1), (1, 1), (2, 2)]),
+    mirror(C_FOLD, [(1, 0), (1, 1), (2, 3)]),
+    mirror(C_FOLD, [(0, 2), (2, 0), (2, 4)]),
+    mirror(C_FOLD, [(2, 2), (1, 4)]),
+    mirror(C_FOLD, [(0, 2), (1, 1), (2, 3)]),
+    mirror(C_FOLD, [(0, 3), (1, 3), (2, 3)]),
+    mirror(C_FOLD, [(2, 0), (2, 1)]),
 ]
 
-S134 = [  # boss
-    number_line("Start at 7. Take 9 hops forward. Tap where you land.", 0, 20, 7, 9,
-                label_every=5),
-    mirror("Fold on the line. Tap the squares that finish the picture.",
-           [(0, 1), (1, 3), (2, 0)]),
-    ten_frame("Count the counters in both frames. Tap the number.", 10, 8),
-    number_line("Start at 13. Take 6 hops forward. Tap where you land.", 0, 20, 13, 6,
-                label_every=5),
-    mirror("Fold on the line. Tap the squares that finish the picture.",
-           [(1, 2), (2, 2), (2, 4)]),
-    size_order("Tap them from smallest to biggest.", [1.0, 0.45, 0.7], HEXAGON),
+S134 = [  # boss: lines and folds
+    hop(7, 9, 20),
+    mirror(C_FOLD, [(0, 1), (1, 3), (2, 0)]),
+    hop(2, 7),
+    hop(13, 6, 20),
+    mirror(C_FOLD, [(1, 2), (2, 2), (2, 4)]),
+    mirror(C_FOLD, [(0, 0), (1, 4)]),
 ]
 
 
 # ================================================================ SECTION 2
-# Building numbers, up to a hundred.
+# Building numbers: parts, tens and same-size hops.
 
+# 2.1.1 A number has parts: both parts make the whole.
 S211 = [
-    bond("6 is 4 and what? Tap the missing part.", 6, 4),
+    bond(C_PART.format(6, 4), 6, 4),
     dice(C_DICE, [4, 3]),
     count_colour("Count only the yellow ones. Tap the number.", 8, 3, glyph=STAR),
-    bond("9 is 5 and what? Tap the missing part.", 9, 5),
-    number_line("Start at 4. Take 3 hops forward. Tap where you land.", 0, 10, 4, 3),
-    bond("8 is 2 and what? Tap the missing part.", 8, 2),
+    bond(C_PART.format(9, 5), 9, 5),
+    count_colour("Count only the purple ones. Tap the number.", 8, 5,
+                 yellow=False, glyph=HEART),
+    bond(C_PART.format(8, 2), 8, 2),
     bar_model("Put the two bars end to end. Tap the total.", 5, 3, ask="total"),
 ]
 
+# 2.1.2 Friends of ten. (The onboarding demo for ages 5-6 is a question from
+# this stop; test/onboarding_demo_test.dart checks it is still here.)
 S212 = [
-    bond("10 is 6 and what? Tap the missing part.", 10, 6),
-    frame_gap("How many more counters would fill the frame? Tap the number.", 7),
-    bond("10 is 3 and what? Tap the missing part.", 10, 3),
+    bond(C_PART.format(10, 6), 10, 6),
+    frame_gap(C_GAP, 7),
+    bond(C_PART.format(10, 3), 10, 3),
     dice(C_DICE, [6, 4]),
-    frame_gap("How many more counters would fill the frame? Tap the number.", 2),
-    bond("10 is 8 and what? Tap the missing part.", 10, 8),
-    number_line("Start at 5. Take 5 hops forward. Tap where you land.", 0, 10, 5, 5),
+    frame_gap(C_GAP, 2),
+    bond(C_PART.format(10, 8), 10, 8),
+    hop(5, 5),
 ]
 
+# 2.1.3 Find the missing part: the whole is at the top; the parts are below.
 S213 = [
-    bond("Both parts are here. Tap the whole.", 7, 3, gap="whole"),
-    frame_gap("How many more counters would fill the frame? Tap the number.", 4),
-    bond("The whole and one part are here. Tap the other part.", 9, 6, gap="left"),
+    bond(C_WHOLE, 7, 3, gap="whole"),
+    frame_gap(C_GAP, 4),
+    bond(C_OTHER, 9, 6, gap="left"),
     bar_model("Put the two bars end to end. Tap the total.", 8, 6, ask="total"),
-    bond("Both parts are here. Tap the whole.", 6, 5, gap="whole"),
-    number_line("Start at 2. Take 6 hops forward. Tap where you land.", 0, 10, 2, 6),
-    bond("The whole and one part are here. Tap the other part.", 10, 7, gap="left"),
+    bond(C_WHOLE, 6, 5, gap="whole"),
+    bond(C_OTHER, 8, 3, gap="left"),
+    bond(C_OTHER, 10, 7, gap="left"),
 ]
 
-S214 = [  # boss
-    bond("10 is 4 and what? Tap the missing part.", 10, 4),
+S214 = [  # boss: parts and wholes
+    bond(C_PART.format(10, 4), 10, 4),
     dice(C_DICE, [5, 2]),
-    bond("Both parts are here. Tap the whole.", 8, 7, gap="whole"),
-    frame_gap("How many more counters would fill the frame? Tap the number.", 9),
-    bond("The whole and one part are here. Tap the other part.", 7, 2, gap="left"),
-    bar_model("How many more does the top bar have? Tap the number.", 11, 4),
+    bond(C_WHOLE, 8, 7, gap="whole"),
+    frame_gap(C_GAP, 9),
+    bond(C_OTHER, 7, 2, gap="left"),
+    count_colour("Count only the purple ones. Tap the number.", 10, 4,
+                 yellow=False, glyph=STAR),
 ]
 
+# 2.2.1 Two dice: know each face, then put them together.
 S221 = [
-    ten_frame("Ten and some more. Count them all. Tap the number.", 10, 4),
-    rods("Count the blocks. Tap the number.", 13),
-    ten_frame("Ten and some more. Count them all. Tap the number.", 10, 6),
-    number_line("Start at 10. Take 8 hops forward. Tap where you land.", 0, 20, 10, 8,
-                label_every=5),
-    rods("Count the blocks. Tap the number.", 17),
-    ten_frame("Ten and some more. Count them all. Tap the number.", 10, 1),
-    bond("15 is 10 and what? Tap the missing part.", 15, 10),
+    dice(C_DICE, [6, 5]),
+    dice(C_DICE, [4, 6]),
+    dice(C_DICE, [5, 5]),
+    dice(C_DICE, [6, 3]),
+    dice(C_DICE, [4, 4]),
+    dice(C_DICE, [3, 5]),
+    dice(C_DICE, [2, 6]),
 ]
 
+# 2.2.2 Ten and some more: a full frame is ten; count on from ten.
 S222 = [
-    rods("Each tall stick is ten. Count the blocks. Tap the number.", 24),
-    number_line("Start at 12. Take 7 hops forward. Tap where you land.", 0, 20, 12, 7,
-                label_every=5),
-    rods("Each tall stick is ten. Count the blocks. Tap the number.", 31),
-    bond("18 is 10 and what? Tap the missing part.", 18, 10),
-    rods("Each tall stick is ten. Count the blocks. Tap the number.", 20),
-    bar_model("How many more does the top bar have? Tap the number.", 20, 12),
-    rods("Each tall stick is ten. Count the blocks. Tap the number.", 28),
+    ten_frame("Ten and some more. Count them all. Tap the number.", 10, 4),
+    ten_frame("Ten and some more. Count them all. Tap the number.", 10, 6),
+    bond(C_PART.format(15, 10), 15, 10),
+    hop(10, 8, 20),
+    ten_frame("Ten and some more. Count them all. Tap the number.", 10, 1),
+    bond(C_PART.format(18, 10), 18, 10),
+    ten_frame(C_TWO, 10, 2),
 ]
 
+# 2.2.3 Tens and ones: each tall stick is ten blocks.
 S223 = [
-    rods("Each tall stick is ten. Count the blocks. Tap the number.", 42),
-    bond("Both parts are here. Tap the whole.", 16, 10, gap="whole"),
-    rods("Each tall stick is ten. Count the blocks. Tap the number.", 35),
-    array("5 rows of 4. Tap how many altogether.", 5, 4),
-    rods("Each tall stick is ten. Count the blocks. Tap the number.", 50),
-    bar_model("Put the two bars end to end. Tap the total.", 14, 11, ask="total"),
-    rods("Each tall stick is ten. Count the blocks. Tap the number.", 47),
+    rods(C_RODS, 42),
+    bond(C_WHOLE, 16, 10, gap="whole"),
+    rods(C_RODS, 35),
+    rods(C_RODS, 24),
+    rods(C_RODS, 50),
+    rods(C_RODS, 31),
+    rods(C_RODS, 47),
 ]
 
-S224 = [  # boss
-    rods("Each tall stick is ten. Count the blocks. Tap the number.", 36),
+S224 = [  # boss: past ten
+    rods(C_RODS, 36),
     ten_frame("Ten and some more. Count them all. Tap the number.", 10, 10),
-    bond("14 is 10 and what? Tap the missing part.", 14, 10),
-    rods("Each tall stick is ten. Count the blocks. Tap the number.", 29),
-    number_line("Start at 3. Take 14 hops forward. Tap where you land.", 0, 20, 3, 14,
-                label_every=5),
-    array("4 rows of 5. Tap how many altogether.", 4, 5),
+    bond(C_PART.format(14, 10), 14, 10),
+    rods(C_RODS, 29),
+    dice(C_DICE, [5, 6]),
+    rods(C_RODS, 28),
 ]
 
+# 2.3.1 Hops of two and five: every hop jumps the same amount.
 S231 = [
-    skip_line("Start at 0. Take 4 hops of 2. Tap where you land.", 20, 0, 2, 4),
-    rods("Each tall stick is ten. Count the blocks. Tap the number.", 23),
-    skip_line("Start at 0. Take 3 hops of 5. Tap where you land.", 20, 0, 5, 3),
-    bond("Both parts are here. Tap the whole.", 13, 9, gap="whole"),
-    skip_line("Start at 0. Take 5 hops of 3. Tap where you land.", 20, 0, 3, 5),
-    bar_model("How many more does the top bar have? Tap the number.", 18, 13),
-    skip_line("Start at 2. Take 4 hops of 4. Tap where you land.", 20, 2, 4, 4),
+    skip(0, 4, 2),
+    skip(0, 3, 5),
+    skip(0, 7, 2),
+    skip(5, 3, 5),
+    skip(0, 4, 5),
+    skip(4, 5, 2),
+    skip(1, 6, 2),
 ]
 
+# 2.3.2 Hops of three and four: say each number you land on.
 S232 = [
-    skip_line("Start at 0. Take 6 hops of 3. Tap where you land.", 20, 0, 3, 6),
-    array("3 rows of 6. Tap how many altogether.", 3, 6),
-    skip_line("Start at 0. Take 4 hops of 5. Tap where you land.", 20, 0, 5, 4),
-    rods("Each tall stick is ten. Count the blocks. Tap the number.", 38),
-    skip_line("Start at 1. Take 6 hops of 3. Tap where you land.", 20, 1, 3, 6),
-    bond("The whole and one part are here. Tap the other part.", 20, 13, gap="left"),
-    skip_line("Start at 4. Take 4 hops of 4. Tap where you land.", 20, 4, 4, 4),
+    skip(0, 5, 3),
+    skip(2, 4, 4),
+    skip(0, 6, 3),
+    skip(1, 6, 3),
+    skip(4, 4, 4),
+    skip(0, 3, 4),
+    skip(3, 4, 3),
 ]
 
+# 2.3.3 Sticks and cubes: count the sticks first, then the loose ones.
 S233 = [
-    rods("Each tall stick is ten. Count the blocks. Tap the number.", 51),
-    skip_line("Start at 0. Take 7 hops of 2. Tap where you land.", 20, 0, 2, 7),
-    rods("Each tall stick is ten. Count the blocks. Tap the number.", 44),
-    bar_model("Put the two bars end to end. Tap the total.", 17, 9, ask="total"),
-    rods("Each tall stick is ten. Count the blocks. Tap the number.", 19),
-    skip_line("Start at 5. Take 3 hops of 5. Tap where you land.", 20, 5, 5, 3),
-    rods("Each tall stick is ten. Count the blocks. Tap the number.", 33),
+    rods(C_RODS, 51),
+    rods(C_RODS, 23),
+    rods(C_RODS, 44),
+    rods(C_RODS, 38),
+    rods(C_RODS, 19),
+    rods(C_RODS, 16),
+    rods(C_RODS, 33),
 ]
 
-S234 = [  # boss
-    rods("Each tall stick is ten. Count the blocks. Tap the number.", 45),
-    skip_line("Start at 0. Take 5 hops of 4. Tap where you land.", 20, 0, 4, 5),
-    bond("Both parts are here. Tap the whole.", 19, 12, gap="whole"),
-    array("5 rows of 3. Tap how many altogether.", 5, 3),
-    bar_model("How many more does the top bar have? Tap the number.", 24, 15),
-    rods("Each tall stick is ten. Count the blocks. Tap the number.", 26),
+S234 = [  # boss: hops and tens
+    rods(C_RODS, 45),
+    skip(0, 5, 4),
+    skip(0, 2, 5),
+    skip(2, 5, 3),
+    rods(C_RODS, 26),
+    rods(C_RODS, 52),
 ]
 
 
 # ================================================================ SECTION 3
 # Learning to look.
 
+# 3.1.1 One is different: three share something, one does not.
 S311 = [
-    odd_one_out("Three are alike. Tap the one that is not.", [_SQ, _SQ, _TR, _SQ]),
-    sort_two("Move the round shapes to the left tray.",
-             [_CI, _SQ, _CIy, _TR], [0, 1, 0, 1], "ROUND", "NOT ROUND"),
-    odd_one_out("Three are alike. Tap the one that is not.", [_CI, _CI, _CI, _SQ]),
-    pattern("What comes next? Tap it.", [_ST, _HE, _ST, _HE, _ST], 4,
-            [cell(HEART), cell(STAR), cell(CIRCLE)]),
-    odd_one_out("Three are alike. Tap the one that is not.", [_ST, _STy, _ST, _ST]),
-    sort_two("Move the yellow shapes to the left tray.",
-             [_STy, _ST, _HEy, _SQ], [0, 1, 0, 1], "YELLOW", "PURPLE"),
-    odd_one_out("Three are alike. Tap the one that is not.", [_TR, _TR, _TR, _HX]),
+    odd_one_out(C_ODD, [_SQ, _SQ, _TR, _SQ]),
+    odd_one_out(C_ODD, [_CI, _CI, _CI, _SQ]),
+    odd_one_out(C_ODD, [_ST, _STy, _ST, _ST]),
+    odd_one_out(C_ODD, [_HEy, _HEy, _HE, _HEy]),
+    odd_one_out(C_ODD, [_TR, _TR, _TR, _HX]),
+    odd_one_out(C_ODD, [_DI, _DI, _DI, _ST]),
+    odd_one_out(C_ODD, [_FL, _FL, _HX, _FL]),
 ]
 
+# 3.1.2 Put them in groups: check each one against the label.
 S312 = [
     sort_two("Move the round shapes to the left tray.",
              [_CI, _SQ, _CIy, _TR, _HX], [0, 1, 0, 1, 1], "ROUND", "NOT ROUND"),
-    odd_one_out("Three are alike. Tap the one that is not.", [_HEy, _HEy, _HE, _HEy]),
+    sort_two("Move the yellow shapes to the left tray.",
+             [_STy, _ST, _HEy, _SQ], [0, 1, 0, 1], "YELLOW", "PURPLE"),
     sort_two("Move the pointy shapes to the left tray.",
              [_TR, _CI, _ST, _CIy], [0, 1, 0, 1], "POINTY", "ROUND"),
-    size_order("Tap them from smallest to biggest.", [0.4, 0.8, 0.25], SQUARE),
+    sort_two("Move the round shapes to the left tray.",
+             [_CI, _SQ, _CIy, _TR], [0, 1, 0, 1], "ROUND", "NOT ROUND"),
     sort_two("Move the yellow shapes to the left tray.",
              [_FLy, _HX, _TRy, _CI, _STy], [0, 1, 0, 1, 0], "YELLOW", "PURPLE"),
-    odd_one_out("Three are alike. Tap the one that is not.", [_SQ, _SQ, _SQ, _CI]),
+    sort_two("Move the yellow shapes to the left tray.",
+             [_SQy, _HE, _TRy], [0, 1, 0], "YELLOW", "PURPLE"),
     sort_two("Move the round shapes to the left tray.",
              [_CIy, _TR, _CI, _SQ, _HXy], [0, 1, 0, 1, 1], "ROUND", "NOT ROUND"),
 ]
 
+# 3.1.3 What comes next: say the pattern out loud as you point.
 S313 = [
-    pattern("What comes next? Tap it.", [_CI, _CI, _SQ, _CI, _CI], 4,
+    pattern(C_NEXT, [_CI, _CI, _SQ, _CI, _CI], 4,
             [cell(SQUARE), cell(CIRCLE), cell(TRIANGLE)]),
-    odd_one_out("Three are alike. Tap the one that is not.", [_DI, _DI, _DI, _ST]),
-    pattern("One is missing. Tap what belongs in the gap.", [_ST, _STy, _ST, _STy], 3,
+    pattern(C_NEXT, [_ST, _HE, _ST, _HE, _ST], 4,
+            [cell(HEART), cell(STAR), cell(CIRCLE)]),
+    pattern(C_GAPPAT, [_ST, _STy, _ST, _STy], 3,
             [cell(STAR, ACCENT), cell(STAR), cell(HEART)]),
-    sort_two("Move the yellow shapes to the left tray.",
-             [_SQy, _HE, _TRy], [0, 1, 0], "YELLOW", "PURPLE"),
-    pattern("What comes next? Tap it.", [_TR, _SQ, _TR, _SQ, _TR], 4,
+    pattern(C_NEXT, [_TR, _SQ, _TR, _SQ, _TR], 4,
             [cell(SQUARE), cell(TRIANGLE), cell(HEXAGON)]),
-    odd_one_out("Three are alike. Tap the one that is not.", [_FL, _FL, _HX, _FL]),
+    pattern(C_NEXT, [_TR, _CI, _TR, _CI, _TR], 4,
+            [cell(CIRCLE), cell(TRIANGLE), cell(SQUARE)]),
     pattern("The shape turns each time. Tap what comes next.",
             [cell(TRIANGLE, PRIMARY, 0), cell(TRIANGLE, PRIMARY, 90),
              cell(TRIANGLE, PRIMARY, 180), cell(TRIANGLE, PRIMARY, 270)], 3,
             [cell(TRIANGLE, PRIMARY, 270), cell(TRIANGLE, PRIMARY, 0),
              cell(TRIANGLE, PRIMARY, 90)]),
+    pattern(C_GAPPAT, [_DI, _DIy, _DI, _DIy], 1,
+            [cell(DIAMOND), cell(DIAMOND, ACCENT), cell(STAR)]),
 ]
 
-S314 = [  # boss
-    odd_one_out("Three are alike. Tap the one that is not.", [_HX, _HX, _ST, _HX]),
-    pattern("What comes next? Tap it.", [_ST, _ST, _HE, _ST, _ST], 4,
+S314 = [  # boss: sorting and patterns
+    odd_one_out(C_ODD, [_HX, _HX, _ST, _HX]),
+    pattern(C_NEXT, [_ST, _ST, _HE, _ST, _ST], 4,
             [cell(STAR), cell(HEART), cell(CIRCLE)]),
     sort_two("Move the pointy shapes to the left tray.",
-             [_ST, _CI, _TR, _HX], [0, 1, 0, 1], "POINTY", "ROUND"),
-    size_order("Tap them from smallest to biggest.", [0.7, 0.3, 1.0], FLOWER),
-    odd_one_out("Three are alike. Tap the one that is not.", [_CIy, _CIy, _CIy, _CI]),
-    pattern("One is missing. Tap what belongs in the gap.", [_SQ, _SQy, _SQ, _SQy], 1,
+             [_ST, _CI, _TR, _CIy], [0, 1, 0, 1], "POINTY", "ROUND"),
+    odd_one_out(C_ODD, [_SQ, _SQ, _SQ, _SQy]),
+    odd_one_out(C_ODD, [_CIy, _CIy, _CIy, _CI]),
+    pattern(C_GAPPAT, [_SQ, _SQy, _SQ, _SQy], 1,
             [cell(SQUARE, ACCENT), cell(SQUARE), cell(TRIANGLE)]),
 ]
 
-# ---- 3.2 shapes inside shapes: easy figures first, then the hidden ones ----
-
+# 3.2.1 Shapes inside shapes: a big shape can be made of smaller ones.
 S321 = [
     shape_hunt("Tap every triangle. Some hide inside others.", "tree", "triangle"),
     shape_hunt("Tap every rectangle. Some hide inside others.", "arrow", "rectangle"),
-    odd_one_out("Three are alike. Tap the one that is not.", [_TR, _TR, _SQ, _TR]),
     shape_hunt("Tap every triangle. Some hide inside others.", "boat", "triangle"),
     shape_count("How many rectangles are hiding here? Tap the number.",
                 "flag", "rectangle"),
-    pattern("What comes next? Tap it.", [_TR, _CI, _TR, _CI, _TR], 4,
-            [cell(CIRCLE), cell(TRIANGLE), cell(SQUARE)]),
-    size_order("Tap them from smallest to biggest.", [0.45, 0.75, 0.25], TRIANGLE),
+    shape_hunt("Tap every square. Some hide inside others.", "rocket", "square"),
+    shape_count("How many triangles are hiding here? Tap the number.",
+                "kite", "triangle"),
+    shape_hunt("Tap every triangle. Some hide inside others.", "house", "triangle"),
 ]
 
+# 3.2.2 Look again: some shapes share their edges.
 S322 = [
     shape_hunt("Tap every square. Some hide inside others.", "house", "square"),
     shape_hunt("Tap every triangle. Some hide inside others.", "rocket", "triangle"),
-    mirror("Fold on the line. Tap the squares that finish the picture.",
-           [(0, 2), (1, 1), (2, 3)]),
     shape_count("How many squares are hiding here? Tap the number.",
                 "window4", "square"),
     shape_hunt("Tap every rectangle. Some hide inside others.", "envelope", "rectangle"),
-    odd_one_out("Three are alike. Tap the one that is not.", [_SQ, _SQ, _HX, _SQ]),
-    shape_hunt("Tap every square. Some hide inside others.", "truck", "square"),
-]
-
-S323 = [
     shape_count("How many triangles are hiding here? Tap the number.",
                 "triangle4", "triangle"),
-    shape_hunt("Tap every triangle. Some hide inside others.", "pinwheel", "triangle"),
-    mirror("Fold on the line. Tap the squares that finish the picture.",
-           [(0, 0), (0, 4), (1, 2), (2, 1)]),
+    shape_hunt("Tap every square. Some hide inside others.", "truck", "square"),
     shape_count("How many squares are hiding here? Tap the number.",
                 "nested", "square"),
-    shape_count("How many triangles are hiding here? Tap the number.",
-                "hex6", "triangle"),
-    size_order("Tap them from smallest to biggest.", [0.6, 0.9, 0.3], TRIANGLE),
-    shape_count("How many squares are hiding here? Tap the number.",
-                "pinwheel", "square"),
 ]
 
-S324 = [  # boss
+# 3.2.3 Both halves match: fold the picture and the halves land on each other.
+S323 = [
+    mirror(C_FOLD, [(0, 0), (0, 4), (1, 2), (2, 1)]),
+    mirror(C_FOLD, [(1, 1), (1, 2), (2, 0), (2, 4)]),
+    mirror(C_FOLD, [(0, 0), (1, 1), (2, 2), (2, 4)]),
+    mirror(C_FOLD, [(0, 2), (2, 0), (2, 3)]),
+    mirror(C_FOLD, [(0, 4), (1, 0), (2, 2)]),
+    mirror(C_FOLD, [(0, 1), (0, 3), (1, 2), (2, 2)]),
+    mirror(C_FOLD, [(1, 0), (2, 1), (1, 4), (2, 3)]),
+]
+
+S324 = [  # boss: hidden shapes
     shape_count("How many squares are hiding here? Tap the number.", "quilt", "square"),
     shape_hunt("Tap every square. Some hide inside others.", "quilt", "square"),
-    mirror("Fold on the line. Tap the squares that finish the picture.",
-           [(0, 2), (1, 0), (2, 4)]),
+    mirror(C_FOLD, [(0, 2), (1, 0), (2, 4)]),
     shape_count("How many triangles are hiding here? Tap the number.",
                 "quilt", "triangle"),
     shape_count("How many squares are hiding here? Tap the number.", "stairs", "square"),
-    pattern("What comes next? Tap it.", [_HX, _TR, _HX, _TR, _HX], 4,
-            [cell(TRIANGLE), cell(HEXAGON), cell(STAR)]),
+    mirror(C_FOLD, [(0, 1), (1, 3), (2, 2)]),
 ]
 
+# 3.3.1 Order and rules: smallest first, and every pattern has a rule.
 S331 = [
-    size_order("Tap them from smallest to biggest.", [0.3, 0.6, 1.0], HEXAGON),
-    pattern("What comes next? Tap it.", [_CI, _HE, _CI, _HE, _CI], 4,
+    size_order(C_SIZE, [0.3, 0.6, 1.0], HEXAGON),
+    pattern(C_NEXT, [_CI, _HE, _CI, _HE, _CI], 4,
             [cell(HEART), cell(CIRCLE), cell(SQUARE)]),
-    odd_one_out("Three are alike. Tap the one that is not.", [_TR, _TR, _CI, _TR]),
-    size_order("Tap them from smallest to biggest.", [1.0, 0.25, 0.7, 0.45], SQUARE),
-    pattern("One is missing. Tap what belongs in the gap.", [_HX, _ST, _HX, _ST], 2,
+    size_order(C_SIZE, [1.0, 0.25, 0.7, 0.45], SQUARE),
+    pattern(C_GAPPAT, [_HX, _ST, _HX, _ST], 2,
             [cell(HEXAGON), cell(STAR), cell(HEART)]),
-    sort_two("Move the yellow shapes to the left tray.",
-             [_HXy, _CI, _STy], [0, 1, 0], "YELLOW", "PURPLE"),
-    size_order("Tap them from smallest to biggest.", [0.5, 0.8], FLOWER),
+    size_order(C_SIZE, [0.5, 0.8], FLOWER),
+    pattern(C_NEXT, [_SQ, _SQ, _CI, _SQ, _SQ], 4,
+            [cell(CIRCLE), cell(SQUARE), cell(HEART)]),
+    size_order(C_SIZE, [0.4, 0.8, 0.25], SQUARE),
 ]
 
+# 3.3.2 Sort and continue: work out the rule before you answer.
 S332 = [
-    mirror("Fold on the line. Tap the squares that finish the picture.",
-           [(1, 1), (1, 2), (2, 0), (2, 4)]),
-    pattern("What comes next? Tap it.", [_ST, _ST, _HE, _ST, _ST], 3,
+    pattern(C_NEXT, [_ST, _ST, _HE, _ST, _ST], 3,
             [cell(HEART), cell(STAR), cell(CIRCLE)]),
-    odd_one_out("Three are alike. Tap the one that is not.", [_SQ, _DI, _SQ, _SQ]),
-    mirror("Fold on the line. Tap the squares that finish the picture.",
-           [(0, 3), (1, 3), (2, 3)]),
+    odd_one_out(C_ODD, [_SQ, _DI, _SQ, _SQ]),
     sort_two("Move the round shapes to the left tray.",
              [_CI, _SQ, _HX, _CIy], [0, 1, 1, 0], "ROUND", "NOT ROUND"),
-    size_order("Tap them from smallest to biggest.", [0.9, 0.3, 0.55], HEART),
-    odd_one_out("Three are alike. Tap the one that is not.", [_HE, _HE, _HE, _ST]),
+    size_order(C_SIZE, [0.9, 0.3, 0.55], HEART),
+    odd_one_out(C_ODD, [_HE, _HE, _HE, _ST]),
+    sort_two("Move the yellow shapes to the left tray.",
+             [_HXy, _CI, _STy], [0, 1, 0], "YELLOW", "PURPLE"),
+    pattern(C_NEXT, [_HE, _HE, _DI, _HE, _HE], 4,
+            [cell(STAR), cell(DIAMOND), cell(HEART)]),
 ]
 
+# 3.3.3 Rules everywhere: size, shape or colour can be the rule.
 S333 = [
-    shape_count("How many rectangles are hiding here? Tap the number.",
-                "quilt", "rectangle"),
-    size_order("Tap them from smallest to biggest.", [0.4, 1.0, 0.15, 0.7], STAR),
-    pattern("One is missing. Tap what belongs in the gap.", [_CI, _SQ, _TR, _CI, _SQ], 3,
+    size_order(C_SIZE, [0.4, 1.0, 0.15, 0.7], STAR),
+    pattern(C_GAPPAT, [_CI, _SQ, _TR, _CI, _SQ], 3,
             [cell(CIRCLE), cell(SQUARE), cell(TRIANGLE)]),
-    odd_one_out("Three are alike. Tap the one that is not.", [_HXy, _HXy, _HX, _HXy]),
-    shape_count("How many triangles are hiding here? Tap the number.",
-                "rocket", "triangle"),
+    odd_one_out(C_ODD, [_HXy, _HXy, _HX, _HXy]),
     sort_two("Move the pointy shapes to the left tray.",
-             [_TRy, _CIy, _ST, _HX, _CI], [0, 1, 0, 1, 1], "POINTY", "ROUND"),
-    pattern("What comes next? Tap it.", [_HE, _CI, _HE, _CI, _HE], 4,
+             [_TRy, _CIy, _ST, _DI, _CI], [0, 1, 0, 0, 1], "POINTY", "ROUND"),
+    pattern(C_NEXT, [_HE, _CI, _HE, _CI, _HE], 4,
             [cell(CIRCLE), cell(HEART), cell(STAR)]),
+    odd_one_out(C_ODD, [_DIy, _DIy, _DIy, _DI]),
+    sort_two("Move the yellow shapes to the left tray.",
+             [_DIy, _SQ, _CIy, _HE], [0, 1, 0, 1], "YELLOW", "PURPLE"),
 ]
 
-S334 = [  # boss
-    shape_count("How many squares are hiding here? Tap the number.", "truck", "square"),
-    size_order("Tap them from smallest to biggest.", [0.8, 0.35, 1.0, 0.5], HEART),
-    pattern("What comes next? Tap it.", [_SQ, _ST, _SQ, _ST, _SQ], 4,
+S334 = [  # boss: looking carefully
+    odd_one_out(C_ODD, [_ST, _ST, _ST, _DI]),
+    size_order(C_SIZE, [0.8, 0.35, 1.0, 0.5], HEART),
+    pattern(C_NEXT, [_SQ, _ST, _SQ, _ST, _SQ], 4,
             [cell(STAR), cell(SQUARE), cell(CIRCLE)]),
     sort_two("Move the round shapes to the left tray.",
              [_CIy, _TR, _CI, _ST], [0, 1, 0, 1], "ROUND", "NOT ROUND"),
-    odd_one_out("Three are alike. Tap the one that is not.", [_CI, _CI, _HX, _CI]),
-    mirror("Fold on the line. Tap the squares that finish the picture.",
-           [(0, 1), (1, 3), (2, 2)]),
+    odd_one_out(C_ODD, [_CI, _CI, _HX, _CI]),
+    pattern(C_GAPPAT, [_TR, _TRy, _TR, _TRy], 2,
+            [cell(TRIANGLE, ACCENT), cell(TRIANGLE), cell(CIRCLE)]),
 ]
 
 
 # ================================================================ SECTION 4
 # Using it: groups, sharing and fractions.
 
+# 4.1.1 Rows of things: 3 rows of 4 is 4, then 4 more, then 4 more.
 S411 = [
-    array("4 rows of 6. Tap how many altogether.", 4, 6),
-    groups("5 bags with 3 in each. Tap how many altogether.", 5, 3),
-    skip_line("Start at 0. Take 6 hops of 2. Tap where you land.", 20, 0, 2, 6),
-    array("3 rows of 5. Tap how many altogether.", 3, 5),
-    groups("4 bags with 4 in each. Tap how many altogether.", 4, 4, glyph=HEART),
-    array("2 rows of 8. Tap how many altogether.", 2, 8),
-    groups("3 bags with 6 in each. Tap how many altogether.", 3, 6, glyph=CIRCLE),
+    array(C_ROWS.format(4, 6), 4, 6),
+    array(C_ROWS.format(3, 5), 3, 5),
+    array(C_ROWS.format(2, 8), 2, 8),
+    array(C_ROWS.format(5, 5), 5, 5),
+    array(C_ROWS.format(4, 4), 4, 4, STAR),
+    array(C_ROWS.format(6, 3), 6, 3),
+    array(C_ROWS.format(5, 6), 5, 6),
 ]
 
+# 4.1.2 Equal groups: count one group, then count on by that much.
 S412 = [
-    array("5 rows of 5. Tap how many altogether.", 5, 5),
-    groups("6 bags with 2 in each. Tap how many altogether.", 6, 2),
-    skip_line("Start at 0. Take 8 hops of 2. Tap where you land.", 20, 0, 2, 8),
-    array("4 rows of 4. Tap how many altogether.", 4, 4, glyph=STAR),
-    groups("2 bags with 9 in each. Tap how many altogether.", 2, 9, glyph=FLOWER),
-    skip_line("Start at 0. Take 4 hops of 3. Tap where you land.", 20, 0, 3, 4),
-    array("6 rows of 3. Tap how many altogether.", 6, 3),
+    groups(C_BAGS.format(5, 3), 5, 3),
+    groups(C_BAGS.format(4, 4), 4, 4, HEART),
+    skip(0, 6, 2),
+    groups(C_BAGS.format(3, 6), 3, 6, CIRCLE),
+    groups(C_BAGS.format(6, 2), 6, 2),
+    skip(0, 4, 3),
+    groups(C_BAGS.format(2, 9), 2, 9, FLOWER),
 ]
 
+# 4.1.3 Sharing equally: share them out one at a time until none are left.
 S413 = [
-    groups("12 shared into 3 equal bags. Tap how many in one bag.", 3, 4, share=True),
-    array("5 rows of 6. Tap how many altogether.", 5, 6),
-    groups("20 shared into 4 equal bags. Tap how many in one bag.", 4, 5,
-           share=True, glyph=HEART),
-    skip_line("Start at 0. Take 5 hops of 5. Tap where you land.", 30, 0, 5, 5),
-    groups("15 shared into 5 equal bags. Tap how many in one bag.", 5, 3,
-           share=True, glyph=CIRCLE),
-    array("3 rows of 7. Tap how many altogether.", 3, 7),
-    groups("18 shared into 3 equal bags. Tap how many in one bag.", 3, 6, share=True),
+    groups(C_SHARE.format(12, 3), 3, 4, share=True),
+    groups(C_SHARE.format(20, 4), 4, 5, HEART, share=True),
+    groups(C_SHARE.format(15, 5), 5, 3, CIRCLE, share=True),
+    groups(C_SHARE.format(18, 3), 3, 6, share=True),
+    groups(C_SHARE.format(10, 2), 2, 5, FLOWER, share=True),
+    groups(C_SHARE.format(24, 6), 6, 4, share=True),
+    groups(C_SHARE.format(16, 4), 4, 4, HEART, share=True),
 ]
 
-S414 = [  # boss
-    array("6 rows of 4. Tap how many altogether.", 6, 4),
-    groups("24 shared into 4 equal bags. Tap how many in one bag.", 4, 6, share=True),
-    skip_line("Start at 0. Take 7 hops of 3. Tap where you land.", 30, 0, 3, 7),
-    groups("7 bags with 3 in each. Tap how many altogether.", 7, 3, glyph=STAR),
-    array("2 rows of 9. Tap how many altogether.", 2, 9, glyph=HEART),
-    groups("16 shared into 8 equal bags. Tap how many in one bag.", 8, 2, share=True),
+S414 = [  # boss: groups and sharing
+    array(C_ROWS.format(6, 4), 6, 4),
+    groups(C_SHARE.format(24, 4), 4, 6, share=True),
+    skip(0, 7, 3, 30),
+    groups(C_BAGS.format(7, 3), 7, 3),
+    array(C_ROWS.format(2, 9), 2, 9, HEART),
+    groups(C_SHARE.format(16, 8), 8, 2, share=True),
 ]
 
+# 4.2.1 Which has more colour: more colour means more of the circle.
 S421 = [
-    fraction("Which circle has more coloured in? Tap it.", 2, 1, other=(4, 1)),
-    fraction_wall("Same length strips. Tap the one with the biggest pieces.",
-                  [(4, 2), (2, 1), (6, 3)]),
-    fraction("Which circle has more coloured in? Tap it.", 4, 3, other=(4, 1)),
-    groups("Half of 8. Tap how many that is.", 2, 4, share=True, glyph=CIRCLE),
-    fraction("Which circle has more coloured in? Tap it.", 3, 2, other=(6, 2)),
+    fraction(C_CIRCLE, 2, 1, other=(4, 1)),
+    fraction(C_CIRCLE, 4, 3, other=(4, 1)),
+    fraction(C_CIRCLE, 3, 2, other=(6, 2)),
+    fraction(C_CIRCLE, 8, 5, other=(2, 1)),
+    fraction(C_CIRCLE, 6, 5, other=(3, 1)),
+    fraction(C_CIRCLE, 8, 7, other=(4, 3)),
+    fraction(C_CIRCLE, 6, 1, other=(8, 3)),
+]
+
+# 4.2.2 Bigger pieces: fewer pieces means each piece is bigger.
+S422 = [
+    fraction_wall(C_BIG, [(4, 2), (2, 1), (6, 3)]),
+    fraction_wall(C_BIG, [(8, 3), (3, 1), (6, 2)]),
+    fraction_wall(C_BIG, [(6, 2), (5, 2), (2, 1)]),
+    fraction_wall(C_BIG, [(5, 2), (3, 1), (8, 4)]),
+    fraction_wall(C_BIG, [(6, 1), (4, 1), (2, 1)]),
+    fraction_wall(C_BIG, [(3, 2), (6, 2), (4, 1)]),
+    fraction_wall(C_BIG, [(8, 6), (5, 3), (4, 2)]),
+]
+
+# 4.2.3 Halves and quarters: half is two equal parts, a quarter is one of four.
+S423 = [
+    groups("Half of 8. Tap how many that is.", 2, 4, CIRCLE, share=True),
     fraction_wall("The top shows half. Tap the other strip showing half.",
                   [(2, 1), (5, 3), (4, 2)], ask="same"),
-    fraction("Which circle has more coloured in? Tap it.", 8, 5, other=(2, 1)),
-]
-
-S422 = [
-    fraction_wall("Same length strips. Tap the one with the biggest pieces.",
-                  [(8, 3), (3, 1), (6, 2)]),
-    fraction("Which circle has more coloured in? Tap it.", 6, 5, other=(3, 1)),
-    groups("A quarter of 12. Tap how many that is.", 4, 3, share=True, glyph=STAR),
-    fraction("Which circle has more coloured in? Tap it.", 8, 7, other=(4, 3)),
+    groups("A quarter of 12. Tap how many that is.", 4, 3, share=True),
+    groups("Half of 14. Tap how many that is.", 2, 7, HEART, share=True),
     fraction_wall("The top shows a quarter. Tap the other quarter.",
                   [(4, 1), (5, 2), (8, 2)], ask="same"),
-    groups("Half of 14. Tap how many that is.", 2, 7, share=True, glyph=HEART),
-    fraction("Which circle has more coloured in? Tap it.", 6, 1, other=(8, 3)),
+    groups("A quarter of 16. Tap how many that is.", 4, 4, FLOWER, share=True),
+    groups("Half of 10. Tap how many that is.", 2, 5, STAR, share=True),
 ]
 
-S423 = [
-    shape_count("How many triangles are hiding here? Tap the number.",
-                "kite", "triangle"),
-    fraction_wall("Same length strips. Tap the one with the biggest pieces.",
-                  [(6, 2), (5, 2), (2, 1)]),
-    mirror("Fold on the line. Tap the squares that finish the picture.",
-           [(0, 0), (1, 1), (2, 2), (2, 4)]),
-    shape_count("How many squares are hiding here? Tap the number.",
-                "house", "square"),
-    groups("A quarter of 16. Tap how many that is.", 4, 4, share=True, glyph=FLOWER),
-    shape_hunt("Tap every square. Some hide inside others.", "rocket", "square"),
-    pattern("What comes next? Tap it.", [_HX, _HE, _HX, _HE, _HX], 4,
-            [cell(HEART), cell(HEXAGON), cell(STAR)]),
+S424 = [  # boss: parts and pieces
+    fraction(C_CIRCLE, 5, 4, other=(2, 1)),
+    fraction_wall(C_BIG, [(6, 3), (4, 2), (3, 1)]),
+    groups("Half of 18. Tap how many that is.", 2, 9, share=True),
+    fraction_wall("The top shows half. Tap the other strip showing half.",
+                  [(2, 1), (8, 3), (6, 3)], ask="same"),
+    fraction(C_CIRCLE, 3, 1, other=(4, 3)),
+    groups("A quarter of 20. Tap how many that is.", 4, 5, HEART, share=True),
 ]
 
-S424 = [  # boss
-    array("7 rows of 3. Tap how many altogether.", 7, 3),
-    fraction("Which circle has more coloured in? Tap it.", 5, 4, other=(2, 1)),
-    mirror("Fold on the line. Tap the squares that finish the picture.",
-           [(0, 2), (2, 0), (2, 3)]),
-    groups("21 shared into 7 equal bags. Tap how many in one bag.", 7, 3, share=True),
-    shape_count("How many triangles are hiding here? Tap the number.",
-                "tree", "triangle"),
-    rods("Each tall stick is ten. Count the blocks. Tap the number.", 41),
-]
-
+# 4.3 All of it: every idea from the skill, mixed together on purpose.
 S431 = [
-    rods("Each tall stick is ten. Count the blocks. Tap the number.", 37),
-    bond("Both parts are here. Tap the whole.", 17, 8, gap="whole"),
-    skip_line("Start at 0. Take 9 hops of 2. Tap where you land.", 30, 0, 2, 9),
-    balance("Which pan goes down? Tap the heavier side.", 5, 8),
+    rods(C_RODS, 37),
+    bond(C_WHOLE, 17, 8, gap="whole"),
+    skip(0, 9, 2, 30),
+    balance(C_PAN, 5, 8),
     ten_frame("Ten and some more. Count them all. Tap the number.", 10, 7),
-    array("4 rows of 7. Tap how many altogether.", 4, 7),
+    array(C_ROWS.format(4, 7), 4, 7),
     count_colour("Count only the yellow ones. Tap the number.", 9, 3, glyph=CIRCLE),
 ]
 
 S432 = [
     shape_count("How many squares are hiding here? Tap the number.", "cross", "square"),
-    pattern("What comes next? Tap it.", [_CI, _ST, _CI, _ST, _CI], 4,
+    pattern(C_NEXT, [_CI, _ST, _CI, _ST, _CI], 4,
             [cell(STAR), cell(CIRCLE), cell(HEART)]),
-    size_order("Tap them from smallest to biggest.", [1.0, 0.4, 0.7, 0.2], HEXAGON),
+    size_order(C_SIZE, [1.0, 0.4, 0.7, 0.2], HEXAGON),
     sort_two("Move the yellow shapes to the left tray.",
              [_CIy, _SQ, _STy, _TR], [0, 1, 0, 1], "YELLOW", "PURPLE"),
-    mirror("Fold on the line. Tap the squares that finish the picture.",
-           [(0, 4), (1, 0), (2, 2)]),
-    odd_one_out("Three are alike. Tap the one that is not.", [_SQ, _SQ, _SQ, _HE]),
+    mirror(C_FOLD, [(0, 4), (1, 0), (2, 3)]),
+    odd_one_out(C_ODD, [_SQ, _SQ, _SQ, _HE]),
     shape_hunt("Tap every triangle. Some hide inside others.", "quilt", "triangle"),
 ]
 
 S433 = [
-    groups("30 shared into 5 equal bags. Tap how many in one bag.", 5, 6, share=True),
-    skip_line("Start at 0. Take 6 hops of 5. Tap where you land.", 30, 0, 5, 6),
-    bond("The whole and one part are here. Tap the other part.", 16, 9, gap="left"),
-    fraction("Which circle has more coloured in? Tap it.", 4, 3, other=(6, 2)),
-    array("8 rows of 3. Tap how many altogether.", 8, 3),
-    bar_model("How many more does the top bar have? Tap the number.", 22, 13),
-    rods("Each tall stick is ten. Count the blocks. Tap the number.", 18),
+    groups(C_SHARE.format(30, 5), 5, 6, share=True),
+    skip(0, 6, 5, 30),
+    bond(C_OTHER, 16, 9, gap="left"),
+    fraction(C_CIRCLE, 4, 3, other=(6, 2)),
+    array(C_ROWS.format(8, 3), 8, 3),
+    bar_model(C_MORE, 22, 13),
+    rods(C_RODS, 18),
 ]
 
-S434 = [  # boss
-    array("6 rows of 5. Tap how many altogether.", 6, 5),
-    groups("28 shared into 4 equal bags. Tap how many in one bag.", 4, 7, share=True),
+S434 = [  # boss: the last climb
+    array(C_ROWS.format(6, 5), 6, 5),
+    groups(C_SHARE.format(28, 4), 4, 7, share=True),
     shape_count("How many triangles are hiding here? Tap the number.",
                 "boat", "triangle"),
-    skip_line("Start at 3. Take 5 hops of 4. Tap where you land.", 30, 3, 4, 5),
+    skip(3, 5, 4, 30),
     fraction_wall("The top shows half. Tap the other strip showing half.",
-                  [(2, 1), (8, 3), (6, 3)], ask="same"),
+                  [(2, 1), (6, 2), (8, 4)], ask="same"),
     bar_model("Put the two bars end to end. Tap the total.", 19, 14, ask="total"),
 ]

@@ -24,6 +24,9 @@ const List<GatePreset> kPresetGateableApps = [
   GatePreset('Snapchat', 'com.snapchat.android'),
   GatePreset('Roblox', 'com.roblox.client'),
   GatePreset('Subway Surfers', 'com.kiloo.subwaysurf'),
+  // Offered in the onboarding story, so it must be pre-tickable here.
+  GatePreset('Minecraft', 'com.mojang.minecraftpe'),
+  GatePreset('Netflix', 'com.netflix.mediaclient'),
 ];
 
 /// Exact package names that must NEVER be gateable.

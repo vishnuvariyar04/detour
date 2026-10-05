@@ -61,11 +61,11 @@ S431 = [
    "Only these three rows run.",
    ends(_a2), visual=_a2),
 
- q("fix", "Build just the first part: get to the key and pick it up.",
-   "Two steps across, then pick it up.",
-   route(g(6, 6, (0, 0), key=(2, 0), door=(2, 0)), [R, R, PICK, OPEN]),
-   visual=g(6, 6, (0, 0), key=(2, 0), door=(2, 0)),
-   blocks=[R, PICK, R, OPEN], slots=4),
+ q("fix", "Build the first two jobs: get the key, then open the door.",
+   "The key comes first. The door will not open without it.",
+   route(g(6, 6, (0, 0), key=(2, 0), door=(3, 0)), [R, R, PICK, R, OPEN]),
+   visual=g(6, 6, (0, 0), key=(2, 0), door=(3, 0)),
+   blocks=[R, PICK, R, OPEN, R], slots=5),
 
  q("choose", "Tap the order that does all three jobs.",
    "Key first, then the door, then the flag.",
@@ -76,7 +76,7 @@ S431 = [
                         [R, R, OPEN, PICK, R, R],
                         [R, R, R, PICK, OPEN, R]]),
 
- q("count", "How many steps does the whole level take? Tap the number.",
+ q("count", "How many steps to the flag? Tap the number.",
    "Count the shortest way from Nupo to the flag.",
    shortest_steps(_a4), visual=_a4, kind="shortest"),
 

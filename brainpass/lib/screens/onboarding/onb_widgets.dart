@@ -27,7 +27,7 @@ import 'package:flutter/material.dart';
 
 import '../../theme.dart';
 import '../../widgets.dart';
-import 'story_beats.dart' show Nupo;
+import 'onb_kit.dart' show Nupo;
 
 /// The headline style for every tapped step, matching the scrolled story's beat
 /// headlines rather than Material's defaults — same size, weight and tracking,

@@ -54,13 +54,16 @@ class CoderGate(
     private var answered = 0          // resolved items, for the progress bar
     private var correctCount = 0
     private var hintShown = false
+    private var shownAt = 0L          // when the item on screen appeared, for analytics
     private var locked = false        // true between answering and Continue
 
     // The child's answer for the item on screen, whatever shape it takes.
     private var pickedCell: Pair<Int, Int>? = null
     private var pickedBlock = -1
     private var pickedOption = -1
-    private var pickedNumber = -1
+    // Not -1: Reasoning's "Below zero" stop has negative answers, and with -1
+    // as "nothing picked" a child who chose -10 could never press Check.
+    private var pickedNumber = NO_PICK
 
     // Number Sense pictures, and what the child has done to them.
     private var picView: android.view.View? = null
@@ -112,9 +115,44 @@ class CoderGate(
         textSize = 17f; radius = 18f; depth = 6
     }
     private val hintButton = PushButton(ctx, fonts).apply {
-        face = Ink.surface; ledgeColor = Ink.ledge; textColor = Ink.muted
+        face = HINT_WASH; ledgeColor = Ink.accentLedge; textColor = HINT_INK
         label = "Hint"; textSize = 15f; radius = 18f; depth = 5
+        val tp = Paint(Paint.ANTI_ALIAS_FLAG)
+        painter = { c, box ->
+            tp.typeface = fonts.black
+            tp.textSize = ctx.dpf(15f)
+            tp.color = HINT_INK
+            val text = "Hint"
+            val tw = tp.measureText(text)
+            val bulb = ctx.dpf(20f)
+            val gap = ctx.dpf(6f)
+            val x0 = box.centerX() - (bulb * 0.7f + gap + tw) / 2
+            // White glass while the hint is open: yellow on yellow vanishes.
+            Bulb.draw(c, x0 + bulb * 0.35f, box.centerY(), bulb,
+                if (face == Ink.accent) android.graphics.Color.WHITE else Ink.accent)
+            c.drawText(text, x0 + bulb * 0.7f + gap,
+                box.centerY() - (tp.descent() + tp.ascent()) / 2, tp)
+        }
     }
+
+    /**
+     * The hint, docked just above the buttons (Brilliant does this): the
+     * question stays exactly where it was, and the hint sits by the answer the
+     * child is about to give. It opens and closes; opening it once is what
+     * counts as having used it.
+     */
+    private val hintDock = LinearLayout(ctx).apply {
+        orientation = LinearLayout.HORIZONTAL
+        gravity = Gravity.CENTER_VERTICAL
+        visibility = View.GONE
+        background = roundRect(HINT_WASH, ctx.dpf(20f), Ink.accent, dp(2))
+        setPadding(dp(10), dp(10), dp(6), dp(10))
+    }
+    private val hintText = label(ctx, fonts, "", 15.5f, Ink.text).apply {
+        typeface = fonts.extra
+        setLineSpacing(dp(3).toFloat(), 1f)
+    }
+    private var hintOpen = false
     private val actionBar = LinearLayout(ctx).apply {
         orientation = LinearLayout.HORIZONTAL
         setPadding(dp(20), dp(10), dp(20), dp(18))
@@ -151,13 +189,18 @@ class CoderGate(
             marginEnd = dp(10)
         })
         actionBar.addView(action, LinearLayout.LayoutParams(0, dp(56), 1f))
-        hintButton.onTap = { revealHint() }
+        hintButton.onTap = { if (hintOpen) closeHint() else revealHint() }
 
         val col = LinearLayout(ctx).apply { orientation = LinearLayout.VERTICAL }
         col.addView(topBar, LinearLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
         col.addView(scroller, LinearLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f))
+        buildHintDock()
+        col.addView(hintDock, LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
+            setMargins(dp(16), dp(6), dp(16), 0)
+        })
         col.addView(actionBar, LinearLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
 
@@ -201,11 +244,12 @@ class CoderGate(
         board = null; list = null; bank = null; hintCard = null
         boardRowView = null; boardView = null; boxesView = null
         pickedCell = null; pickedBlock = -1; pickedOption = -1
-        pickedNumber = -1; pickedBool = null; builtProgram = emptyList()
+        pickedNumber = NO_PICK; pickedBool = null; builtProgram = emptyList()
         picView = null
         pickedSet = mutableSetOf(); pickedOrder = mutableListOf()
         pickedCells = mutableSetOf(); pickedSides = IntArray(0)
         hintShown = false
+        closeHint(animate = false)
         locked = false
         drawer.removeAllViews()
 
@@ -220,15 +264,26 @@ class CoderGate(
     // ---- teach card
 
     private fun renderTeach(stop: Curriculum.Stop) {
+        Analytics.teachShown(ctx, skill.id, stop.id)
         hintButton.visibility = View.GONE
         progress.value = answered
 
-        body.addView(label(ctx, fonts, "NEW IDEA", 12f, Ink.primary, black = true).apply {
-            letterSpacing = 0.14f
-        })
-        body.addView(space(6))
-        body.addView(label(ctx, fonts, stop.title, 26f, Ink.text, black = true))
-        body.addView(space(10))
+        // The teacher owl beside the idea's name, under a "new idea" chip.
+        val head = LinearLayout(ctx).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+        }
+        val words = LinearLayout(ctx).apply { orientation = LinearLayout.VERTICAL }
+        words.addView(chip("NEW IDEA", Ink.primary, 0xFFEDE6FF.toInt(), bulb = true),
+            LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT))
+        words.addView(space(8))
+        words.addView(label(ctx, fonts, stop.title, 26f, Ink.text, black = true))
+        head.addView(words, LinearLayout.LayoutParams(0,
+            ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+        head.addView(Mascot.view(ctx, "teacher", 92))
+        body.addView(head)
+        body.addView(space(8))
         body.addView(label(ctx, fonts, stop.teachLine ?: "", 16f, Ink.muted).apply {
             typeface = fonts.body
             setLineSpacing(dp(4).toFloat(), 1f)
@@ -253,15 +308,9 @@ class CoderGate(
                 body.addView(label(ctx, fonts, "Answer:  ${tp.reveal}", 17f,
                     Ink.good, black = true, align = Gravity.CENTER))
             }
-            val replayP = PushButton(ctx, fonts).apply {
-                face = Ink.surface; ledgeColor = Ink.ledge; textColor = Ink.primary
-                label = "Watch again"; textSize = 15f; radius = 18f; depth = 5
-            }
-            replayP.onTap = { playPicture(v) }
-            body.addView(space(16))
-            body.addView(replayP, LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, dp(52)))
-            v.post { playPicture(v) }
+            // A picture that animates plays on a loop; a still one (a story
+            // card, a drawn clue) just sits there — there is nothing to replay.
+            if (animates(v)) loop(300, 3200) { playPicture(v) }
             action.label = "Got it"
             action.onTap = { next() }
             return
@@ -325,15 +374,9 @@ class CoderGate(
                         onDone = { pls[i].running = -1 })
                 }
             }
-            val replayC = PushButton(ctx, fonts).apply {
-                face = Ink.surface; ledgeColor = Ink.ledge; textColor = Ink.primary
-                label = "Watch again"; textSize = 15f; radius = 18f; depth = 5
+            loop(500, maxOf(cd.a.size, cd.b.size) * 280L + 2200L) {
+                if (g3 == generation) playBoth()
             }
-            replayC.onTap = { playBoth() }
-            body.addView(space(16))
-            body.addView(replayC, LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, dp(52)))
-            handler.postDelayed({ if (g3 == generation) playBoth() }, 500)
             action.label = "Got it"
             action.onTap = { next() }
             return
@@ -363,19 +406,12 @@ class CoderGate(
                 verdict.alpha = 0f
                 verdict.animate().alpha(1f).setDuration(240).start()
             }
-            val replayT = PushButton(ctx, fonts).apply {
-                face = Ink.surface; ledgeColor = Ink.ledge; textColor = Ink.primary
-                label = "Watch again"; textSize = 15f; radius = 18f; depth = 5
-            }
-            replayT.onTap = {
+            // The verdict lands, holds, clears, and lands again.
+            loop(0, 3600) {
                 verdict.text = ""
                 verdict.alpha = 0f
-                handler.postDelayed({ if (g2 == generation) showVerdict() }, 700)
+                handler.postDelayed({ if (g2 == generation) showVerdict() }, 900)
             }
-            body.addView(space(16))
-            body.addView(replayT, LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, dp(52)))
-            handler.postDelayed({ if (g2 == generation) showVerdict() }, 900)
             action.label = "Got it"
             action.onTap = { next() }
             return
@@ -394,15 +430,6 @@ class CoderGate(
                 ViewGroup.LayoutParams.WRAP_CONTENT))
         }
         val playIt = { if (showGrid) runDemo(demo.program) else playBoxes(demo) }
-        body.addView(space(14))
-
-        val replay = PushButton(ctx, fonts).apply {
-            face = Ink.surface; ledgeColor = Ink.ledge; textColor = Ink.primary
-            label = "Watch again"; textSize = 15f; radius = 16f
-        }
-        replay.onTap = { playIt() }
-        body.addView(replay, LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT, dp(50)))
 
         action.label = "Got it"
         action.tint(Ink.primary, Ink.primaryLedge)
@@ -411,8 +438,11 @@ class CoderGate(
             Curriculum.Progress.markTaught(ctx, stop.id)
             next()
         }
-        val g = generation
-        handler.postDelayed({ if (g == generation) playIt() }, 420)
+        // The demo replays on its own, with a pause at the end to see where
+        // it finished.
+        val runMs = if (showGrid) demo.program.size * 280L + 300L
+                    else demo.program.size * 620L + 420L
+        loop(420, runMs + 2000L) { playIt() }
     }
 
     private fun runDemo(program: List<String>) {
@@ -509,14 +539,39 @@ class CoderGate(
     }
 
     private fun renderQuestion(q: Curriculum.Question) {
+        shownAt = android.os.SystemClock.elapsedRealtime()
         hintButton.visibility = if (q.hint.isBlank()) View.GONE else View.VISIBLE
         hintButton.enabledLook = true
-        hintButton.tint(Ink.surface, Ink.ledge, Ink.muted)
+        hintButton.tint(HINT_WASH, Ink.accentLedge, HINT_INK)
         progress.value = answered
 
-        body.addView(label(ctx, fonts, q.prompt, 19f, Ink.text, black = true).apply {
-            setLineSpacing(dp(3).toFloat(), 1f)
-        })
+        if (items.getOrNull(index)?.stop?.boss == true) {
+            body.addView(chip("BOSS QUESTION", HINT_INK, HINT_WASH),
+                LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT))
+            body.addView(space(10))
+        }
+        if (q.board == null) {
+            // Duolingo's pattern: the owl asks, in a speech bubble. Coding
+            // questions skip it, because there the owl is already on the board
+            // as the robot and two of him would be one too many.
+            val ask = LinearLayout(ctx).apply {
+                orientation = LinearLayout.HORIZONTAL
+                gravity = Gravity.BOTTOM
+            }
+            ask.addView(Mascot.view(ctx, "focused", 70))
+            val bubble = SpeechBubble(ctx)
+            bubble.addView(label(ctx, fonts, q.prompt, 17.5f, Ink.text, black = true).apply {
+                setLineSpacing(dp(3).toFloat(), 1f)
+            })
+            ask.addView(bubble, LinearLayout.LayoutParams(0,
+                ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply { marginStart = dp(2) })
+            body.addView(ask)
+        } else {
+            body.addView(label(ctx, fonts, q.prompt, 19f, Ink.text, black = true).apply {
+                setLineSpacing(dp(3).toFloat(), 1f)
+            })
+        }
         body.addView(space(16))
 
         when (q.shape) {
@@ -1042,6 +1097,7 @@ class CoderGate(
             from = pic.from; to = pic.to; labelEvery = pic.labelEvery
             pic.marker?.let { marker = it }
             pic.hopFrom?.let { hopFrom = it }
+            step = pic.step
         }
         "pattern" -> PatternStripView(ctx, fonts).apply {
             cells = pic.cells.map { cellOf(it) }; gapAt = pic.gapAt
@@ -1091,6 +1147,30 @@ class CoderGate(
     }
 
     /** Replays whichever picture this is. */
+    /**
+     * Runs [run] after [firstMs], then every [everyMs], for as long as the
+     * item on screen is the one that started it.
+     */
+    private fun loop(firstMs: Long, everyMs: Long, run: () -> Unit) {
+        val g = generation
+        fun tick() {
+            if (g != generation) return
+            run()
+            handler.postDelayed({ tick() }, everyMs)
+        }
+        handler.postDelayed({ tick() }, firstMs)
+    }
+
+    /** Whether [playPicture] has anything to play for this view. */
+    private fun animates(v: View): Boolean = when (v) {
+        is CountGroupView, is TenFrameView, is RodsView, is DiceView,
+        is NumberBondView, is BalanceScaleView, is NumberLineView, is FractionView,
+        is MirrorView, is SortTrayView, is SizeOrderView, is ShapeHuntView,
+        is ArrayGridView, is GroupsView, is BarModelView, is FractionWallView,
+        is OddOneOutView, is PatternStripView -> true
+        else -> false
+    }
+
     private fun playPicture(v: View) {
         when (v) {
             is CountGroupView -> v.play()
@@ -1591,12 +1671,12 @@ class CoderGate(
     private fun hasAnswer(q: Curriculum.Question): Boolean = when (q.shape) {
         "predict" -> pickedCell != null
         "spot", "debug" -> pickedBlock >= 0
-        "count", "trace" -> pickedNumber >= 0
+        "count", "trace" -> pickedNumber != NO_PICK
         "choose", "chooseText", "complete", "compare", "yesno" -> pickedOption >= 0
         "fix", "inverse", "constrain" -> bank?.complete() == true
         "countObjects", "tenFrame", "rods", "dice", "bond",
-        "shapeCount", "array", "groups", "barModel" -> pickedNumber >= 0
-        "numberLine" -> pickedNumber >= 0
+        "shapeCount", "array", "groups", "barModel" -> pickedNumber != NO_PICK
+        "numberLine" -> pickedNumber != NO_PICK
         "balance", "oddOneOut", "pattern", "fraction",
         "fractionWall" -> pickedOption >= 0
         "shapeHunt" -> pickedSet.isNotEmpty()
@@ -1608,7 +1688,7 @@ class CoderGate(
         // Puzzles and Logic and Reasoning: whichever row the question put on
         // screen is the one that has to have been touched.
         in PuzzleShapes.all ->
-            if (q.answerType == "number") pickedNumber >= 0 else pickedOption >= 0
+            if (q.answerType == "number") pickedNumber != NO_PICK else pickedOption >= 0
         else -> false
     }
 
@@ -1619,23 +1699,77 @@ class CoderGate(
 
     // ---- hint
 
-    private fun revealHint() {
-        if (hintShown) return
-        val q = items.getOrNull(index)?.question ?: return
-        hintShown = true
-        hintButton.enabledLook = false
-        val card = label(ctx, fonts, q.hint, 15f, Ink.text).apply {
-            typeface = fonts.body
-            background = roundRect(0xFFFFF6DA.toInt(), ctx.dpf(14f), Ink.accent, dp(2))
-            setPadding(dp(14), dp(12), dp(14), dp(12))
-            setLineSpacing(dp(3).toFloat(), 1f)
-            alpha = 0f
+    private fun buildHintDock() {
+        hintDock.addView(Mascot.view(ctx, "idea", 56))
+        val col = LinearLayout(ctx).apply { orientation = LinearLayout.VERTICAL }
+        val head = LinearLayout(ctx).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
         }
-        hintCard = card
-        body.addView(card, 1)
-        body.addView(space(12), 2)
-        card.animate().alpha(1f).setDuration(220).start()
+        head.addView(BulbView(ctx), LinearLayout.LayoutParams(dp(12), dp(16)))
+        head.addView(label(ctx, fonts, "HINT", 11.5f, HINT_INK, black = true).apply {
+            letterSpacing = 0.14f
+        }, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT).apply { marginStart = dp(5) })
+        col.addView(head)
+        col.addView(space(4))
+        col.addView(hintText)
+        hintDock.addView(col, LinearLayout.LayoutParams(0,
+            ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply { marginStart = dp(8) })
+        hintDock.addView(CloseMark(ctx), LinearLayout.LayoutParams(dp(36), dp(36)).apply {
+            gravity = Gravity.TOP
+        })
+        // The whole card closes it: a small cross is a hard target for a
+        // five-year-old, and nothing else on the card is tappable.
+        hintDock.setOnClickListener { closeHint() }
     }
+
+    private fun revealHint() {
+        val q = items.getOrNull(index)?.question ?: return
+        if (locked) return
+        if (!hintShown) {
+            hintShown = true
+            Analytics.hintOpened(ctx, skill.id, q.stopId, q.shape)
+        }
+        hintOpen = true
+        hintText.text = q.hint
+        hintDock.animate().cancel()
+        hintDock.visibility = View.VISIBLE
+        hintDock.alpha = 0f
+        hintDock.translationY = dp(18).toFloat()
+        hintDock.animate().alpha(1f).translationY(0f).setDuration(240)
+            .setInterpolator(DecelerateInterpolator(1.6f)).start()
+        hintButton.tint(Ink.accent, Ink.accentLedge, HINT_INK)
+    }
+
+    private fun closeHint(animate: Boolean = true) {
+        hintOpen = false
+        hintButton.tint(HINT_WASH, Ink.accentLedge, HINT_INK)
+        if (!animate || hintDock.visibility != View.VISIBLE) {
+            hintDock.animate().cancel()
+            hintDock.visibility = View.GONE
+            return
+        }
+        hintDock.animate().alpha(0f).translationY(dp(18).toFloat()).setDuration(160)
+            .withEndAction { if (!hintOpen) hintDock.visibility = View.GONE }.start()
+    }
+
+    /** A small rounded label: "NEW IDEA", "BOSS QUESTION". */
+    private fun chip(text: String, ink: Int, wash: Int, bulb: Boolean = false): View =
+        LinearLayout(ctx).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            background = roundRect(wash, ctx.dpf(10f))
+            setPadding(dp(9), dp(5), dp(11), dp(5))
+            if (bulb) addView(BulbView(ctx), LinearLayout.LayoutParams(dp(11), dp(15)).apply {
+                marginEnd = dp(5)
+            })
+            addView(label(ctx, fonts, text, 11.5f, ink, black = true).apply {
+                letterSpacing = 0.12f
+                layoutParams = LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+            })
+        }
 
     // ---- grading
 
@@ -1695,14 +1829,28 @@ class CoderGate(
     private fun grade(q: Curriculum.Question, correct: Boolean) {
         android.util.Log.d("NupoGate", "grade ${q.id} ${q.shape} correct=$correct")
         locked = true
+        closeHint()
         answered++
         if (correct) correctCount++
         progress.value = answered
 
         Curriculum.Progress.resolve(ctx, q, correct)
+        Analytics.questionAnswered(
+            ctx, skill.id, q.stopId, q.shape,
+            boss = items.getOrNull(index)?.stop?.boss == true,
+            correct = correct, hintUsed = hintShown, review = isReviewItem(),
+            seconds = ((android.os.SystemClock.elapsedRealtime() - shownAt) / 1000).toInt(),
+        )
         // Only ladder questions move the cursor. A review question is a repeat of
         // one already passed, so advancing on it would skip fresh content.
-        if (!isReviewItem()) Curriculum.Progress.advance(ctx, skill)
+        if (!isReviewItem()) {
+            val before = Curriculum.Progress.stopIndex(ctx)
+            Curriculum.Progress.advance(ctx, skill)
+            val after = Curriculum.Progress.stopIndex(ctx)
+            if (after != before) skill.ladder.getOrNull(after)?.let {
+                Analytics.stopReached(ctx, skill.id, it.id, after)
+            }
+        }
 
         // Show the verdict on whatever the child actually touched.
         when (q.shape) {
@@ -1804,20 +1952,35 @@ class CoderGate(
     private fun showDrawer(correct: Boolean, message: String) {
         val sheet = LinearLayout(ctx).apply {
             orientation = LinearLayout.VERTICAL
-            setBackgroundColor(if (correct) Ink.goodWash else Ink.badWash)
-            setPadding(dp(20), dp(16), dp(20), dp(20))
+            background = android.graphics.drawable.GradientDrawable().apply {
+                setColor(if (correct) Ink.goodWash else Ink.badWash)
+                val r = ctx.dpf(26f)
+                cornerRadii = floatArrayOf(r, r, r, r, 0f, 0f, 0f, 0f)
+            }
+            setPadding(dp(20), dp(18), dp(20), dp(20))
         }
-        sheet.addView(label(
-            ctx, fonts, if (correct) "Correct" else "Not quite", 20f,
-            if (correct) Ink.good else Ink.bad, black = true,
+        // The mark, the verdict and the owl's reaction, on one line.
+        val top = LinearLayout(ctx).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+        }
+        top.addView(VerdictBadge(ctx, correct), LinearLayout.LayoutParams(dp(40), dp(40)))
+        val words = LinearLayout(ctx).apply { orientation = LinearLayout.VERTICAL }
+        words.addView(label(
+            ctx, fonts, if (correct) "Correct!" else "Not quite", 22f,
+            if (correct) Ink.goodLedge else Ink.badLedge, black = true,
         ))
         if (message.isNotBlank()) {
-            sheet.addView(space(4))
-            sheet.addView(label(ctx, fonts, message, 15f, Ink.text).apply {
-                typeface = fonts.body
+            words.addView(space(2))
+            words.addView(label(ctx, fonts, message, 15f, Ink.text).apply {
+                typeface = fonts.extra
                 setLineSpacing(dp(3).toFloat(), 1f)
             })
         }
+        top.addView(words, LinearLayout.LayoutParams(0,
+            ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply { marginStart = dp(12) })
+        top.addView(Mascot.view(ctx, if (correct) "cheer" else "shrug", 72))
+        sheet.addView(top)
         sheet.addView(space(14))
         val cont = PushButton(ctx, fonts).apply {
             label = if (index >= items.size - 1) "Finish" else "Continue"
@@ -1847,6 +2010,7 @@ class CoderGate(
     // ---- finish
 
     private fun renderFinish() {
+        Analytics.sessionFinished(ctx, skill.id, answered, correctCount)
         hintButton.visibility = View.GONE
         progress.value = items.size
         drawer.removeAllViews()
@@ -1855,10 +2019,17 @@ class CoderGate(
         val done = stop != null &&
             Curriculum.Progress.stopIndex(ctx) > skill.ladder.indexOfFirst { it.id == stop.id }
 
-        body.addView(space(24))
-        body.addView(Confetti(ctx), LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT, dp(150)))
-        body.addView(space(6))
+        body.addView(space(16))
+        // The trophy owl inside the confetti.
+        val party = FrameLayout(ctx)
+        party.addView(Confetti(ctx), FrameLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT, dp(170)))
+        party.addView(Mascot.view(ctx, if (done) "trophy" else "cheer", 150),
+            FrameLayout.LayoutParams(dp(150), ViewGroup.LayoutParams.WRAP_CONTENT,
+                Gravity.CENTER))
+        body.addView(party, LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT, dp(170)))
+        body.addView(space(10))
         body.addView(label(
             ctx, fonts, if (done) "Stop complete" else "Nice work", 28f,
             Ink.text, black = true, align = Gravity.CENTER,
@@ -1871,16 +2042,18 @@ class CoderGate(
         ).apply { typeface = fonts.body })
         body.addView(space(22))
 
+        // The reward, as a ticket in the logo yellow.
         val card = LinearLayout(ctx).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER
-            background = roundRect(Ink.surface, ctx.dpf(20f), Ink.line, dp(2))
-            setPadding(dp(20), dp(20), dp(20), dp(20))
+            background = roundRect(HINT_WASH, ctx.dpf(24f), Ink.accent, dp(3))
+            setPadding(dp(20), dp(18), dp(20), dp(20))
         }
-        card.addView(label(ctx, fonts, "$minutes", 44f, Ink.primary,
+        card.addView(label(ctx, fonts, "+$minutes min", 40f, Ink.text,
             black = true, align = Gravity.CENTER))
-        card.addView(label(ctx, fonts, "minutes unlocked", 15f, Ink.muted,
-            align = Gravity.CENTER).apply { typeface = fonts.body })
+        card.addView(space(2))
+        card.addView(label(ctx, fonts, "of play unlocked", 15f, HINT_INK,
+            black = true, align = Gravity.CENTER))
         body.addView(card, LinearLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
 
@@ -1988,6 +2161,13 @@ class CoderGate(
     private fun dp(v: Int) = (v * ctx.resources.displayMetrics.density).toInt()
 
     private companion object {
+        /** The hint's warm wash and the dark gold its words are written in. */
+        val HINT_WASH = 0xFFFFF6DA.toInt()
+        val HINT_INK = 0xFF8A6100.toInt()
+
+        /** "No number picked yet" — outside any answer a question can have. */
+        const val NO_PICK = Int.MIN_VALUE
+
         /** The size a board would like to be when there is room. */
         const val MIN_BOARD = 210
 

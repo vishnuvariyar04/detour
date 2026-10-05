@@ -40,7 +40,7 @@ S221 = [
    opt(1), visual=_a3, optionsText=["2", "3", "4"]),
 
  q("predict", "Three steps inside, twice round. Tap where he ends.",
-   "Up, up, across. Then up, up, across again.",
+   "Trace the three steps inside once. Then do them again.",
    ends(_a4), visual=_a4),
 
  q("compare", "Two loops, different counts, different steps inside. Do they "

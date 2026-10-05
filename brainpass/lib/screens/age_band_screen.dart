@@ -6,6 +6,7 @@
 import 'package:flutter/material.dart';
 
 import '../engine.dart';
+import '../curriculum.dart';
 import '../questions.dart';
 import '../storage.dart';
 import '../theme.dart';
@@ -15,12 +16,7 @@ class AgeBandScreen extends StatefulWidget {
   final VoidCallback onNext;
   final int? step;
   final int? total;
-  const AgeBandScreen({
-    super.key,
-    required this.onNext,
-    this.step,
-    this.total,
-  });
+  const AgeBandScreen({super.key, required this.onNext, this.step, this.total});
 
   @override
   State<AgeBandScreen> createState() => _AgeBandScreenState();
@@ -36,8 +32,10 @@ class _AgeBandScreenState extends State<AgeBandScreen> {
   }
 
   Future<void> _save() async {
-    await Storage.setAgeBand(bandToString(_band));
-    await Engine.setAgeBand(bandToString(_band));
+    final band = bandToString(_band);
+    await Storage.setAgeBand(band);
+    Curriculum.invalidate();
+    await Engine.setAgeBand(band);
     widget.onNext();
   }
 
@@ -72,7 +70,7 @@ class _AgeBandScreenState extends State<AgeBandScreen> {
                       const Text('How old is your kid?', style: AppText.title),
                       const SizedBox(height: 8),
                       const Text(
-                        'Questions match the age you pick. Change it any time.',
+                        'The complete syllabus changes with the age you pick.',
                         style: AppText.body,
                       ),
                       const SizedBox(height: 20),
@@ -103,7 +101,10 @@ class _AgeBandScreenState extends State<AgeBandScreen> {
               ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
-                child: PrimaryButton(label: 'Save', onPressed: _save),
+                child: PrimaryButton(
+                  label: 'Save & switch syllabus',
+                  onPressed: _save,
+                ),
               ),
             ],
           ),
@@ -132,18 +133,21 @@ class _AgeBandScreenState extends State<AgeBandScreen> {
   }
 
   Widget _previewCard() {
-    var math = '🍎 + 🍎 = 6\nWhat is 🍎?';
-    var gk = 'What is a baby dog called?';
-    if (_band == Band.b) {
-      math = '14 + 8 = ?';
-      gk = 'Which shape has 5 sides?';
-    } else if (_band == Band.c) {
-      math = '8 × 7 = ?';
-      gk = 'Pumps blood in body?';
-    } else if (_band == Band.d) {
-      math = '6 × 8 + 7 = ?';
-      gk = 'Capital of Australia?';
-    }
+    final (name, topics) = switch (_band) {
+      Band.a => (
+        'Number Sense',
+        ['Counting', 'Making numbers', 'Shapes & patterns'],
+      ),
+      Band.b => (
+        'Puzzles & Logic',
+        ['Number thinking', 'Order & position', 'Relations & codes'],
+      ),
+      Band.c => (
+        'Think Like a Coder',
+        ['Sequences', 'Loops & conditions', 'Debugging'],
+      ),
+      Band.d => ('Reasoning', ['Sequences & logic', 'Codes', '3D space']),
+    };
 
     return Container(
       width: double.infinity,
@@ -154,11 +158,14 @@ class _AgeBandScreenState extends State<AgeBandScreen> {
         children: [
           const Row(
             children: [
-              Icon(Icons.auto_awesome_rounded,
-                  color: AppColors.accent, size: 16),
+              Icon(
+                Icons.auto_awesome_rounded,
+                color: AppColors.accent,
+                size: 16,
+              ),
               SizedBox(width: 8),
               Text(
-                'Sample questions',
+                'SYLLABUS PREVIEW',
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w900,
@@ -170,12 +177,24 @@ class _AgeBandScreenState extends State<AgeBandScreen> {
           const SizedBox(height: 12),
           AnimatedSwitcher(
             duration: const Duration(milliseconds: 200),
-            child: Row(
+            child: Column(
               key: ValueKey(_band),
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _sampleChip(math),
-                const SizedBox(width: 8),
-                _sampleChip(gk),
+                Text(
+                  name,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.textDark,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [for (final topic in topics) _topicChip(topic)],
+                ),
               ],
             ),
           ),
@@ -184,23 +203,20 @@ class _AgeBandScreenState extends State<AgeBandScreen> {
     );
   }
 
-  Widget _sampleChip(String q) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppColors.line),
-        ),
-        child: Text(
-          q,
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w800,
-            color: AppColors.textDark,
-          ),
+  Widget _topicChip(String topic) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: AppColors.line),
+      ),
+      child: Text(
+        topic,
+        style: const TextStyle(
+          fontSize: 12.5,
+          fontWeight: FontWeight.w800,
+          color: AppColors.textDark,
         ),
       ),
     );
@@ -209,13 +225,13 @@ class _AgeBandScreenState extends State<AgeBandScreen> {
   String _bandDescription(Band b) {
     switch (b) {
       case Band.a:
-        return 'Counting and simple sums';
+        return 'Number sense and visual patterns';
       case Band.b:
-        return 'Mental maths and nature';
+        return 'Puzzles, order and everyday logic';
       case Band.c:
-        return 'Times tables and trivia';
+        return 'Sequences, loops and debugging';
       case Band.d:
-        return 'Advanced logic and maths';
+        return 'Algebraic, spatial and formal reasoning';
     }
   }
 }

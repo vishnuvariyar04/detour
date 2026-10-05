@@ -12,7 +12,9 @@ import '../../analytics.dart';
 import '../../auth_service.dart';
 import '../../theme.dart';
 import '../../widgets.dart';
-import '../onboarding/onb_widgets.dart';
+import '../../storage.dart';
+import '../onboarding/demo_lessons.dart';
+import '../onboarding/onb_kit.dart';
 
 class LoginFlow extends StatefulWidget {
   const LoginFlow({super.key});
@@ -28,6 +30,32 @@ class _LoginFlowState extends State<LoginFlow> {
   bool _busy = false;
   bool _creating = false; // false = sign in, true = create account
   bool _showPassword = false;
+
+  /// The email form stays folded behind one button until it is wanted, so the
+  /// screen leads with the one-tap route.
+  bool _showEmail = false;
+
+  /// After the story the parent has just met their child's course, so sign-in
+  /// is framed as keeping it. A returning parent sees "Welcome back".
+  String get _course {
+    final id = Storage.onbSubject;
+    for (final c in kDemoCourses) {
+      if (c.id == id) return c.name;
+    }
+    return '';
+  }
+
+  String get _title {
+    if (_creating) return 'Create your account';
+    return _course.isEmpty ? 'Welcome back' : 'Save $_course';
+  }
+
+  String get _subtitle {
+    if (_creating) return 'So their progress follows them to any phone.';
+    return _course.isEmpty
+        ? 'Sign in and your saved plan comes right back.'
+        : 'So their progress is never lost.';
+  }
   String? _error;
   String? _notice;
 
@@ -125,33 +153,47 @@ class _LoginFlowState extends State<LoginFlow> {
                   child: Column(
                     children: [
                       if (MediaQuery.of(context).viewInsets.bottom == 0) ...[
-                        const HaloMascot('assets/mascot_pin.png', size: 120),
-                        const SizedBox(height: 18),
+                        const SizedBox(height: 12),
+                        Image.asset(Nupo.pin, width: 150),
+                        const SizedBox(height: 14),
                       ],
-                      Text(_creating ? 'Create your account' : 'Welcome back',
-                          style: AppText.title),
+                      Text(
+                        _title,
+                        textAlign: TextAlign.center,
+                        style: OnbText.title,
+                      ),
                       const SizedBox(height: 8),
                       Text(
-                        _creating
-                            ? "So Nupo remembers your kid's plan on any phone."
-                            : 'Sign in and your saved plan comes right back.',
+                        _subtitle,
                         textAlign: TextAlign.center,
-                        style: AppText.body,
+                        style: OnbText.sub,
                       ),
-                      const SizedBox(height: 22),
+                      const SizedBox(height: 26),
 
-                      NupoButton(
+                      ChunkyButton(
                         label: 'Continue with Google',
-                        buttonTone: ButtonTone.brand,
+                        tone: Chunky.ghost,
+                        arrow: false,
+                        leading: const _GoogleG(),
                         onPressed: _busy
                             ? null
                             : () => _run('google', AuthService.signInWithGoogle),
                       ),
+                      const SizedBox(height: 10),
+                      if (!_showEmail)
+                        ChunkyButton(
+                          label: 'Continue with email',
+                          tone: Chunky.ghost,
+                          arrow: false,
+                          leading: const Icon(Icons.mail_rounded,
+                              color: AppColors.primary, size: 20),
+                          onPressed: _busy
+                              ? null
+                              : () => setState(() => _showEmail = true),
+                        ),
 
-                      const SizedBox(height: 18),
-                      const _OrDivider(),
-                      const SizedBox(height: 18),
-
+                      if (_showEmail) ...[
+                      const SizedBox(height: 8),
                       _Field(
                         controller: _email,
                         hint: 'Email',
@@ -179,9 +221,8 @@ class _LoginFlowState extends State<LoginFlow> {
                       ),
                       const SizedBox(height: 14),
 
-                      NupoButton(
+                      ChunkyButton(
                         label: _creating ? 'Create account' : 'Sign in',
-                        buttonTone: ButtonTone.light,
                         onPressed: _canSubmit ? _submitEmail : null,
                       ),
 
@@ -198,6 +239,8 @@ class _LoginFlowState extends State<LoginFlow> {
                             ),
                           ),
                         ),
+                      ],
+
                       ],
 
                       if (_error != null) ...[
@@ -327,21 +370,38 @@ class _Message extends StatelessWidget {
       );
 }
 
-class _OrDivider extends StatelessWidget {
-  const _OrDivider();
+
+/// Google's "G", drawn in its four colours.
+class _GoogleG extends StatelessWidget {
+  const _GoogleG();
 
   @override
-  Widget build(BuildContext context) => Row(
-        children: [
-          const Expanded(child: Divider(color: AppColors.cardBorder)),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Text(
-              'or',
-              style: AppText.caption.copyWith(color: AppColors.textMuted),
-            ),
-          ),
-          const Expanded(child: Divider(color: AppColors.cardBorder)),
-        ],
-      );
+  Widget build(BuildContext context) =>
+      const CustomPaint(size: Size(20, 20), painter: _GPainter());
+}
+
+class _GPainter extends CustomPainter {
+  const _GPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final r = Rect.fromLTWH(2, 2, size.width - 4, size.height - 4);
+    final w = size.width * 0.18;
+    Paint arc(Color c) => Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = w
+      ..color = c;
+    const d = 3.14159265 / 180;
+    canvas.drawArc(r, -40 * d, -95 * d, false, arc(const Color(0xFFEA4335)));
+    canvas.drawArc(r, -135 * d, -90 * d, false, arc(const Color(0xFFFBBC05)));
+    canvas.drawArc(r, 135 * d, -90 * d, false, arc(const Color(0xFF34A853)));
+    canvas.drawArc(r, 45 * d, -45 * d, false, arc(const Color(0xFF4285F4)));
+    canvas.drawRect(
+      Rect.fromLTWH(size.width / 2, size.height / 2 - w / 2, size.width / 2 - 2, w),
+      Paint()..color = const Color(0xFF4285F4),
+    );
+  }
+
+  @override
+  bool shouldRepaint(_GPainter oldDelegate) => false;
 }

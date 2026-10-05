@@ -46,6 +46,8 @@ class GuardService : Service() {
         private const val TAG = "NupoGuard"
         private const val CHANNEL = "brainpass_guard"
         private const val NOTIF_ID = 4201
+        private const val ACTION_AGE_BAND_CHANGED =
+            "com.brainpass.brainpass.action.AGE_BAND_CHANGED"
 
         fun start(ctx: Context) {
             try {
@@ -54,6 +56,21 @@ class GuardService : Service() {
                 else ctx.startService(i)
             } catch (e: Throwable) {
                 Log.e(TAG, "start failed", e)
+            }
+        }
+
+        /**
+         * Discard any interrupted lesson built for the previous age band.
+         * The next foreground tick creates a fresh gate from the new syllabus.
+         */
+        fun ageBandChanged(ctx: Context) {
+            try {
+                val i = Intent(ctx, GuardService::class.java)
+                    .setAction(ACTION_AGE_BAND_CHANGED)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) ctx.startForegroundService(i)
+                else ctx.startService(i)
+            } catch (e: Throwable) {
+                Log.e(TAG, "age-band refresh failed", e)
             }
         }
 
@@ -117,6 +134,14 @@ class GuardService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (intent?.action == ACTION_AGE_BAND_CHANGED) {
+            // hideLock() parks the current lesson by design; releasing directly
+            // afterwards makes this a true invalidation instead of a resume.
+            hideLock()
+            releaseParked()
+            trackedPkg = null
+            lastFg = null
+        }
         startTicking()
         return START_STICKY
     }

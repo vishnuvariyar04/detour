@@ -22,6 +22,7 @@ Change one and change the other, or this measures a card nobody draws.
 """
 import collections, json, math, os, sys
 from PIL import ImageFont
+import rs_emit as EMIT
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.join(HERE, "..", "..")
@@ -332,6 +333,18 @@ def main():
     items, stops, bosses = [], 0, 0
     for sec in d["sections"]:
         for u in sec["units"]:
+            taught = set()
+            for st in u["stops"]:
+                kinds = {q["shape"] for q in st["questions"]}
+                if st.get("boss"):
+                    if not kinds <= taught:
+                        bad(st["id"], f"the boss asks {sorted(kinds - taught)}, never taught in its unit")
+                else:
+                    allowed = EMIT.STOP_SHAPES[st["id"]]
+                    for i, q in enumerate(st["questions"]):
+                        if q["shape"] not in allowed:
+                            bad(f"{st['id']}#{i}", f"a {q['shape']} question in a stop that teaches {sorted(allowed)}")
+                    taught |= allowed
             for st in u["stops"]:
                 stops += 1
                 bosses += bool(st.get("boss"))

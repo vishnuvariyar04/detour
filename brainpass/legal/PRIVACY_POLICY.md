@@ -1,6 +1,6 @@
 # Privacy Policy
 
-**Effective date:** 31 August 2026
+**Effective date:** 5 October 2026
 
 **Apps:** Nupo for iOS (bundle `com.app.nupo`) and Nupo for Android (package `app.nupo.kid`)
 
@@ -15,7 +15,7 @@ Nupo is a daily learning app for children aged 5–12, set up and controlled ent
 - The **parent** creates the account. On Android that means **Sign in with Google** or an **email address and password**; on iOS it means **Sign in with Apple or Sign in with Google**. Either way we get an email address for the parent.
 - **Children never create accounts, enter personal information, or see ads.**
 - Almost everything Nupo does — knowing which app was opened, showing lessons, counting minutes — happens **entirely on the device** and is never uploaded.
-- We show no ads and use no advertising or marketing SDKs. We do use **product analytics** (Google Firebase Analytics, and PostHog on iOS) to see where parents get stuck setting Nupo up and whether families keep using it — never to profile anyone and never for advertising. **No advertising identifier is collected, and no child's answers or names are ever sent.** See "Product analytics" below.
+- We show no ads and use no advertising or marketing SDKs. We do use **product analytics** (Google Firebase Analytics, and PostHog) to see where parents get stuck setting Nupo up and whether families keep using it — never to profile anyone and never for advertising. **No advertising identifier is collected, and no child's answers or names are ever sent.** See "Product analytics" below.
 - We **never sell or share data** with anyone except the infrastructure providers listed below.
 
 ## Information we collect (parent account)
@@ -25,7 +25,7 @@ When a parent signs in and uses Nupo, we store the following in our cloud databa
 | Data | Platform | Purpose |
 |---|---|---|
 | Parent's email address | Android and iOS | Account sign-in and, occasionally, to contact you about Nupo |
-| Your saved setup: your child's first name, the owl's nickname, their age range, chosen subject, the apps you picked for lessons and each app's rules | Android and iOS | So that signing in on a new phone, or after reinstalling, restores what you already set up |
+| Your saved setup: your child's first name, the owl's nickname, their age (in years) and age range, chosen subject, the apps you picked for lessons and each app's rules | Android and iOS | So that signing in on a new phone, or after reinstalling, restores what you already set up |
 | Parent's email address | iOS | Account sign-in and, occasionally, to contact you about Nupo |
 | Parent's name, if the sign-in provider supplies one | iOS | Addressing you correctly in the app |
 | Which sign-in method was used (Apple or Google) | iOS | Signing you back into the right account |
@@ -38,11 +38,11 @@ When a parent signs in and uses Nupo, we store the following in our cloud databa
 
 **A note on Sign in with Apple.** Apple lets you hide your real email address. If you choose that, we receive a relay address ending in `@privaterelay.appleid.com` and never see your actual email. That works perfectly well — you can use Nupo entirely through the relay.
 
-**Subscriptions (iOS).** Nupo for iOS is a paid app. Purchases are processed by **Apple**, and we use **RevenueCat** to confirm whether a subscription is active. Neither we nor RevenueCat ever see your payment card, billing address, or Apple Account password — Apple handles all of that. RevenueCat holds only your purchase history and an account identifier so that your subscription follows you across devices and reinstalls. We have deliberately **disabled RevenueCat's optional device-identifier and advertising-attribution collection**.
+**Subscriptions.** Nupo Pro is sold through **Apple** on iOS and through **Google Play** on Android, and we use **RevenueCat** to confirm whether a subscription is active. Neither we nor RevenueCat ever see your payment card, billing address, or store account password — Apple and Google handle all of that. If you start a free trial on Android, Nupo schedules one **local** reminder notification on your phone for the day before the trial ends; it is created on the device, not sent from our servers. RevenueCat holds only your purchase history and an account identifier so that your subscription follows you across devices and reinstalls. We have deliberately **disabled RevenueCat's optional device-identifier and advertising-attribution collection**.
 
-**Your saved setup.** So that signing in on a new phone (or after a reinstall) restores what you already configured, we store your setup against your account: your child's first name, the name you gave the Nupo owl, their age range and chosen subject, the apps you selected for lessons, and each app's rules. This is readable only by your own signed-in account, is never sold or shared, and is deleted with your account.
+**Your saved setup.** So that signing in on a new phone (or after a reinstall) restores what you already configured, we store your setup against your account: your child's first name, the name you gave the Nupo owl, their age in years and age range, their chosen subject, the apps you selected for lessons, and each app's rules. This is readable only by your own signed-in account, is never sold or shared, and is deleted with your account.
 
-We do **not** collect: your child's birth date, photos, contacts, messages, location, browsing history, the full list of apps installed on the device, or your child's answers to questions.
+We do **not** collect: your child's date of birth, photos, contacts, messages, location, browsing history, the full list of apps installed on the device, or your child's answers to questions.
 
 ## Information that stays on the device
 
@@ -50,7 +50,7 @@ The following is stored **only on the device** and is never transmitted to us or
 
 - The parent PIN (stored as a salted cryptographic hash — we cannot read it)
 - Daily usage and earned-time counters
-- Everything about the child's learning session (questions shown, answers given, progress, streaks)
+- Everything about the child's learning session (the questions shown, the answers given, progress, streaks). The only part of it that leaves the device is the right/wrong, hint and timing analytics described under "Product analytics".
 
 Your child's first name, the owl's name, and your chosen apps and rules are also kept on the device, and additionally saved to your account so they can be restored — see **Your saved setup** above.
 
@@ -73,7 +73,7 @@ On **neither** platform does Nupo request SMS, contacts, camera, microphone, or 
 
 Nupo is used by children under parental control, and we take that seriously:
 
-- The account and all settings belong to the **parent**. The one piece of information about a child that reaches our servers is the **first name (or nickname) the parent types during setup**, together with the owl's nickname, stored so the setup can be restored. We ask for nothing else about the child: no birth date, no exact age, no photo, no contact details, and never their answers.
+- The account and all settings belong to the **parent**. The one piece of information about a child that reaches our servers is the **first name (or nickname) the parent types during setup**, together with the owl's nickname, stored so the setup can be restored. We also store the age (in years) the parent picks, to choose the right lessons. We ask for nothing else about the child: no date of birth, no photo, no contact details, and never their answers.
 - The child-facing screens contain **no ads, no external links, no purchases, and no data entry** beyond answering learning questions, which are processed on-device and never stored on our servers or transmitted.
 - The only child-related data we hold is the coarse age band the **parent** selected, which cannot identify a child.
 
@@ -84,9 +84,10 @@ If you believe we have inadvertently collected personal information from a child
 | Processor | What they handle |
 |---|---|
 | **Google LLC** (Firebase Authentication, Cloud Firestore and Firebase Analytics) | The parent account record and saved setup described above, plus the product-analytics events listed under "Product analytics". Google also handles Sign in with Google on both platforms, and email/password sign-in on Android. |
-| **Apple Inc.** (iOS only) | Sign in with Apple, and all payment processing for subscriptions. |
-| **RevenueCat, Inc.** (iOS purchases; the SDK also ships on Android) | Confirming whether a subscription is active. Purchase history and an account identifier only. Android is currently free, so RevenueCat holds only an account identifier there. |
-| **PostHog, Inc.** (iOS only) | The product-analytics events listed under "Product analytics". Hosted in PostHog's US region. No session replay and no automatic capture — only the events we write ourselves. |
+| **Apple Inc.** (iOS only) | Sign in with Apple, and all payment processing for iOS subscriptions. |
+| **Google LLC** (Google Play, Android only) | All payment processing for Android subscriptions. |
+| **RevenueCat, Inc.** (both apps) | Confirming whether a subscription is active. Purchase history and an account identifier only. |
+| **PostHog, Inc.** | The product-analytics events listed under "Product analytics". Data from both apps is hosted in PostHog's EU region (Frankfurt, Germany). No session replay and no automatic capture — only the events we write ourselves. |
 
 All data is encrypted in transit (TLS), and database access rules ensure each account can only ever read or write its own record.
 
@@ -97,7 +98,7 @@ We use **no advertising SDKs, no crash-reporting SDKs, and no data brokers**. We
 Nupo uses product analytics so we can tell where the app is failing parents. Before we added it we had no way of knowing that a parent had installed Nupo, tried to sign in, and been blocked. We use two tools:
 
 - **Firebase Analytics** (Google LLC) — on **Android and iOS**.
-- **PostHog** (PostHog, Inc.) — on **iOS only**.
+- **PostHog** (PostHog, Inc.) — on **Android** and **iOS**, hosted in PostHog's EU region.
 
 **Both are configured to record only the events we deliberately write into the app.** We do not use session replay, screen recording, or automatic capture of taps and gestures. Nothing is recorded from the screens your child sees beyond the fact that a lesson happened.
 
@@ -107,20 +108,23 @@ Nupo uses product analytics so we can tell where the app is failing parents. Bef
 - Whether each permission was granted or skipped (Android), or whether Screen Time access was granted (iOS).
 - Whether sign-in succeeded or failed, and a short technical *reason code* when it fails (for example `invalid-credential`). We never record what was typed.
 - That a lesson was shown on the device, that it was completed, or that a parent used their PIN to skip it — and a once-a-day marker that the app was used.
+- How the learning is going (Android): for each question, which lesson it belongs to (for example "lesson 2.1.3 of Number Sense"), the *kind* of question, whether the answer was right or wrong, whether the hint was opened, and how many seconds it took. Also when a new idea is introduced and when a lesson is finished. We use this to find questions that are too hard and lessons that do not teach well.
+- Which settings screens a parent opens later (for example "apps" or "age"), whether protection was switched off, and sign-out or account deletion.
+- Basic technical details the analytics tools attach to every event: the device model, Android or iOS version, app version and language, and the IP address the event came from (used only to estimate the country).
 - The child's age **band** (such as 7-8), the chosen subject, and how many apps are gated.
 
 **What we never record**
 
 - Your child's name, the owl's name, your name, or anything else typed into the app.
-- Any question your child saw or any answer they gave. Those never leave the device.
+- The text of any question your child saw, or what they tapped or typed as an answer. Only whether it was right or wrong is recorded.
 - Screen recordings, screenshots, or a general log of what was tapped.
 - Your advertising ID. Because Nupo is for children, there is no advertising identifier in either app — on Android it is removed from the app entirely and ad personalisation and ad-user-data signals are switched off; on iOS there is no IDFA and no App Tracking Transparency prompt. Analytics data is tied only to a random, app-specific identifier that is destroyed when you uninstall Nupo.
 
-This data is used solely to improve Nupo. It is never used for advertising, never sold, and never shared with anyone other than Google and PostHog as the processors running the service on our behalf.
+This data is used solely to improve Nupo. It is never used for advertising, never sold, and never shared with anyone other than Google and PostHog, Inc. as the processors running the service on our behalf.
 
 ## Where your data is processed
 
-Our processors — Google, Apple, RevenueCat and PostHog — are United States companies, and your data is processed on their infrastructure, which may be in the United States or in other countries where they operate. Our PostHog project is hosted in PostHog's **US region**. Where the law requires a safeguard for such transfers (for example the GDPR), we rely on our processors' standard contractual clauses and equivalent data-protection terms. All data is encrypted in transit.
+Our processors — Google, Apple, RevenueCat and PostHog — are United States companies, and your data is processed on their infrastructure, which may be in the United States or in other countries where they operate. Our PostHog project, used by both apps, is hosted in PostHog's **EU region** (Frankfurt, Germany). Where the law requires a safeguard for such transfers (for example the GDPR), we rely on our processors' standard contractual clauses and equivalent data-protection terms. All data is encrypted in transit.
 
 ## How long we keep data
 
@@ -135,10 +139,10 @@ You can, at any time:
 - **View** what we hold about you — email us and we'll send you a copy.
 - **Delete** your account and all associated data:
   - **iOS:** Parent settings → Delete account
-  - **Android:** Settings → Account → Delete account
+  - **Android:** Parent tab → Account → Delete account
   - or by emailing us. See our [Data Deletion page](/data-deletion).
 - **Correct** your details by deleting the account and signing up again.
-- **Cancel a subscription** at any time in Settings → Apple Account → Subscriptions on iOS. Deleting your Nupo account does not cancel an Apple subscription; you must cancel it with Apple separately.
+- **Cancel a subscription** at any time: on iOS in Settings → Apple Account → Subscriptions; on Android in the Google Play app → Profile → Payments & subscriptions → Subscriptions (or from Nupo's Parent tab → Nupo Pro). Deleting your Nupo account does not cancel a store subscription; you must cancel it with Apple or Google separately.
 
 We respond to all requests within 30 days. Depending on where you live, you may have additional rights under laws such as the GDPR or India's DPDP Act; we honour reasonable requests regardless of jurisdiction.
 

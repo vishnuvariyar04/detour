@@ -23,7 +23,7 @@
         {
          "shape": "equation",
          "prompt": "Tap the number for the box.",
-         "hint": "What number makes both sides the same?",
+         "hint": "Start at 27. How far is it up to 45?",
          "pic": {
           "kind": "equation",
           "left": 27,
@@ -46,7 +46,7 @@
         {
          "shape": "equation",
          "prompt": "Tap the number for the box.",
-         "hint": "What number makes both sides the same?",
+         "hint": "Add 36 and 29. Add the tens, then the ones.",
          "pic": {
           "kind": "equation",
           "left": 36,
@@ -69,7 +69,7 @@
         {
          "shape": "equation",
          "prompt": "Tap the number for the box.",
-         "hint": "What number makes both sides the same?",
+         "hint": "Start at 25. How far is it up to 73?",
          "pic": {
           "kind": "equation",
           "left": 48,
@@ -92,7 +92,7 @@
         {
          "shape": "equation",
          "prompt": "Tap the number for the box.",
-         "hint": "What number makes both sides the same?",
+         "hint": "Start at 19. How far is it up to 76?",
          "pic": {
           "kind": "equation",
           "left": 19,
@@ -115,7 +115,7 @@
         {
          "shape": "equation",
          "prompt": "Tap the number for the box.",
-         "hint": "What number makes both sides the same?",
+         "hint": "Add 64 and 28. Add the tens, then the ones.",
          "pic": {
           "kind": "equation",
           "left": 64,
@@ -136,69 +136,49 @@
          ]
         },
         {
-         "shape": "riddle",
-         "prompt": "Tap the number I am.",
-         "hint": "Work backwards from the end.",
+         "shape": "equation",
+         "prompt": "Tap the number for the box.",
+         "hint": "Start at 36. How far is it up to 83?",
          "pic": {
-          "kind": "card",
-          "lines": [
-           "I am a number.",
-           "I add 17, then double it.",
-           "Now I am 50."
-          ],
-          "steps": [
-           [
-            "add",
-            17
-           ],
-           [
-            "double"
-           ]
-          ],
-          "result": 50
+          "kind": "equation",
+          "left": 47,
+          "op": "+",
+          "right": 36,
+          "result": 83,
+          "hide": "left"
          },
          "answer": {
           "type": "number",
-          "value": 8
+          "value": 47
          },
          "choices": [
-          8,
-          9,
-          50,
-          134
+          46,
+          47,
+          53,
+          119
          ]
         },
         {
-         "shape": "riddle",
-         "prompt": "Tap the number I am.",
-         "hint": "Work backwards from the end.",
+         "shape": "equation",
+         "prompt": "Tap the number for the box.",
+         "hint": "Start at 58. How far is it up to 75?",
          "pic": {
-          "kind": "card",
-          "lines": [
-           "I am a number.",
-           "I double, then add 15.",
-           "Now I am 39."
-          ],
-          "steps": [
-           [
-            "double"
-           ],
-           [
-            "add",
-            15
-           ]
-          ],
-          "result": 39
+          "kind": "equation",
+          "left": 58,
+          "op": "+",
+          "right": 17,
+          "result": 75,
+          "hide": "right"
          },
          "answer": {
           "type": "number",
-          "value": 12
+          "value": 17
          },
          "choices": [
-          11,
-          12,
-          39,
-          93
+          15,
+          16,
+          17,
+          23
          ]
         }
        ],
@@ -224,7 +204,7 @@
         {
          "shape": "equation",
          "prompt": "Tap the number for the box.",
-         "hint": "What number makes both sides the same?",
+         "hint": "How far is it from 25 up to 52?",
          "pic": {
           "kind": "equation",
           "left": 52,
@@ -238,16 +218,16 @@
           "value": 27
          },
          "choices": [
+          24,
           25,
-          27,
-          33,
-          77
+          26,
+          27
          ]
         },
         {
          "shape": "equation",
          "prompt": "Tap the number for the box.",
-         "hint": "What number makes both sides the same?",
+         "hint": "Take 38 from 71. Take the tens, then the ones.",
          "pic": {
           "kind": "equation",
           "left": 71,
@@ -261,16 +241,16 @@
           "value": 33
          },
          "choices": [
-          31,
-          32,
           33,
-          47
+          38,
+          47,
+          109
          ]
         },
         {
          "shape": "equation",
          "prompt": "Tap the number for the box.",
-         "hint": "What number makes both sides the same?",
+         "hint": "Add back: put 26 and 19 together.",
          "pic": {
           "kind": "equation",
           "left": 45,
@@ -284,16 +264,16 @@
           "value": 45
          },
          "choices": [
-          7,
-          26,
           35,
-          45
+          45,
+          46,
+          47
          ]
         },
         {
          "shape": "equation",
          "prompt": "Tap the number for the box.",
-         "hint": "What number makes both sides the same?",
+         "hint": "How far is it from 44 up to 90?",
          "pic": {
           "kind": "equation",
           "left": 90,
@@ -307,16 +287,16 @@
           "value": 46
          },
          "choices": [
+          44,
+          45,
           46,
-          47,
-          54,
-          134
+          54
          ]
         },
         {
          "shape": "equation",
          "prompt": "Tap the number for the box.",
-         "hint": "What number makes both sides the same?",
+         "hint": "Take 35 from 63. Take the tens, then the ones.",
          "pic": {
           "kind": "equation",
           "left": 63,
@@ -330,76 +310,56 @@
           "value": 28
          },
          "choices": [
+          25,
+          26,
           27,
-          28,
-          32,
+          28
+         ]
+        },
+        {
+         "shape": "equation",
+         "prompt": "Tap the number for the box.",
+         "hint": "Add back: put 35 and 47 together.",
+         "pic": {
+          "kind": "equation",
+          "left": 82,
+          "op": "-",
+          "right": 47,
+          "result": 35,
+          "hide": "left"
+         },
+         "answer": {
+          "type": "number",
+          "value": 82
+         },
+         "choices": [
+          82,
+          83,
+          84,
+          85
+         ]
+        },
+        {
+         "shape": "equation",
+         "prompt": "Tap the number for the box.",
+         "hint": "How far is it from 37 up to 61?",
+         "pic": {
+          "kind": "equation",
+          "left": 61,
+          "op": "-",
+          "right": 24,
+          "result": 37,
+          "hide": "right"
+         },
+         "answer": {
+          "type": "number",
+          "value": 24
+         },
+         "choices": [
+          23,
+          24,
+          36,
           98
-         ]
-        },
-        {
-         "shape": "riddle",
-         "prompt": "Tap the number I am.",
-         "hint": "Work backwards from the end.",
-         "pic": {
-          "kind": "card",
-          "lines": [
-           "I am a number.",
-           "I take away 9, then halve it.",
-           "Now I am 17."
-          ],
-          "steps": [
-           [
-            "take",
-            9
-           ],
-           [
-            "half"
-           ]
-          ],
-          "result": 17
-         },
-         "answer": {
-          "type": "number",
-          "value": 43
-         },
-         "choices": [
-          4,
-          17,
-          43,
-          44
-         ]
-        },
-        {
-         "shape": "riddle",
-         "prompt": "Tap the number I am.",
-         "hint": "Work backwards from the end.",
-         "pic": {
-          "kind": "card",
-          "lines": [
-           "I am a number.",
-           "I halve, then take away 8.",
-           "Now I am 14."
-          ],
-          "steps": [
-           [
-            "half"
-           ],
-           [
-            "take",
-            8
-           ]
-          ],
-          "result": 14
-         },
-         "answer": {
-          "type": "number",
-          "value": 44
-         },
-         "choices": [
-          14,
-          42,
-          43,
-          44
          ]
         }
        ],
@@ -425,7 +385,7 @@
         {
          "shape": "riddle",
          "prompt": "Tap the number I am.",
-         "hint": "Work backwards from the end.",
+         "hint": "Start at 30 and double it. Then undo the first step.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -458,7 +418,7 @@
         {
          "shape": "riddle",
          "prompt": "Tap the number I am.",
-         "hint": "Work backwards from the end.",
+         "hint": "Start at 41 and add 13. Then undo the first step.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -491,7 +451,7 @@
         {
          "shape": "riddle",
          "prompt": "Tap the number I am.",
-         "hint": "Work backwards from the end.",
+         "hint": "Start at 58 and halve it. Then undo the first step.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -522,105 +482,135 @@
          ]
         },
         {
-         "shape": "equation",
-         "prompt": "Tap the number for the box.",
-         "hint": "What number makes both sides the same?",
+         "shape": "riddle",
+         "prompt": "Tap the number I am.",
+         "hint": "Start at 50 and halve it. Then undo the first step.",
          "pic": {
-          "kind": "equation",
-          "left": 38,
-          "op": "+",
-          "right": 47,
-          "result": 85,
-          "hide": "left"
+          "kind": "card",
+          "lines": [
+           "I am a number.",
+           "I add 17, then double it.",
+           "Now I am 50."
+          ],
+          "steps": [
+           [
+            "add",
+            17
+           ],
+           [
+            "double"
+           ]
+          ],
+          "result": 50
          },
          "answer": {
           "type": "number",
-          "value": 38
+          "value": 8
          },
          "choices": [
-          36,
-          37,
-          38,
-          42
-         ]
-        },
-        {
-         "shape": "equation",
-         "prompt": "Tap the number for the box.",
-         "hint": "What number makes both sides the same?",
-         "pic": {
-          "kind": "equation",
-          "left": 100,
-          "op": "-",
-          "right": 57,
-          "result": 43,
-          "hide": "right"
-         },
-         "answer": {
-          "type": "number",
-          "value": 57
-         },
-         "choices": [
-          43,
-          55,
-          56,
-          57
-         ]
-        },
-        {
-         "shape": "equation",
-         "prompt": "Tap the number for the box.",
-         "hint": "What number makes both sides the same?",
-         "pic": {
-          "kind": "equation",
-          "left": 29,
-          "op": "+",
-          "right": 34,
-          "result": 63,
-          "hide": "right"
-         },
-         "answer": {
-          "type": "number",
-          "value": 34
-         },
-         "choices": [
-          34,
-          46,
-          63,
-          92
+          5,
+          6,
+          7,
+          8
          ]
         },
         {
          "shape": "riddle",
          "prompt": "Tap the number I am.",
-         "hint": "Work backwards from the end.",
+         "hint": "Start at 17 and double it. Then undo the first step.",
          "pic": {
           "kind": "card",
           "lines": [
            "I am a number.",
-           "I halve, then add 19.",
-           "Now I am 42."
+           "I take away 9, then halve it.",
+           "Now I am 17."
+          ],
+          "steps": [
+           [
+            "take",
+            9
+           ],
+           [
+            "half"
+           ]
+          ],
+          "result": 17
+         },
+         "answer": {
+          "type": "number",
+          "value": 43
+         },
+         "choices": [
+          43,
+          44,
+          45,
+          46
+         ]
+        },
+        {
+         "shape": "riddle",
+         "prompt": "Tap the number I am.",
+         "hint": "Start at 14 and add 8. Then undo the first step.",
+         "pic": {
+          "kind": "card",
+          "lines": [
+           "I am a number.",
+           "I halve, then take away 8.",
+           "Now I am 14."
           ],
           "steps": [
            [
             "half"
            ],
            [
-            "add",
-            19
+            "take",
+            8
            ]
           ],
-          "result": 42
+          "result": 14
          },
          "answer": {
           "type": "number",
-          "value": 46
+          "value": 44
          },
          "choices": [
-          40,
-          42,
+          14,
+          44,
           45,
           46
+         ]
+        },
+        {
+         "shape": "riddle",
+         "prompt": "Tap the number I am.",
+         "hint": "Start at 39 and take away 15. Then undo the first step.",
+         "pic": {
+          "kind": "card",
+          "lines": [
+           "I am a number.",
+           "I double, then add 15.",
+           "Now I am 39."
+          ],
+          "steps": [
+           [
+            "double"
+           ],
+           [
+            "add",
+            15
+           ]
+          ],
+          "result": 39
+         },
+         "answer": {
+          "type": "number",
+          "value": 12
+         },
+         "choices": [
+          10,
+          11,
+          12,
+          39
          ]
         }
        ],
@@ -646,7 +636,7 @@
         {
          "shape": "equation",
          "prompt": "Tap the number for the box.",
-         "hint": "What number makes both sides the same?",
+         "hint": "Add back: put 35 and 49 together.",
          "pic": {
           "kind": "equation",
           "left": 84,
@@ -660,16 +650,16 @@
           "value": 84
          },
          "choices": [
+          35,
           74,
           84,
-          85,
-          86
+          85
          ]
         },
         {
          "shape": "riddle",
          "prompt": "Tap the number I am.",
-         "hint": "Work backwards from the end.",
+         "hint": "Start at 76 and halve it. Then undo the first step.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -693,16 +683,16 @@
           "value": 24
          },
          "choices": [
-          24,
-          25,
-          76,
-          180
+          21,
+          22,
+          23,
+          24
          ]
         },
         {
          "shape": "equation",
          "prompt": "Tap the number for the box.",
-         "hint": "What number makes both sides the same?",
+         "hint": "Add 56 and 37. Add the tens, then the ones.",
          "pic": {
           "kind": "equation",
           "left": 56,
@@ -717,15 +707,15 @@
          },
          "choices": [
           19,
+          56,
           83,
-          93,
-          94
+          93
          ]
         },
         {
          "shape": "riddle",
          "prompt": "Tap the number I am.",
-         "hint": "Work backwards from the end.",
+         "hint": "Start at 45 and add 27. Then undo the first step.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -749,8 +739,8 @@
           "value": 36
          },
          "choices": [
-          35,
           36,
+          37,
           45,
           63
          ]
@@ -758,7 +748,7 @@
         {
          "shape": "equation",
          "prompt": "Tap the number for the box.",
-         "hint": "What number makes both sides the same?",
+         "hint": "How far is it from 27 up to 72?",
          "pic": {
           "kind": "equation",
           "left": 72,
@@ -772,16 +762,16 @@
           "value": 45
          },
          "choices": [
-          27,
-          43,
-          44,
-          45
+          45,
+          46,
+          55,
+          99
          ]
         },
         {
          "shape": "riddle",
          "prompt": "Tap the number I am.",
-         "hint": "Work backwards from the end.",
+         "hint": "Start at 25 and double it. Then undo the first step.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -805,10 +795,10 @@
           "value": 61
          },
          "choices": [
-          7,
           25,
           61,
-          62
+          62,
+          63
          ]
         }
        ]
@@ -828,7 +818,7 @@
         {
          "shape": "story",
          "prompt": "Read the story. Tap the answer.",
-         "hint": "Is something joining, leaving, or being compared?",
+         "hint": "She gets more. Add 38 and 27.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -856,7 +846,7 @@
         {
          "shape": "story",
          "prompt": "Read the story. Tap the answer.",
-         "hint": "Is something joining, leaving, or being compared?",
+         "hint": "He gives some away. Take 18 from 52.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -884,7 +874,7 @@
         {
          "shape": "story",
          "prompt": "Read the story. Tap the answer.",
-         "hint": "Is something joining, leaving, or being compared?",
+         "hint": "First add 19. Then take away 15.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -913,7 +903,7 @@
         {
          "shape": "story",
          "prompt": "Read the story. Tap the answer.",
-         "hint": "Is something joining, leaving, or being compared?",
+         "hint": "She gives some away. Take 34 from 70.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -941,7 +931,7 @@
         {
          "shape": "story",
          "prompt": "Read the story. Tap the answer.",
-         "hint": "Is something joining, leaving, or being compared?",
+         "hint": "Start at 29. How far is it up to 56?",
          "pic": {
           "kind": "card",
           "lines": [
@@ -969,7 +959,7 @@
         {
          "shape": "story",
          "prompt": "Read the story. Tap the answer.",
-         "hint": "Is something joining, leaving, or being compared?",
+         "hint": "First take away 17. Then add 26.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -996,35 +986,31 @@
          ]
         },
         {
-         "shape": "bars",
-         "prompt": "Tap the missing number on the bars.",
-         "hint": "The longer bar is the shorter bar plus the gap.",
+         "shape": "story",
+         "prompt": "Read the story. Tap the answer.",
+         "hint": "She gets more. Add 46 and 38.",
          "pic": {
-          "kind": "bars",
-          "names": [
-           "Ravi",
-           "Asha"
+          "kind": "card",
+          "lines": [
+           "Asha has 46 beads.",
+           "She gets 38 more.",
+           "How many now?"
           ],
-          "values": [
-           63,
+          "schema": "join",
+          "nums": [
+           46,
            38
-          ],
-          "shown": {
-           "top": 63,
-           "low": 38,
-           "diff": null
-          },
-          "hide": "diff"
+          ]
          },
          "answer": {
           "type": "number",
-          "value": 25
+          "value": 84
          },
          "choices": [
-          25,
-          35,
-          38,
-          101
+          8,
+          74,
+          84,
+          94
          ]
         }
        ],
@@ -1050,7 +1036,7 @@
         {
          "shape": "story",
          "prompt": "Read the story. Tap the answer.",
-         "hint": "Is something joining, leaving, or being compared?",
+         "hint": "Put the red and the blue together.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -1071,14 +1057,14 @@
          "choices": [
           9,
           53,
-          63,
-          73
+          62,
+          63
          ]
         },
         {
          "shape": "story",
          "prompt": "Read the story. Tap the answer.",
-         "hint": "Is something joining, leaving, or being compared?",
+         "hint": "Take the big ones away from all 61.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -1097,16 +1083,16 @@
           "value": 34
          },
          "choices": [
-          27,
-          32,
-          33,
-          34
+          34,
+          35,
+          46,
+          88
          ]
         },
         {
          "shape": "story",
          "prompt": "Read the story. Tap the answer.",
-         "hint": "Is something joining, leaving, or being compared?",
+         "hint": "Isha has more than Veer. So add.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -1125,16 +1111,16 @@
           "value": 74
          },
          "choices": [
+          18,
           74,
           75,
-          76,
-          77
+          76
          ]
         },
         {
          "shape": "story",
          "prompt": "Read the story. Tap the answer.",
-         "hint": "Is something joining, leaving, or being compared?",
+         "hint": "Rohan has fewer than Priya. So take away.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -1153,16 +1139,16 @@
           "value": 36
          },
          "choices": [
+          34,
           35,
           36,
-          44,
           130
          ]
         },
         {
          "shape": "story",
          "prompt": "Read the story. Tap the answer.",
-         "hint": "Is something joining, leaving, or being compared?",
+         "hint": "Take the smaller number from the bigger one.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -1181,16 +1167,16 @@
           "value": 34
          },
          "choices": [
+          31,
           32,
           33,
-          34,
-          46
+          34
          ]
         },
         {
          "shape": "story",
          "prompt": "Read the story. Tap the answer.",
-         "hint": "Is something joining, leaving, or being compared?",
+         "hint": "Add all three numbers.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -1210,16 +1196,16 @@
           "value": 72
          },
          "choices": [
-          43,
-          54,
-          62,
-          72
+          72,
+          73,
+          74,
+          75
          ]
         },
         {
          "shape": "bars",
          "prompt": "Tap the missing number on the bars.",
-         "hint": "The longer bar is the shorter bar plus the gap.",
+         "hint": "The gap is the long bar take away the short bar.",
          "pic": {
           "kind": "bars",
           "names": [
@@ -1242,9 +1228,9 @@
           "value": 26
          },
          "choices": [
-          25,
           26,
           34,
+          49,
           124
          ]
         }
@@ -1280,7 +1266,7 @@
         {
          "shape": "story",
          "prompt": "Read the story. Tap the answer.",
-         "hint": "Is something joining, leaving, or being compared?",
+         "hint": "Count in 5s, once for each bag.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -1299,16 +1285,16 @@
           "value": 30
          },
          "choices": [
+          11,
           30,
           31,
-          32,
           35
          ]
         },
         {
          "shape": "story",
          "prompt": "Read the story. Tap the answer.",
-         "hint": "Is something joining, leaving, or being compared?",
+         "hint": "Count in 4s, once for each one.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -1328,15 +1314,15 @@
          },
          "choices": [
           13,
+          32,
           36,
-          37,
           40
          ]
         },
         {
          "shape": "story",
          "prompt": "Read the story. Tap the answer.",
-         "hint": "Is something joining, leaving, or being compared?",
+         "hint": "Share 32 into 4 equal piles.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -1356,15 +1342,15 @@
          },
          "choices": [
           4,
+          6,
           7,
-          8,
-          28
+          8
          ]
         },
         {
          "shape": "story",
          "prompt": "Read the story. Tap the answer.",
-         "hint": "Is something joining, leaving, or being compared?",
+         "hint": "First find how many in all. Then take away 13.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -1384,16 +1370,16 @@
           "value": 27
          },
          "choices": [
-          1,
-          25,
-          26,
-          27
+          27,
+          28,
+          40,
+          53
          ]
         },
         {
          "shape": "story",
          "prompt": "Read the story. Tap the answer.",
-         "hint": "Is something joining, leaving, or being compared?",
+         "hint": "Share 45 into 5 equal piles.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -1412,79 +1398,71 @@
           "value": 9
          },
          "choices": [
+          5,
           9,
           10,
-          11,
           40
          ]
         },
         {
-         "shape": "bars",
-         "prompt": "Tap the missing number on the bars.",
-         "hint": "The longer bar is the shorter bar plus the gap.",
+         "shape": "story",
+         "prompt": "Read the story. Tap the answer.",
+         "hint": "Count in 8s, once for each bag.",
          "pic": {
-          "kind": "bars",
-          "names": [
-           "Mia",
-           "Dev"
+          "kind": "card",
+          "lines": [
+           "There are 3 bags.",
+           "Each bag has 8 eggs.",
+           "How many eggs in all?"
           ],
-          "values": [
-           81,
-           57
-          ],
-          "shown": {
-           "top": 81,
-           "low": null,
-           "diff": 24
-          },
-          "hide": "low"
+          "schema": "groups",
+          "nums": [
+           3,
+           8
+          ]
          },
          "answer": {
           "type": "number",
-          "value": 57
+          "value": 24
          },
          "choices": [
+          11,
+          16,
           24,
-          56,
-          57,
-          63
+          32
          ]
         },
         {
-         "shape": "bars",
-         "prompt": "Tap the missing number on the bars.",
-         "hint": "The longer bar is the shorter bar plus the gap.",
+         "shape": "story",
+         "prompt": "Read the story. Tap the answer.",
+         "hint": "Share 24 into 3 equal piles.",
          "pic": {
-          "kind": "bars",
-          "names": [
-           "Nina",
-           "Raj"
+          "kind": "card",
+          "lines": [
+           "24 stickers are shared equally.",
+           "3 friends get them.",
+           "How many does each get?"
           ],
-          "values": [
-           94,
-           66
-          ],
-          "shown": {
-           "top": null,
-           "low": 66,
-           "diff": 28
-          },
-          "hide": "top"
+          "schema": "share",
+          "nums": [
+           24,
+           3
+          ]
          },
          "answer": {
           "type": "number",
-          "value": 94
+          "value": 8
          },
          "choices": [
-          38,
-          66,
-          84,
-          94
+          3,
+          6,
+          7,
+          8
          ]
         }
        ],
        "teach": {
-        "line": "Equal groups: add the same number again and again.",
+        "line": "Equal groups: count on the same number. Sharing: one each, again and again.",
         "pic": {
          "kind": "card",
          "lines": [
@@ -1504,7 +1482,7 @@
         {
          "shape": "story",
          "prompt": "Read the story. Tap the answer.",
-         "hint": "Is something joining, leaving, or being compared?",
+         "hint": "Start at 37. How far is it up to 64?",
          "pic": {
           "kind": "card",
           "lines": [
@@ -1523,16 +1501,16 @@
           "value": 27
          },
          "choices": [
-          26,
           27,
           33,
+          64,
           101
          ]
         },
         {
          "shape": "story",
          "prompt": "Read the story. Tap the answer.",
-         "hint": "Is something joining, leaving, or being compared?",
+         "hint": "Sara has fewer than Nikhil. So take away.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -1551,16 +1529,16 @@
           "value": 36
          },
          "choices": [
-          34,
           35,
           36,
+          44,
           108
          ]
         },
         {
          "shape": "story",
          "prompt": "Read the story. Tap the answer.",
-         "hint": "Is something joining, leaving, or being compared?",
+         "hint": "Count in 8s, once for each one.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -1581,14 +1559,14 @@
          "choices": [
           13,
           32,
-          39,
-          40
+          40,
+          48
          ]
         },
         {
          "shape": "bars",
          "prompt": "Tap the missing number on the bars.",
-         "hint": "The longer bar is the shorter bar plus the gap.",
+         "hint": "The gap is the long bar take away the short bar.",
          "pic": {
           "kind": "bars",
           "names": [
@@ -1611,16 +1589,16 @@
           "value": 28
          },
          "choices": [
+          27,
           28,
           32,
-          62,
           152
          ]
         },
         {
          "shape": "story",
          "prompt": "Read the story. Tap the answer.",
-         "hint": "Is something joining, leaving, or being compared?",
+         "hint": "First find how many in all. Then take away 12.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -1640,16 +1618,16 @@
           "value": 18
          },
          "choices": [
-          18,
-          19,
-          30,
-          42
+          15,
+          16,
+          17,
+          18
          ]
         },
         {
          "shape": "story",
          "prompt": "Read the story. Tap the answer.",
-         "hint": "Is something joining, leaving, or being compared?",
+         "hint": "First add 36. Then take away 28.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -1669,8 +1647,8 @@
           "value": 55
          },
          "choices": [
-          39,
           55,
+          56,
           83,
           111
          ]
@@ -1692,7 +1670,7 @@
         {
          "shape": "series",
          "prompt": "Tap the missing number.",
-         "hint": "How does each number change to the next?",
+         "hint": "Find the jump from 7 to 13. Then from 13 to 19.",
          "pic": {
           "kind": "series",
           "terms": [
@@ -1719,7 +1697,7 @@
         {
          "shape": "series",
          "prompt": "Tap the missing number.",
-         "hint": "How does each number change to the next?",
+         "hint": "Find the jump from 4 to 12. Then from 12 to 20.",
          "pic": {
           "kind": "series",
           "terms": [
@@ -1746,7 +1724,7 @@
         {
          "shape": "series",
          "prompt": "Tap the missing number.",
-         "hint": "How does each number change to the next?",
+         "hint": "Find the jump from 9 to 18. Then from 18 to 27.",
          "pic": {
           "kind": "series",
           "terms": [
@@ -1773,7 +1751,7 @@
         {
          "shape": "series",
          "prompt": "Tap the missing number.",
-         "hint": "How does each number change to the next?",
+         "hint": "Find the jump from 95 to 88. Then from 88 to 81.",
          "pic": {
           "kind": "series",
           "terms": [
@@ -1800,7 +1778,7 @@
         {
          "shape": "series",
          "prompt": "Tap the missing number.",
-         "hint": "How does each number change to the next?",
+         "hint": "Find the jump from 11 to 17. Then from 29 to 35.",
          "pic": {
           "kind": "series",
           "terms": [
@@ -1827,7 +1805,7 @@
         {
          "shape": "seriesRule",
          "prompt": "Tap the rule for this row.",
-         "hint": "Check the rule on every step, not just the first.",
+         "hint": "Try each rule on 5. Does it make 12? Check the rest.",
          "pic": {
           "kind": "series",
           "terms": [
@@ -1869,7 +1847,7 @@
         {
          "shape": "seriesRule",
          "prompt": "Tap the rule for this row.",
-         "hint": "Check the rule on every step, not just the first.",
+         "hint": "Try each rule on 80. Does it make 72? Check the rest.",
          "pic": {
           "kind": "series",
           "terms": [
@@ -1934,7 +1912,7 @@
         {
          "shape": "series",
          "prompt": "Tap the missing number.",
-         "hint": "How does each number change to the next?",
+         "hint": "Find the jump from 3 to 12. Then from 12 to 21.",
          "pic": {
           "kind": "series",
           "terms": [
@@ -1961,7 +1939,7 @@
         {
          "shape": "series",
          "prompt": "Tap the missing number.",
-         "hint": "How does each number change to the next?",
+         "hint": "Find the jump from 100 to 91. Then from 73 to 64.",
          "pic": {
           "kind": "series",
           "terms": [
@@ -1988,7 +1966,7 @@
         {
          "shape": "series",
          "prompt": "Tap the missing number.",
-         "hint": "How does each number change to the next?",
+         "hint": "Find the jump from 14 to 22. Then from 22 to 30.",
          "pic": {
           "kind": "series",
           "terms": [
@@ -2015,7 +1993,7 @@
         {
          "shape": "series",
          "prompt": "Tap the missing number.",
-         "hint": "How does each number change to the next?",
+         "hint": "Find the jump from 66 to 59. Then from 59 to 52.",
          "pic": {
           "kind": "series",
           "terms": [
@@ -2042,7 +2020,7 @@
         {
          "shape": "series",
          "prompt": "Tap the missing number.",
-         "hint": "How does each number change to the next?",
+         "hint": "Find the jump from 23 to 38. Then from 38 to 53.",
          "pic": {
           "kind": "series",
           "terms": [
@@ -2069,7 +2047,7 @@
         {
          "shape": "seriesRule",
          "prompt": "Tap the rule for this row.",
-         "hint": "Check the rule on every step, not just the first.",
+         "hint": "Try each rule on 6. Does it make 15? Check the rest.",
          "pic": {
           "kind": "series",
           "terms": [
@@ -2111,7 +2089,7 @@
         {
          "shape": "seriesRule",
          "prompt": "Tap the rule for this row.",
-         "hint": "Check the rule on every step, not just the first.",
+         "hint": "Try each rule on 90. Does it make 84? Check the rest.",
          "pic": {
           "kind": "series",
           "terms": [
@@ -2176,7 +2154,7 @@
         {
          "shape": "series",
          "prompt": "Tap the missing number.",
-         "hint": "How does each number change to the next?",
+         "hint": "Find the jump from 2 to 3. Then from 3 to 5.",
          "pic": {
           "kind": "series",
           "terms": [
@@ -2204,7 +2182,7 @@
         {
          "shape": "series",
          "prompt": "Tap the missing number.",
-         "hint": "How does each number change to the next?",
+         "hint": "Find the jump from 3 to 6. Then from 6 to 12.",
          "pic": {
           "kind": "series",
           "terms": [
@@ -2231,7 +2209,7 @@
         {
          "shape": "series",
          "prompt": "Tap the missing number.",
-         "hint": "How does each number change to the next?",
+         "hint": "Find the jump from 10 to 12. Then from 12 to 15.",
          "pic": {
           "kind": "series",
           "terms": [
@@ -2258,7 +2236,7 @@
         {
          "shape": "series",
          "prompt": "Tap the missing number.",
-         "hint": "How does each number change to the next?",
+         "hint": "Find the jump from 5 to 10. Then from 40 to 80.",
          "pic": {
           "kind": "series",
           "terms": [
@@ -2284,7 +2262,7 @@
         {
          "shape": "series",
          "prompt": "Tap the missing number.",
-         "hint": "How does each number change to the next?",
+         "hint": "Find the jump from 20 to 21. Then from 21 to 23.",
          "pic": {
           "kind": "series",
           "terms": [
@@ -2311,7 +2289,7 @@
         {
          "shape": "seriesRule",
          "prompt": "Tap the rule for this row.",
-         "hint": "Check the rule on every step, not just the first.",
+         "hint": "Try each rule on 4. Does it make 8? Check the rest.",
          "pic": {
           "kind": "series",
           "terms": [
@@ -2352,7 +2330,7 @@
         {
          "shape": "seriesRule",
          "prompt": "Tap the rule for this row.",
-         "hint": "Check the rule on every step, not just the first.",
+         "hint": "Try each rule on 15. Does it make 16? Check the rest.",
          "pic": {
           "kind": "series",
           "terms": [
@@ -2392,7 +2370,7 @@
         }
        ],
        "teach": {
-        "line": "Sometimes the jump gets bigger each time.",
+        "line": "Sometimes the jump grows. Sometimes each number doubles.",
         "pic": {
          "kind": "series",
          "terms": [
@@ -2415,7 +2393,7 @@
         {
          "shape": "series",
          "prompt": "Tap the missing number.",
-         "hint": "How does each number change to the next?",
+         "hint": "Find the jump from 8 to 15. Then from 15 to 22.",
          "pic": {
           "kind": "series",
           "terms": [
@@ -2442,7 +2420,7 @@
         {
          "shape": "series",
          "prompt": "Tap the missing number.",
-         "hint": "How does each number change to the next?",
+         "hint": "Find the jump from 6 to 12. Then from 12 to 24.",
          "pic": {
           "kind": "series",
           "terms": [
@@ -2468,7 +2446,7 @@
         {
          "shape": "seriesRule",
          "prompt": "Tap the rule for this row.",
-         "hint": "Check the rule on every step, not just the first.",
+         "hint": "Try each rule on 13. Does it make 21? Check the rest.",
          "pic": {
           "kind": "series",
           "terms": [
@@ -2510,7 +2488,7 @@
         {
          "shape": "series",
          "prompt": "Tap the missing number.",
-         "hint": "How does each number change to the next?",
+         "hint": "Find the jump from 99 to 92. Then from 92 to 85.",
          "pic": {
           "kind": "series",
           "terms": [
@@ -2537,7 +2515,7 @@
         {
          "shape": "series",
          "prompt": "Tap the missing number.",
-         "hint": "How does each number change to the next?",
+         "hint": "Find the jump from 30 to 31. Then from 31 to 33.",
          "pic": {
           "kind": "series",
           "terms": [
@@ -2564,7 +2542,7 @@
         {
          "shape": "series",
          "prompt": "Tap the missing number.",
-         "hint": "How does each number change to the next?",
+         "hint": "Find the jump from 36 to 45. Then from 45 to 54.",
          "pic": {
           "kind": "series",
           "terms": [
@@ -2612,7 +2590,7 @@
         {
          "shape": "rank",
          "prompt": "Tap who is the tallest.",
-         "hint": "Put them in order, one clue at a time.",
+         "hint": "Line them up, tallest first. Who is at the front?",
          "pic": {
           "kind": "card",
           "lines": [
@@ -2652,7 +2630,7 @@
         {
          "shape": "rank",
          "prompt": "Tap who is the shortest.",
-         "hint": "Put them in order, one clue at a time.",
+         "hint": "Line them up, tallest first. Who comes last?",
          "pic": {
           "kind": "card",
           "lines": [
@@ -2692,7 +2670,7 @@
         {
          "shape": "rank",
          "prompt": "Tap who is the oldest.",
-         "hint": "Put them in order, one clue at a time.",
+         "hint": "Line them up, oldest first. Who is at the front?",
          "pic": {
           "kind": "card",
           "lines": [
@@ -2732,7 +2710,7 @@
         {
          "shape": "rank",
          "prompt": "Tap who is the fastest.",
-         "hint": "Put them in order, one clue at a time.",
+         "hint": "Line them up, fastest first. Who is at the front?",
          "pic": {
           "kind": "card",
           "lines": [
@@ -2772,7 +2750,7 @@
         {
          "shape": "rank",
          "prompt": "Tap who is the heaviest.",
-         "hint": "Put them in order, one clue at a time.",
+         "hint": "Line them up, heaviest first. Who is at the front?",
          "pic": {
           "kind": "card",
           "lines": [
@@ -2812,7 +2790,7 @@
         {
          "shape": "rankCount",
          "prompt": "Tap how many are taller than Om.",
-         "hint": "Put them in order first, then count.",
+         "hint": "Line them up, tallest first. Count who is before Om.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -2853,7 +2831,7 @@
         {
          "shape": "rankCount",
          "prompt": "Tap how many are older than Riya.",
-         "hint": "Put them in order first, then count.",
+         "hint": "Line them up, oldest first. Count who is before Riya.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -2913,7 +2891,7 @@
         {
          "shape": "rank",
          "prompt": "Tap who is the tallest.",
-         "hint": "Put them in order, one clue at a time.",
+         "hint": "Line them up, tallest first. Who is at the front?",
          "pic": {
           "kind": "card",
           "lines": [
@@ -2953,7 +2931,7 @@
         {
          "shape": "rank",
          "prompt": "Tap who is the youngest.",
-         "hint": "Put them in order, one clue at a time.",
+         "hint": "Line them up, oldest first. Who comes last?",
          "pic": {
           "kind": "card",
           "lines": [
@@ -2993,7 +2971,7 @@
         {
          "shape": "rank",
          "prompt": "Tap who is the slowest.",
-         "hint": "Put them in order, one clue at a time.",
+         "hint": "Line them up, fastest first. Who comes last?",
          "pic": {
           "kind": "card",
           "lines": [
@@ -3033,7 +3011,7 @@
         {
          "shape": "rank",
          "prompt": "Tap who is the lightest.",
-         "hint": "Put them in order, one clue at a time.",
+         "hint": "Line them up, heaviest first. Who comes last?",
          "pic": {
           "kind": "card",
           "lines": [
@@ -3073,7 +3051,7 @@
         {
          "shape": "rank",
          "prompt": "Tap who is the shortest.",
-         "hint": "Put them in order, one clue at a time.",
+         "hint": "Line them up, tallest first. Who comes last?",
          "pic": {
           "kind": "card",
           "lines": [
@@ -3113,7 +3091,7 @@
         {
          "shape": "rankCount",
          "prompt": "Tap how many are faster than Dev.",
-         "hint": "Put them in order first, then count.",
+         "hint": "Line them up, fastest first. Count who is before Dev.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -3154,7 +3132,7 @@
         {
          "shape": "rankCount",
          "prompt": "Tap how many are heavier than Zoya.",
-         "hint": "Put them in order first, then count.",
+         "hint": "Line them up, heaviest first. Count who is before Zoya.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -3213,7 +3191,7 @@
         {
          "shape": "rank",
          "prompt": "Tap who is the second tallest.",
-         "hint": "Put them in order, one clue at a time.",
+         "hint": "Line them up, tallest first. Who comes next?",
          "pic": {
           "kind": "card",
           "lines": [
@@ -3253,7 +3231,7 @@
         {
          "shape": "rank",
          "prompt": "Tap who is the second oldest.",
-         "hint": "Put them in order, one clue at a time.",
+         "hint": "Line them up, oldest first. Who comes next?",
          "pic": {
           "kind": "card",
           "lines": [
@@ -3293,7 +3271,7 @@
         {
          "shape": "rank",
          "prompt": "Tap who is the second fastest.",
-         "hint": "Put them in order, one clue at a time.",
+         "hint": "Line them up, fastest first. Who comes next?",
          "pic": {
           "kind": "card",
           "lines": [
@@ -3333,7 +3311,7 @@
         {
          "shape": "rank",
          "prompt": "Tap who is the second heaviest.",
-         "hint": "Put them in order, one clue at a time.",
+         "hint": "Line them up, heaviest first. Who comes next?",
          "pic": {
           "kind": "card",
           "lines": [
@@ -3373,7 +3351,7 @@
         {
          "shape": "rank",
          "prompt": "Tap who is the tallest.",
-         "hint": "Put them in order, one clue at a time.",
+         "hint": "Line them up, tallest first. Who is at the front?",
          "pic": {
           "kind": "card",
           "lines": [
@@ -3421,7 +3399,7 @@
         {
          "shape": "rank",
          "prompt": "Tap who is the youngest.",
-         "hint": "Put them in order, one clue at a time.",
+         "hint": "Line them up, oldest first. Who comes last?",
          "pic": {
           "kind": "card",
           "lines": [
@@ -3469,7 +3447,7 @@
         {
          "shape": "rankCount",
          "prompt": "Tap how many are taller than Nina.",
-         "hint": "Put them in order first, then count.",
+         "hint": "Line them up, tallest first. Count who is before Nina.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -3536,7 +3514,7 @@
         {
          "shape": "rank",
          "prompt": "Tap who is the oldest.",
-         "hint": "Put them in order, one clue at a time.",
+         "hint": "Line them up, oldest first. Who is at the front?",
          "pic": {
           "kind": "card",
           "lines": [
@@ -3576,7 +3554,7 @@
         {
          "shape": "rankCount",
          "prompt": "Tap how many are older than Pooja.",
-         "hint": "Put them in order first, then count.",
+         "hint": "Line them up, oldest first. Count who is before Pooja.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -3617,7 +3595,7 @@
         {
          "shape": "rank",
          "prompt": "Tap who is the second tallest.",
-         "hint": "Put them in order, one clue at a time.",
+         "hint": "Line them up, tallest first. Who comes next?",
          "pic": {
           "kind": "card",
           "lines": [
@@ -3665,7 +3643,7 @@
         {
          "shape": "rank",
          "prompt": "Tap who is the heaviest.",
-         "hint": "Put them in order, one clue at a time.",
+         "hint": "Line them up, heaviest first. Who is at the front?",
          "pic": {
           "kind": "card",
           "lines": [
@@ -3705,7 +3683,7 @@
         {
          "shape": "rank",
          "prompt": "Tap who is the fastest.",
-         "hint": "Put them in order, one clue at a time.",
+         "hint": "Line them up, fastest first. Who is at the front?",
          "pic": {
           "kind": "card",
           "lines": [
@@ -3753,7 +3731,7 @@
         {
          "shape": "rankCount",
          "prompt": "Tap how many are heavier than Imran.",
-         "hint": "Put them in order first, then count.",
+         "hint": "Line them up, heaviest first. Count who is before Imran.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -3815,7 +3793,7 @@
         {
          "shape": "queueBack",
          "prompt": "Tap Mia's place from the back.",
-         "hint": "Count from the other end of the line.",
+         "hint": "Start at the back end. Count each child up to Mia.",
          "pic": {
           "kind": "line",
           "n": 7,
@@ -3836,7 +3814,7 @@
         {
          "shape": "queueBack",
          "prompt": "Tap Om's place from the back.",
-         "hint": "Count from the other end of the line.",
+         "hint": "Start at the back end. Count each child up to Om.",
          "pic": {
           "kind": "line",
           "n": 6,
@@ -3857,7 +3835,7 @@
         {
          "shape": "queueBack",
          "prompt": "Tap Riya's place from the back.",
-         "hint": "Count from the other end of the line.",
+         "hint": "Start at the back end. Count each child up to Riya.",
          "pic": {
           "kind": "line",
           "n": 9,
@@ -3878,7 +3856,7 @@
         {
          "shape": "queueBack",
          "prompt": "Tap Kabir's place from the back.",
-         "hint": "Count from the other end of the line.",
+         "hint": "Start at the back end. Count each child up to Kabir.",
          "pic": {
           "kind": "line",
           "n": 8,
@@ -3899,7 +3877,7 @@
         {
          "shape": "queueBack",
          "prompt": "Tap Neha's place from the back.",
-         "hint": "Count from the other end of the line.",
+         "hint": "Start at the back end. Count each child up to Neha.",
          "pic": {
           "kind": "line",
           "n": 10,
@@ -3920,7 +3898,7 @@
         {
          "shape": "queueWho",
          "prompt": "Tap who is 2nd from the back.",
-         "hint": "Find which end is the front first.",
+         "hint": "Find the back of the line. Count 2 from there.",
          "pic": {
           "kind": "line",
           "n": 5,
@@ -3947,31 +3925,31 @@
         },
         {
          "shape": "queueWho",
-         "prompt": "Tap who is 3rd from the front.",
-         "hint": "Find which end is the front first.",
+         "prompt": "Tap who is 3rd from the back.",
+         "hint": "Find the back of the line. Count 3 from there.",
          "pic": {
           "kind": "line",
           "n": 6,
           "names": [
-           "Imran",
-           "Diya",
-           "Yash",
-           "Lila",
-           "Aman",
-           "Sara"
+           "Pooja",
+           "Tom",
+           "Kavya",
+           "Ali",
+           "Rohan",
+           "Isha"
           ],
           "nth": 3,
-          "end": "front"
+          "end": "back"
          },
          "answer": {
           "type": "option",
           "value": 1
          },
          "optionsText": [
-          "Aman",
-          "Yash",
-          "Lila",
-          "Diya"
+          "Isha",
+          "Ali",
+          "Kavya",
+          "Rohan"
          ]
         }
        ],
@@ -3993,93 +3971,93 @@
        "boss": false,
        "questions": [
         {
-         "shape": "queueWho",
-         "prompt": "Tap who is 4th from the front.",
-         "hint": "Find which end is the front first.",
+         "shape": "queueCalc",
+         "prompt": "Read the clues. Tap the answer.",
+         "hint": "1 in front of Nina, 5 behind. Now add Nina.",
          "pic": {
-          "kind": "line",
-          "n": 5,
-          "names": [
-           "Nina",
-           "Raj",
-           "Anu",
-           "Veer",
-           "Mia"
+          "kind": "card",
+          "lines": [
+           "Nina is 2nd from the front.",
+           "Nina is 6th from the back.",
+           "How many are in the line?"
           ],
-          "nth": 4,
-          "end": "front"
+          "calc": "total",
+          "nums": [
+           2,
+           6
+          ]
          },
          "answer": {
-          "type": "option",
-          "value": 2
+          "type": "number",
+          "value": 7
          },
-         "optionsText": [
-          "Mia",
-          "Anu",
-          "Veer",
-          "Raj"
-         ]
-        },
-        {
-         "shape": "queueWho",
-         "prompt": "Tap who is 3rd from the back.",
-         "hint": "Find which end is the front first.",
-         "pic": {
-          "kind": "line",
-          "n": 6,
-          "names": [
-           "Pooja",
-           "Tom",
-           "Kavya",
-           "Ali",
-           "Rohan",
-           "Isha"
-          ],
-          "nth": 3,
-          "end": "back"
-         },
-         "answer": {
-          "type": "option",
-          "value": 3
-         },
-         "optionsText": [
-          "Kavya",
-          "Rohan",
-          "Isha",
-          "Ali"
-         ]
-        },
-        {
-         "shape": "queueWho",
-         "prompt": "Tap who is 1st from the back.",
-         "hint": "Find which end is the front first.",
-         "pic": {
-          "kind": "line",
-          "n": 4,
-          "names": [
-           "Sahil",
-           "Rani",
-           "Karan",
-           "Meera"
-          ],
-          "nth": 1,
-          "end": "back"
-         },
-         "answer": {
-          "type": "option",
-          "value": 0
-         },
-         "optionsText": [
-          "Meera",
-          "Sahil",
-          "Karan",
-          "Rani"
+         "choices": [
+          7,
+          8,
+          9,
+          10
          ]
         },
         {
          "shape": "queueCalc",
          "prompt": "Read the clues. Tap the answer.",
-         "hint": "Draw the line in your head.",
+         "hint": "2 in front of Raj, 8 behind. Now add Raj.",
+         "pic": {
+          "kind": "card",
+          "lines": [
+           "Raj is 3rd from the front.",
+           "Raj is 9th from the back.",
+           "How many are in the line?"
+          ],
+          "calc": "total",
+          "nums": [
+           3,
+           9
+          ]
+         },
+         "answer": {
+          "type": "number",
+          "value": 11
+         },
+         "choices": [
+          9,
+          11,
+          12,
+          13
+         ]
+        },
+        {
+         "shape": "queueCalc",
+         "prompt": "Read the clues. Tap the answer.",
+         "hint": "4 in front of Anu, 1 behind. Now add Anu.",
+         "pic": {
+          "kind": "card",
+          "lines": [
+           "Anu is 5th from the front.",
+           "Anu is 2nd from the back.",
+           "How many are in the line?"
+          ],
+          "calc": "total",
+          "nums": [
+           5,
+           2
+          ]
+         },
+         "answer": {
+          "type": "number",
+          "value": 6
+         },
+         "choices": [
+          4,
+          5,
+          6,
+          7
+         ]
+        },
+        {
+         "shape": "queueCalc",
+         "prompt": "Read the clues. Tap the answer.",
+         "hint": "2 in front of Arjun, 4 behind. Now add Arjun.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -4098,16 +4076,16 @@
           "value": 7
          },
          "choices": [
-          7,
-          8,
-          9,
-          10
+          4,
+          5,
+          6,
+          7
          ]
         },
         {
          "shape": "queueCalc",
          "prompt": "Read the clues. Tap the answer.",
-         "hint": "Draw the line in your head.",
+         "hint": "3 in front of Priya, 3 behind. Now add Priya.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -4126,16 +4104,16 @@
           "value": 7
          },
          "choices": [
-          4,
           7,
           8,
-          9
+          9,
+          10
          ]
         },
         {
          "shape": "queueCalc",
          "prompt": "Read the clues. Tap the answer.",
-         "hint": "Draw the line in your head.",
+         "hint": "4 in front of Om, 5 behind. Now add Om.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -4155,15 +4133,15 @@
          },
          "choices": [
           6,
-          9,
           10,
-          11
+          11,
+          12
          ]
         },
         {
          "shape": "queueCalc",
          "prompt": "Read the clues. Tap the answer.",
-         "hint": "Draw the line in your head.",
+         "hint": "Nobody in front of Zoya, 7 behind. Now add Zoya.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -4182,10 +4160,10 @@
           "value": 8
          },
          "choices": [
-          5,
           6,
           7,
-          8
+          8,
+          9
          ]
         }
        ],
@@ -4210,7 +4188,7 @@
         {
          "shape": "queueCalc",
          "prompt": "Read the clues. Tap the answer.",
-         "hint": "Draw the line in your head.",
+         "hint": "Say the places from 2nd to 6th. Skip those two.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -4229,16 +4207,16 @@
           "value": 3
          },
          "choices": [
-          3,
-          4,
-          5,
-          8
+          0,
+          1,
+          2,
+          3
          ]
         },
         {
          "shape": "queueCalc",
          "prompt": "Read the clues. Tap the answer.",
-         "hint": "Draw the line in your head.",
+         "hint": "Say the places from 3rd to 8th. Skip those two.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -4257,16 +4235,16 @@
           "value": 4
          },
          "choices": [
-          3,
           4,
           5,
-          6
+          6,
+          11
          ]
         },
         {
          "shape": "queueCalc",
          "prompt": "Read the clues. Tap the answer.",
-         "hint": "Draw the line in your head.",
+         "hint": "Say the places from 1st to 4th. Skip those two.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -4285,16 +4263,16 @@
           "value": 2
          },
          "choices": [
-          0,
           1,
           2,
-          3
+          3,
+          4
          ]
         },
         {
          "shape": "queueCalc",
          "prompt": "Read the clues. Tap the answer.",
-         "hint": "Draw the line in your head.",
+         "hint": "Say the places from 4th to 10th. Skip those two.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -4313,80 +4291,94 @@
           "value": 5
          },
          "choices": [
-          2,
           3,
           4,
-          5
-         ]
-        },
-        {
-         "shape": "queueBack",
-         "prompt": "Tap Veer's place from the back.",
-         "hint": "Count from the other end of the line.",
-         "pic": {
-          "kind": "line",
-          "n": 5,
-          "mark": 1,
-          "name": "Veer"
-         },
-         "answer": {
-          "type": "number",
-          "value": 5
-         },
-         "choices": [
-          1,
           5,
-          6,
-          7
-         ]
-        },
-        {
-         "shape": "queueBack",
-         "prompt": "Tap Anu's place from the back.",
-         "hint": "Count from the other end of the line.",
-         "pic": {
-          "kind": "line",
-          "n": 10,
-          "mark": 9,
-          "name": "Anu"
-         },
-         "answer": {
-          "type": "number",
-          "value": 2
-         },
-         "choices": [
-          1,
-          2,
-          3,
-          9
+          6
          ]
         },
         {
          "shape": "queueCalc",
          "prompt": "Read the clues. Tap the answer.",
-         "hint": "Draw the line in your head.",
+         "hint": "Say the places from 3rd to 7th. Skip those two.",
          "pic": {
           "kind": "card",
           "lines": [
-           "Nikhil is 7th from the front.",
-           "Nikhil is 3rd from the back.",
-           "How many are in the line?"
+           "Veer is 3rd in the line.",
+           "Rani is 7th in the line.",
+           "How many stand between them?"
           ],
-          "calc": "total",
+          "calc": "between",
           "nums": [
-           7,
-           3
+           3,
+           7
           ]
          },
          "answer": {
           "type": "number",
-          "value": 9
+          "value": 3
          },
          "choices": [
-          9,
-          10,
-          11,
-          12
+          0,
+          1,
+          2,
+          3
+         ]
+        },
+        {
+         "shape": "queueCalc",
+         "prompt": "Read the clues. Tap the answer.",
+         "hint": "Say the places from 5th to 9th. Skip those two.",
+         "pic": {
+          "kind": "card",
+          "lines": [
+           "Karan is 9th in the line.",
+           "Meera is 5th in the line.",
+           "How many stand between them?"
+          ],
+          "calc": "between",
+          "nums": [
+           9,
+           5
+          ]
+         },
+         "answer": {
+          "type": "number",
+          "value": 3
+         },
+         "choices": [
+          3,
+          4,
+          5,
+          14
+         ]
+        },
+        {
+         "shape": "queueCalc",
+         "prompt": "Read the clues. Tap the answer.",
+         "hint": "Say the places from 1st to 6th. Skip those two.",
+         "pic": {
+          "kind": "card",
+          "lines": [
+           "Nikhil is 1st in the line.",
+           "Sahil is 6th in the line.",
+           "How many stand between them?"
+          ],
+          "calc": "between",
+          "nums": [
+           1,
+           6
+          ]
+         },
+         "answer": {
+          "type": "number",
+          "value": 4
+         },
+         "choices": [
+          3,
+          4,
+          5,
+          6
          ]
         }
        ],
@@ -4411,7 +4403,7 @@
         {
          "shape": "queueWho",
          "prompt": "Tap who is 2nd from the front.",
-         "hint": "Find which end is the front first.",
+         "hint": "Find the front of the line. Count 2 from there.",
          "pic": {
           "kind": "line",
           "n": 5,
@@ -4427,19 +4419,19 @@
          },
          "answer": {
           "type": "option",
-          "value": 1
+          "value": 2
          },
          "optionsText": [
+          "Aman",
           "Raj",
           "Mia",
-          "Pooja",
-          "Aman"
+          "Pooja"
          ]
         },
         {
          "shape": "queueBack",
          "prompt": "Tap Sara's place from the back.",
-         "hint": "Count from the other end of the line.",
+         "hint": "Start at the back end. Count each child up to Sara.",
          "pic": {
           "kind": "line",
           "n": 8,
@@ -4451,16 +4443,16 @@
           "value": 4
          },
          "choices": [
-          1,
-          2,
           3,
-          4
+          4,
+          5,
+          6
          ]
         },
         {
          "shape": "queueCalc",
          "prompt": "Read the clues. Tap the answer.",
-         "hint": "Draw the line in your head.",
+         "hint": "Say the places from 2nd to 9th. Skip those two.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -4479,16 +4471,16 @@
           "value": 6
          },
          "choices": [
+          4,
           5,
           6,
-          7,
-          8
+          7
          ]
         },
         {
          "shape": "queueCalc",
          "prompt": "Read the clues. Tap the answer.",
-         "hint": "Draw the line in your head.",
+         "hint": "5 in front of Kavya, 3 behind. Now add Kavya.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -4508,15 +4500,15 @@
          },
          "choices": [
           6,
+          7,
           8,
-          9,
-          10
+          9
          ]
         },
         {
          "shape": "queueWho",
          "prompt": "Tap who is 4th from the back.",
-         "hint": "Find which end is the front first.",
+         "hint": "Find the back of the line. Count 4 from there.",
          "pic": {
           "kind": "line",
           "n": 6,
@@ -4533,19 +4525,19 @@
          },
          "answer": {
           "type": "option",
-          "value": 2
+          "value": 3
          },
          "optionsText": [
+          "Rani",
           "Rohan",
           "Karan",
-          "Sahil",
-          "Rani"
+          "Sahil"
          ]
         },
         {
          "shape": "queueBack",
          "prompt": "Tap Dev's place from the back.",
-         "hint": "Count from the other end of the line.",
+         "hint": "Start at the back end. Count each child up to Dev.",
          "pic": {
           "kind": "line",
           "n": 9,
@@ -4557,9 +4549,9 @@
           "value": 3
          },
          "choices": [
+          1,
+          2,
           3,
-          4,
-          5,
           7
          ]
         }
@@ -4580,7 +4572,7 @@
         {
          "shape": "shelf",
          "prompt": "Tap the shape just left of the heart.",
-         "hint": "Hold up your left hand to check which side is left.",
+         "hint": "Put your finger on the heart. Move one to the left.",
          "pic": {
           "kind": "shelf",
           "items": [
@@ -4624,7 +4616,7 @@
         {
          "shape": "shelf",
          "prompt": "Tap the shape just right of the star.",
-         "hint": "Hold up your left hand to check which side is left.",
+         "hint": "Put your finger on the star. Move one to the right.",
          "pic": {
           "kind": "shelf",
           "items": [
@@ -4668,13 +4660,12 @@
         {
          "shape": "shelf",
          "prompt": "Tap the shape just left of the square.",
-         "hint": "Hold up your left hand to check which side is left.",
+         "hint": "Put your finger on the square. Move one to the left.",
          "pic": {
           "kind": "shelf",
           "items": [
-           "heart",
            "diamond",
-           "triangle",
+           "heart",
            "square",
            "star"
           ],
@@ -4688,6 +4679,11 @@
          },
          "optionCells": [
           {
+           "kind": "star",
+           "color": "primary",
+           "rotation": 0
+          },
+          {
            "kind": "diamond",
            "color": "primary",
            "rotation": 0
@@ -4696,23 +4692,13 @@
            "kind": "heart",
            "color": "primary",
            "rotation": 0
-          },
-          {
-           "kind": "triangle",
-           "color": "primary",
-           "rotation": 0
-          },
-          {
-           "kind": "star",
-           "color": "primary",
-           "rotation": 0
           }
          ]
         },
         {
          "shape": "shelf",
          "prompt": "Tap the shape just right of the circle.",
-         "hint": "Hold up your left hand to check which side is left.",
+         "hint": "Put your finger on the circle. Move one to the right.",
          "pic": {
           "kind": "shelf",
           "items": [
@@ -4755,20 +4741,20 @@
         },
         {
          "shape": "shelf",
-         "prompt": "Tap the shape just left of the diamond.",
-         "hint": "Hold up your left hand to check which side is left.",
+         "prompt": "Tap two places left of the heart.",
+         "hint": "Put your finger on the heart. Move two to the left.",
          "pic": {
           "kind": "shelf",
           "items": [
            "square",
-           "star",
-           "circle",
            "triangle",
-           "diamond"
+           "star",
+           "heart",
+           "circle"
           ],
-          "target": "diamond",
+          "target": "heart",
           "side": "left",
-          "steps": 1
+          "steps": 2
          },
          "answer": {
           "type": "option",
@@ -4781,7 +4767,46 @@
            "rotation": 0
           },
           {
+           "kind": "star",
+           "color": "primary",
+           "rotation": 0
+          },
+          {
+           "kind": "square",
+           "color": "primary",
+           "rotation": 0
+          },
+          {
            "kind": "circle",
+           "color": "primary",
+           "rotation": 0
+          }
+         ]
+        },
+        {
+         "shape": "shelf",
+         "prompt": "Tap two places right of the diamond.",
+         "hint": "Put your finger on the diamond. Move two to the right.",
+         "pic": {
+          "kind": "shelf",
+          "items": [
+           "diamond",
+           "circle",
+           "square",
+           "star",
+           "heart"
+          ],
+          "target": "diamond",
+          "side": "right",
+          "steps": 2
+         },
+         "answer": {
+          "type": "option",
+          "value": 1
+         },
+         "optionCells": [
+          {
+           "kind": "heart",
            "color": "primary",
            "rotation": 0
           },
@@ -4794,62 +4819,57 @@
            "kind": "star",
            "color": "primary",
            "rotation": 0
+          },
+          {
+           "kind": "circle",
+           "color": "primary",
+           "rotation": 0
           }
          ]
         },
         {
-         "shape": "turns",
-         "prompt": "Tap the way Om faces now.",
-         "hint": "Turn your own body the same way.",
+         "shape": "shelf",
+         "prompt": "Tap two places right of the circle.",
+         "hint": "Put your finger on the circle. Move two to the right.",
          "pic": {
-          "kind": "compass",
-          "lines": [
-           "Om faces North.",
-           "He turns right."
+          "kind": "shelf",
+          "items": [
+           "heart",
+           "circle",
+           "triangle",
+           "diamond",
+           "star"
           ],
-          "start": "North",
-          "moves": [
-           "right"
-          ]
+          "target": "circle",
+          "side": "right",
+          "steps": 2
          },
          "answer": {
           "type": "option",
-          "value": 1
+          "value": 2
          },
-         "optionsText": [
-          "North",
-          "East",
-          "South",
-          "West"
-         ],
-         "fixedOrder": true
-        },
-        {
-         "shape": "turns",
-         "prompt": "Tap the way Riya faces now.",
-         "hint": "Turn your own body the same way.",
-         "pic": {
-          "kind": "compass",
-          "lines": [
-           "Riya faces East.",
-           "She turns left."
-          ],
-          "start": "East",
-          "moves": [
-           "left"
-          ]
-         },
-         "answer": {
-          "type": "option",
-          "value": 0
-         },
-         "optionsText": [
-          "North",
-          "East",
-          "South",
-          "West"
-         ],
-         "fixedOrder": true
+         "optionCells": [
+          {
+           "kind": "triangle",
+           "color": "primary",
+           "rotation": 0
+          },
+          {
+           "kind": "heart",
+           "color": "primary",
+           "rotation": 0
+          },
+          {
+           "kind": "diamond",
+           "color": "primary",
+           "rotation": 0
+          },
+          {
+           "kind": "star",
+           "color": "primary",
+           "rotation": 0
+          }
+         ]
         }
        ],
        "teach": {
@@ -4877,7 +4897,7 @@
         {
          "shape": "turns",
          "prompt": "Tap the way Kabir faces now.",
-         "hint": "Turn your own body the same way.",
+         "hint": "Start at South. Right goes on: North, East, South, West.",
          "pic": {
           "kind": "compass",
           "lines": [
@@ -4904,7 +4924,7 @@
         {
          "shape": "turns",
          "prompt": "Tap the way Asha faces now.",
-         "hint": "Turn your own body the same way.",
+         "hint": "Start at West. Right goes on: North, East, South, West.",
          "pic": {
           "kind": "compass",
           "lines": [
@@ -4931,7 +4951,7 @@
         {
          "shape": "turns",
          "prompt": "Tap the way Dev faces now.",
-         "hint": "Turn your own body the same way.",
+         "hint": "Start at North. Left goes back: North, West, South, East.",
          "pic": {
           "kind": "compass",
           "lines": [
@@ -4957,8 +4977,224 @@
         },
         {
          "shape": "turns",
+         "prompt": "Tap the way Om faces now.",
+         "hint": "Start at North. Right goes on: North, East, South, West.",
+         "pic": {
+          "kind": "compass",
+          "lines": [
+           "Om faces North.",
+           "He turns right."
+          ],
+          "start": "North",
+          "moves": [
+           "right"
+          ]
+         },
+         "answer": {
+          "type": "option",
+          "value": 1
+         },
+         "optionsText": [
+          "North",
+          "East",
+          "South",
+          "West"
+         ],
+         "fixedOrder": true
+        },
+        {
+         "shape": "turns",
+         "prompt": "Tap the way Riya faces now.",
+         "hint": "Start at East. Left goes back: North, West, South, East.",
+         "pic": {
+          "kind": "compass",
+          "lines": [
+           "Riya faces East.",
+           "She turns left."
+          ],
+          "start": "East",
+          "moves": [
+           "left"
+          ]
+         },
+         "answer": {
+          "type": "option",
+          "value": 0
+         },
+         "optionsText": [
+          "North",
+          "East",
+          "South",
+          "West"
+         ],
+         "fixedOrder": true
+        },
+        {
+         "shape": "turns",
+         "prompt": "Tap the way Ravi faces now.",
+         "hint": "Start at East. Right goes on: North, East, South, West.",
+         "pic": {
+          "kind": "compass",
+          "lines": [
+           "Ravi faces East.",
+           "He turns right."
+          ],
+          "start": "East",
+          "moves": [
+           "right"
+          ]
+         },
+         "answer": {
+          "type": "option",
+          "value": 2
+         },
+         "optionsText": [
+          "North",
+          "East",
+          "South",
+          "West"
+         ],
+         "fixedOrder": true
+        },
+        {
+         "shape": "turns",
+         "prompt": "Tap the way Neha faces now.",
+         "hint": "Start at East. Do the first turn. Then the second.",
+         "pic": {
+          "kind": "compass",
+          "lines": [
+           "Neha faces East.",
+           "She turns right.",
+           "Then she turns left."
+          ],
+          "start": "East",
+          "moves": [
+           "right",
+           "left"
+          ]
+         },
+         "answer": {
+          "type": "option",
+          "value": 1
+         },
+         "optionsText": [
+          "North",
+          "East",
+          "South",
+          "West"
+         ],
+         "fixedOrder": true
+        }
+       ],
+       "teach": {
+        "line": "Right goes North, East, South, West. Left goes back the other way.",
+        "pic": {
+         "kind": "compass",
+         "lines": [
+          "Riya faces North.",
+          "She turns right."
+         ],
+         "start": "North",
+         "moves": [
+          "right"
+         ],
+         "conclusion": "Now she faces East."
+        }
+       }
+      },
+      {
+       "id": "2.3.3",
+       "title": "Turning around",
+       "authored": true,
+       "boss": false,
+       "questions": [
+        {
+         "shape": "turns",
+         "prompt": "Tap the way Zoya faces now.",
+         "hint": "Start at North. Around means face the other way.",
+         "pic": {
+          "kind": "compass",
+          "lines": [
+           "Zoya faces North.",
+           "She turns around."
+          ],
+          "start": "North",
+          "moves": [
+           "around"
+          ]
+         },
+         "answer": {
+          "type": "option",
+          "value": 2
+         },
+         "optionsText": [
+          "North",
+          "East",
+          "South",
+          "West"
+         ],
+         "fixedOrder": true
+        },
+        {
+         "shape": "turns",
+         "prompt": "Tap the way Yash faces now.",
+         "hint": "Start at West. Around means face the other way.",
+         "pic": {
+          "kind": "compass",
+          "lines": [
+           "Yash faces West.",
+           "He turns around."
+          ],
+          "start": "West",
+          "moves": [
+           "around"
+          ]
+         },
+         "answer": {
+          "type": "option",
+          "value": 1
+         },
+         "optionsText": [
+          "North",
+          "East",
+          "South",
+          "West"
+         ],
+         "fixedOrder": true
+        },
+        {
+         "shape": "turns",
+         "prompt": "Tap the way Aman faces now.",
+         "hint": "Start at South. Do the first turn. Then the second.",
+         "pic": {
+          "kind": "compass",
+          "lines": [
+           "Aman faces South.",
+           "He turns around.",
+           "Then he turns left."
+          ],
+          "start": "South",
+          "moves": [
+           "around",
+           "left"
+          ]
+         },
+         "answer": {
+          "type": "option",
+          "value": 3
+         },
+         "optionsText": [
+          "North",
+          "East",
+          "South",
+          "West"
+         ],
+         "fixedOrder": true
+        },
+        {
+         "shape": "turns",
          "prompt": "Tap the way Tara faces now.",
-         "hint": "Turn your own body the same way.",
+         "hint": "Start at East. Do the first turn. Then the second.",
          "pic": {
           "kind": "compass",
           "lines": [
@@ -4987,7 +5223,7 @@
         {
          "shape": "turns",
          "prompt": "Tap the way Imran faces now.",
-         "hint": "Turn your own body the same way.",
+         "hint": "Start at South. Do the first turn. Then the second.",
          "pic": {
           "kind": "compass",
           "lines": [
@@ -5014,359 +5250,60 @@
          "fixedOrder": true
         },
         {
-         "shape": "shelf",
-         "prompt": "Tap the shape just right of the triangle.",
-         "hint": "Hold up your left hand to check which side is left.",
-         "pic": {
-          "kind": "shelf",
-          "items": [
-           "diamond",
-           "square",
-           "triangle",
-           "heart",
-           "circle"
-          ],
-          "target": "triangle",
-          "side": "right",
-          "steps": 1
-         },
-         "answer": {
-          "type": "option",
-          "value": 1
-         },
-         "optionCells": [
-          {
-           "kind": "diamond",
-           "color": "primary",
-           "rotation": 0
-          },
-          {
-           "kind": "heart",
-           "color": "primary",
-           "rotation": 0
-          },
-          {
-           "kind": "square",
-           "color": "primary",
-           "rotation": 0
-          },
-          {
-           "kind": "circle",
-           "color": "primary",
-           "rotation": 0
-          }
-         ]
-        },
-        {
-         "shape": "shelf",
-         "prompt": "Tap the shape just left of the star.",
-         "hint": "Hold up your left hand to check which side is left.",
-         "pic": {
-          "kind": "shelf",
-          "items": [
-           "circle",
-           "star",
-           "heart",
-           "diamond",
-           "triangle"
-          ],
-          "target": "star",
-          "side": "left",
-          "steps": 1
-         },
-         "answer": {
-          "type": "option",
-          "value": 2
-         },
-         "optionCells": [
-          {
-           "kind": "diamond",
-           "color": "primary",
-           "rotation": 0
-          },
-          {
-           "kind": "triangle",
-           "color": "primary",
-           "rotation": 0
-          },
-          {
-           "kind": "circle",
-           "color": "primary",
-           "rotation": 0
-          },
-          {
-           "kind": "heart",
-           "color": "primary",
-           "rotation": 0
-          }
-         ]
-        }
-       ],
-       "teach": {
-        "line": "Turning right goes North, East, South, West.",
-        "pic": {
-         "kind": "compass",
-         "lines": [
-          "Riya faces North.",
-          "She turns right."
-         ],
-         "start": "North",
-         "moves": [
-          "right"
-         ],
-         "conclusion": "Now she faces East."
-        }
-       }
-      },
-      {
-       "id": "2.3.3",
-       "title": "Turning around",
-       "authored": true,
-       "boss": false,
-       "questions": [
-        {
          "shape": "turns",
-         "prompt": "Tap the way Zoya faces now.",
-         "hint": "Turn your own body the same way.",
+         "prompt": "Tap the way Asha faces now.",
+         "hint": "Start at South. Around means face the other way.",
          "pic": {
           "kind": "compass",
           "lines": [
-           "Zoya faces North.",
+           "Asha faces South.",
            "She turns around."
-          ],
-          "start": "North",
-          "moves": [
-           "around"
-          ]
-         },
-         "answer": {
-          "type": "option",
-          "value": 2
-         },
-         "optionsText": [
-          "North",
-          "East",
-          "South",
-          "West"
-         ],
-         "fixedOrder": true
-        },
-        {
-         "shape": "turns",
-         "prompt": "Tap the way Yash faces now.",
-         "hint": "Turn your own body the same way.",
-         "pic": {
-          "kind": "compass",
-          "lines": [
-           "Yash faces West.",
-           "He turns around."
-          ],
-          "start": "West",
-          "moves": [
-           "around"
-          ]
-         },
-         "answer": {
-          "type": "option",
-          "value": 1
-         },
-         "optionsText": [
-          "North",
-          "East",
-          "South",
-          "West"
-         ],
-         "fixedOrder": true
-        },
-        {
-         "shape": "turns",
-         "prompt": "Tap the way Neha faces now.",
-         "hint": "Turn your own body the same way.",
-         "pic": {
-          "kind": "compass",
-          "lines": [
-           "Neha faces East.",
-           "She turns right.",
-           "Then she turns left."
-          ],
-          "start": "East",
-          "moves": [
-           "right",
-           "left"
-          ]
-         },
-         "answer": {
-          "type": "option",
-          "value": 1
-         },
-         "optionsText": [
-          "North",
-          "East",
-          "South",
-          "West"
-         ],
-         "fixedOrder": true
-        },
-        {
-         "shape": "turns",
-         "prompt": "Tap the way Aman faces now.",
-         "hint": "Turn your own body the same way.",
-         "pic": {
-          "kind": "compass",
-          "lines": [
-           "Aman faces South.",
-           "He turns around.",
-           "Then he turns left."
           ],
           "start": "South",
           "moves": [
-           "around",
-           "left"
+           "around"
           ]
-         },
-         "answer": {
-          "type": "option",
-          "value": 3
-         },
-         "optionsText": [
-          "North",
-          "East",
-          "South",
-          "West"
-         ],
-         "fixedOrder": true
-        },
-        {
-         "shape": "shelf",
-         "prompt": "Tap two places left of the heart.",
-         "hint": "Hold up your left hand to check which side is left.",
-         "pic": {
-          "kind": "shelf",
-          "items": [
-           "square",
-           "triangle",
-           "star",
-           "heart",
-           "circle"
-          ],
-          "target": "heart",
-          "side": "left",
-          "steps": 2
-         },
-         "answer": {
-          "type": "option",
-          "value": 3
-         },
-         "optionCells": [
-          {
-           "kind": "star",
-           "color": "primary",
-           "rotation": 0
-          },
-          {
-           "kind": "square",
-           "color": "primary",
-           "rotation": 0
-          },
-          {
-           "kind": "circle",
-           "color": "primary",
-           "rotation": 0
-          },
-          {
-           "kind": "triangle",
-           "color": "primary",
-           "rotation": 0
-          }
-         ]
-        },
-        {
-         "shape": "shelf",
-         "prompt": "Tap two places right of the diamond.",
-         "hint": "Hold up your left hand to check which side is left.",
-         "pic": {
-          "kind": "shelf",
-          "items": [
-           "diamond",
-           "circle",
-           "square",
-           "star",
-           "heart"
-          ],
-          "target": "diamond",
-          "side": "right",
-          "steps": 2
          },
          "answer": {
           "type": "option",
           "value": 0
          },
-         "optionCells": [
-          {
-           "kind": "square",
-           "color": "primary",
-           "rotation": 0
-          },
-          {
-           "kind": "star",
-           "color": "primary",
-           "rotation": 0
-          },
-          {
-           "kind": "circle",
-           "color": "primary",
-           "rotation": 0
-          },
-          {
-           "kind": "heart",
-           "color": "primary",
-           "rotation": 0
-          }
-         ]
+         "optionsText": [
+          "North",
+          "East",
+          "South",
+          "West"
+         ],
+         "fixedOrder": true
         },
         {
-         "shape": "shelf",
-         "prompt": "Tap two places right of the circle.",
-         "hint": "Hold up your left hand to check which side is left.",
+         "shape": "turns",
+         "prompt": "Tap the way Mia faces now.",
+         "hint": "Start at North. Do the first turn. Then the second.",
          "pic": {
-          "kind": "shelf",
-          "items": [
-           "heart",
-           "circle",
-           "triangle",
-           "diamond",
-           "star"
+          "kind": "compass",
+          "lines": [
+           "Mia faces North.",
+           "She turns left.",
+           "Then she turns left."
           ],
-          "target": "circle",
-          "side": "right",
-          "steps": 2
+          "start": "North",
+          "moves": [
+           "left",
+           "left"
+          ]
          },
          "answer": {
           "type": "option",
-          "value": 1
+          "value": 2
          },
-         "optionCells": [
-          {
-           "kind": "heart",
-           "color": "primary",
-           "rotation": 0
-          },
-          {
-           "kind": "diamond",
-           "color": "primary",
-           "rotation": 0
-          },
-          {
-           "kind": "star",
-           "color": "primary",
-           "rotation": 0
-          },
-          {
-           "kind": "triangle",
-           "color": "primary",
-           "rotation": 0
-          }
-         ]
+         "optionsText": [
+          "North",
+          "East",
+          "South",
+          "West"
+         ],
+         "fixedOrder": true
         }
        ],
        "teach": {
@@ -5394,7 +5331,7 @@
         {
          "shape": "turns",
          "prompt": "Tap the way Lila faces now.",
-         "hint": "Turn your own body the same way.",
+         "hint": "Start at West. Do the first turn. Then the second.",
          "pic": {
           "kind": "compass",
           "lines": [
@@ -5423,7 +5360,7 @@
         {
          "shape": "shelf",
          "prompt": "Tap two places left of the star.",
-         "hint": "Hold up your left hand to check which side is left.",
+         "hint": "Put your finger on the star. Move two to the left.",
          "pic": {
           "kind": "shelf",
           "items": [
@@ -5439,9 +5376,14 @@
          },
          "answer": {
           "type": "option",
-          "value": 2
+          "value": 3
          },
          "optionCells": [
+          {
+           "kind": "square",
+           "color": "primary",
+           "rotation": 0
+          },
           {
            "kind": "heart",
            "color": "primary",
@@ -5456,18 +5398,13 @@
            "kind": "diamond",
            "color": "primary",
            "rotation": 0
-          },
-          {
-           "kind": "square",
-           "color": "primary",
-           "rotation": 0
           }
          ]
         },
         {
          "shape": "turns",
          "prompt": "Tap the way Veer faces now.",
-         "hint": "Turn your own body the same way.",
+         "hint": "Start at North. Do the first turn. Then the second.",
          "pic": {
           "kind": "compass",
           "lines": [
@@ -5496,7 +5433,7 @@
         {
          "shape": "shelf",
          "prompt": "Tap the shape just right of the heart.",
-         "hint": "Hold up your left hand to check which side is left.",
+         "hint": "Put your finger on the heart. Move one to the right.",
          "pic": {
           "kind": "shelf",
           "items": [
@@ -5512,9 +5449,14 @@
          },
          "answer": {
           "type": "option",
-          "value": 3
+          "value": 0
          },
          "optionCells": [
+          {
+           "kind": "diamond",
+           "color": "primary",
+           "rotation": 0
+          },
           {
            "kind": "circle",
            "color": "primary",
@@ -5529,18 +5471,13 @@
            "kind": "triangle",
            "color": "primary",
            "rotation": 0
-          },
-          {
-           "kind": "diamond",
-           "color": "primary",
-           "rotation": 0
           }
          ]
         },
         {
          "shape": "turns",
          "prompt": "Tap the way Diya faces now.",
-         "hint": "Turn your own body the same way.",
+         "hint": "Start at South. Left goes back: North, West, South, East.",
          "pic": {
           "kind": "compass",
           "lines": [
@@ -5567,7 +5504,7 @@
         {
          "shape": "turns",
          "prompt": "Tap the way Karan faces now.",
-         "hint": "Turn your own body the same way.",
+         "hint": "Start at East. Do the first turn. Then the second.",
          "pic": {
           "kind": "compass",
           "lines": [
@@ -5617,7 +5554,7 @@
         {
          "shape": "relation",
          "prompt": "Tap who Raj is to Riya.",
-         "hint": "Draw the family: who is above, who is beside?",
+         "hint": "Start at Raj. Follow the clues one at a time to Riya.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -5653,7 +5590,7 @@
         {
          "shape": "relation",
          "prompt": "Tap who Om is to Meera.",
-         "hint": "Draw the family: who is above, who is beside?",
+         "hint": "Start at Om. Follow the clues one at a time to Meera.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -5683,7 +5620,7 @@
         {
          "shape": "relation",
          "prompt": "Tap who Diya is to Kabir.",
-         "hint": "Draw the family: who is above, who is beside?",
+         "hint": "Start at Diya. Follow the clues one at a time to Kabir.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -5719,7 +5656,7 @@
         {
          "shape": "relation",
          "prompt": "Tap who Priya is to Tom.",
-         "hint": "Draw the family: who is above, who is beside?",
+         "hint": "Start at Priya. Follow the clues one at a time to Tom.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -5755,7 +5692,7 @@
         {
          "shape": "relation",
          "prompt": "Tap who Yash is to Neha.",
-         "hint": "Draw the family: who is above, who is beside?",
+         "hint": "Start at Yash. Follow the clues one at a time to Neha.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -5791,7 +5728,7 @@
         {
          "shape": "relationWho",
          "prompt": "Tap Anu's father.",
-         "hint": "Find each person's place in the family.",
+         "hint": "Who is a parent of Anu? Find the man.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -5832,7 +5769,7 @@
         {
          "shape": "relationWho",
          "prompt": "Tap Veer's sister.",
-         "hint": "Find each person's place in the family.",
+         "hint": "Who has the same parents as Veer? Find the girl.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -5892,7 +5829,7 @@
         {
          "shape": "relation",
          "prompt": "Tap who Asha is to Om.",
-         "hint": "Draw the family: who is above, who is beside?",
+         "hint": "Start at Asha. Follow the clues one at a time to Om.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -5928,7 +5865,7 @@
         {
          "shape": "relation",
          "prompt": "Tap who Kabir is to Rani.",
-         "hint": "Draw the family: who is above, who is beside?",
+         "hint": "Start at Kabir. Follow the clues one at a time to Rani.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -5964,7 +5901,7 @@
         {
          "shape": "relation",
          "prompt": "Tap who Nina is to Sahil.",
-         "hint": "Draw the family: who is above, who is beside?",
+         "hint": "Start at Nina. Follow the clues one at a time to Sahil.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -6000,7 +5937,7 @@
         {
          "shape": "relation",
          "prompt": "Tap who Ali is to Pooja.",
-         "hint": "Draw the family: who is above, who is beside?",
+         "hint": "Start at Ali. Follow the clues one at a time to Pooja.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -6036,7 +5973,7 @@
         {
          "shape": "relation",
          "prompt": "Tap who Meera is to Dev.",
-         "hint": "Draw the family: who is above, who is beside?",
+         "hint": "Start at Meera. Follow the clues one at a time to Dev.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -6078,7 +6015,7 @@
         {
          "shape": "relationWho",
          "prompt": "Tap Kavya's grandfather.",
-         "hint": "Find each person's place in the family.",
+         "hint": "Find Kavya's parent first. Then that parent's father.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -6119,7 +6056,7 @@
         {
          "shape": "relationWho",
          "prompt": "Tap Tom's grandmother.",
-         "hint": "Find each person's place in the family.",
+         "hint": "Find Tom's parent first. Then that parent's mother.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -6179,7 +6116,7 @@
         {
          "shape": "relation",
          "prompt": "Tap who Anu is to Om.",
-         "hint": "Draw the family: who is above, who is beside?",
+         "hint": "Start at Anu. Follow the clues one at a time to Om.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -6215,7 +6152,7 @@
         {
          "shape": "relation",
          "prompt": "Tap who Karan is to Riya.",
-         "hint": "Draw the family: who is above, who is beside?",
+         "hint": "Start at Karan. Follow the clues one at a time to Riya.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -6251,7 +6188,7 @@
         {
          "shape": "relation",
          "prompt": "Tap who Zoya is to Dev.",
-         "hint": "Draw the family: who is above, who is beside?",
+         "hint": "Start at Zoya. Follow the clues one at a time to Dev.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -6293,7 +6230,7 @@
         {
          "shape": "relation",
          "prompt": "Tap who Priya is to Kabir.",
-         "hint": "Draw the family: who is above, who is beside?",
+         "hint": "Start at Priya. Follow the clues one at a time to Kabir.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -6329,7 +6266,7 @@
         {
          "shape": "relation",
          "prompt": "Tap who Rohan is to Mia.",
-         "hint": "Draw the family: who is above, who is beside?",
+         "hint": "Start at Rohan. Follow the clues one at a time to Mia.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -6365,7 +6302,7 @@
         {
          "shape": "relationWho",
          "prompt": "Tap Isha's uncle.",
-         "hint": "Find each person's place in the family.",
+         "hint": "Find Isha's parent first. Then look beside that parent.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -6406,7 +6343,7 @@
         {
          "shape": "relationWho",
          "prompt": "Tap Tara's aunt.",
-         "hint": "Find each person's place in the family.",
+         "hint": "Find Tara's parent first. Then look beside that parent.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -6466,7 +6403,7 @@
         {
          "shape": "relation",
          "prompt": "Tap who Aman is to Sara.",
-         "hint": "Draw the family: who is above, who is beside?",
+         "hint": "Start at Aman. Follow the clues one at a time to Sara.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -6508,7 +6445,7 @@
         {
          "shape": "relationWho",
          "prompt": "Tap Om's cousin.",
-         "hint": "Find each person's place in the family.",
+         "hint": "Find Om's aunt or uncle first. Then their child.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -6549,7 +6486,7 @@
         {
          "shape": "relation",
          "prompt": "Tap who Diya is to Yash.",
-         "hint": "Draw the family: who is above, who is beside?",
+         "hint": "Start at Diya. Follow the clues one at a time to Yash.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -6591,7 +6528,7 @@
         {
          "shape": "relation",
          "prompt": "Tap who Imran is to Kavya.",
-         "hint": "Draw the family: who is above, who is beside?",
+         "hint": "Start at Imran. Follow the clues one at a time to Kavya.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -6627,7 +6564,7 @@
         {
          "shape": "relationWho",
          "prompt": "Tap Veer's grandmother.",
-         "hint": "Find each person's place in the family.",
+         "hint": "Find Veer's parent first. Then that parent's mother.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -6668,7 +6605,7 @@
         {
          "shape": "relation",
          "prompt": "Tap who Sahil is to Rani.",
-         "hint": "Draw the family: who is above, who is beside?",
+         "hint": "Start at Sahil. Follow the clues one at a time to Rani.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -6724,7 +6661,7 @@
         {
          "shape": "wordAnalogy",
          "prompt": "Tap the word that fits.",
-         "hint": "Say how the first two go together. Use the same link.",
+         "hint": "A baby cow is a calf. What is a baby dog?",
          "pic": {
           "kind": "wordPairs",
           "pairs": [
@@ -6753,7 +6690,7 @@
         {
          "shape": "wordAnalogy",
          "prompt": "Tap the word that fits.",
-         "hint": "Say how the first two go together. Use the same link.",
+         "hint": "A baby hen is a chick. What is a baby sheep?",
          "pic": {
           "kind": "wordPairs",
           "pairs": [
@@ -6782,7 +6719,7 @@
         {
          "shape": "wordAnalogy",
          "prompt": "Tap the word that fits.",
-         "hint": "Say how the first two go together. Use the same link.",
+         "hint": "A baby cat is a kitten. What is a baby duck?",
          "pic": {
           "kind": "wordPairs",
           "pairs": [
@@ -6811,7 +6748,7 @@
         {
          "shape": "wordAnalogy",
          "prompt": "Tap the word that fits.",
-         "hint": "Say how the first two go together. Use the same link.",
+         "hint": "A bird lives in a nest. Where does a bee live?",
          "pic": {
           "kind": "wordPairs",
           "pairs": [
@@ -6840,7 +6777,7 @@
         {
          "shape": "wordAnalogy",
          "prompt": "Tap the word that fits.",
-         "hint": "Say how the first two go together. Use the same link.",
+         "hint": "A dog lives in a kennel. Where does a horse live?",
          "pic": {
           "kind": "wordPairs",
           "pairs": [
@@ -6867,9 +6804,318 @@
          ]
         },
         {
+         "shape": "wordAnalogy",
+         "prompt": "Tap the word that fits.",
+         "hint": "A baby dog is a puppy. What is a baby cat?",
+         "pic": {
+          "kind": "wordPairs",
+          "pairs": [
+           [
+            "dog",
+            "puppy"
+           ],
+           [
+            "cat",
+            null
+           ]
+          ],
+          "rel": "baby"
+         },
+         "answer": {
+          "type": "option",
+          "value": 1
+         },
+         "optionsText": [
+          "chick",
+          "kitten",
+          "puppy",
+          "calf"
+         ]
+        },
+        {
+         "shape": "wordAnalogy",
+         "prompt": "Tap the word that fits.",
+         "hint": "A lion lives in a den. Where does a bird live?",
+         "pic": {
+          "kind": "wordPairs",
+          "pairs": [
+           [
+            "lion",
+            "den"
+           ],
+           [
+            "bird",
+            null
+           ]
+          ],
+          "rel": "home"
+         },
+         "answer": {
+          "type": "option",
+          "value": 2
+         },
+         "optionsText": [
+          "hive",
+          "stable",
+          "nest",
+          "den"
+         ]
+        }
+       ],
+       "teach": {
+        "line": "Say how the first pair goes together.",
+        "pic": {
+         "kind": "wordPairs",
+         "pairs": [
+          [
+           "cat",
+           "kitten"
+          ],
+          [
+           "hen",
+           "chick"
+          ]
+         ]
+        }
+       }
+      },
+      {
+       "id": "3.2.2",
+       "title": "More word links",
+       "authored": true,
+       "boss": false,
+       "questions": [
+        {
+         "shape": "wordAnalogy",
+         "prompt": "Tap the word that fits.",
+         "hint": "Hot is the opposite of cold. What is the opposite of big?",
+         "pic": {
+          "kind": "wordPairs",
+          "pairs": [
+           [
+            "hot",
+            "cold"
+           ],
+           [
+            "big",
+            null
+           ]
+          ],
+          "rel": "opposite"
+         },
+         "answer": {
+          "type": "option",
+          "value": 3
+         },
+         "optionsText": [
+          "cold",
+          "down",
+          "night",
+          "small"
+         ]
+        },
+        {
+         "shape": "wordAnalogy",
+         "prompt": "Tap the word that fits.",
+         "hint": "Up is the opposite of down. What is the opposite of day?",
+         "pic": {
+          "kind": "wordPairs",
+          "pairs": [
+           [
+            "up",
+            "down"
+           ],
+           [
+            "day",
+            null
+           ]
+          ],
+          "rel": "opposite"
+         },
+         "answer": {
+          "type": "option",
+          "value": 0
+         },
+         "optionsText": [
+          "night",
+          "down",
+          "cold",
+          "small"
+         ]
+        },
+        {
+         "shape": "wordAnalogy",
+         "prompt": "Tap the word that fits.",
+         "hint": "Happy is the opposite of sad. What is the opposite of fast?",
+         "pic": {
+          "kind": "wordPairs",
+          "pairs": [
+           [
+            "happy",
+            "sad"
+           ],
+           [
+            "fast",
+            null
+           ]
+          ],
+          "rel": "opposite"
+         },
+         "answer": {
+          "type": "option",
+          "value": 1
+         },
+         "optionsText": [
+          "small",
+          "slow",
+          "sad",
+          "cold"
+         ]
+        },
+        {
+         "shape": "wordAnalogy",
+         "prompt": "Tap the word that fits.",
+         "hint": "We see with our eyes. What do we do with our ears?",
+         "pic": {
+          "kind": "wordPairs",
+          "pairs": [
+           [
+            "eye",
+            "see"
+           ],
+           [
+            "ear",
+            null
+           ]
+          ],
+          "rel": "sense"
+         },
+         "answer": {
+          "type": "option",
+          "value": 2
+         },
+         "optionsText": [
+          "smell",
+          "taste",
+          "hear",
+          "see"
+         ]
+        },
+        {
+         "shape": "wordAnalogy",
+         "prompt": "Tap the word that fits.",
+         "hint": "We smell with our noses. What do we do with our tongue?",
+         "pic": {
+          "kind": "wordPairs",
+          "pairs": [
+           [
+            "nose",
+            "smell"
+           ],
+           [
+            "tongue",
+            null
+           ]
+          ],
+          "rel": "sense"
+         },
+         "answer": {
+          "type": "option",
+          "value": 3
+         },
+         "optionsText": [
+          "smell",
+          "see",
+          "hear",
+          "taste"
+         ]
+        },
+        {
+         "shape": "wordAnalogy",
+         "prompt": "Tap the word that fits.",
+         "hint": "A doctor works in a hospital. Where does a teacher work?",
+         "pic": {
+          "kind": "wordPairs",
+          "pairs": [
+           [
+            "doctor",
+            "hospital"
+           ],
+           [
+            "teacher",
+            null
+           ]
+          ],
+          "rel": "work"
+         },
+         "answer": {
+          "type": "option",
+          "value": 0
+         },
+         "optionsText": [
+          "school",
+          "hospital",
+          "farm",
+          "plane"
+         ]
+        },
+        {
+         "shape": "wordAnalogy",
+         "prompt": "Tap the word that fits.",
+         "hint": "Grass is green. What colour is the banana?",
+         "pic": {
+          "kind": "wordPairs",
+          "pairs": [
+           [
+            "grass",
+            "green"
+           ],
+           [
+            "banana",
+            null
+           ]
+          ],
+          "rel": "colour"
+         },
+         "answer": {
+          "type": "option",
+          "value": 1
+         },
+         "optionsText": [
+          "black",
+          "yellow",
+          "green",
+          "white"
+         ]
+        }
+       ],
+       "teach": {
+        "line": "Opposites, jobs, colours: use the same link again.",
+        "pic": {
+         "kind": "wordPairs",
+         "pairs": [
+          [
+           "big",
+           "small"
+          ],
+          [
+           "cook",
+           "kitchen"
+          ]
+         ]
+        }
+       }
+      },
+      {
+       "id": "3.2.3",
+       "title": "Numbers that match",
+       "authored": true,
+       "boss": false,
+       "questions": [
+        {
          "shape": "numberAnalogy",
          "prompt": "Tap the number that fits.",
-         "hint": "What happens to each number? Do the same.",
+         "hint": "What turns 8 into 25? Check it on 15. Then do it to 26.",
          "pic": {
           "kind": "numPairs",
           "pairs": [
@@ -6901,7 +7147,7 @@
         {
          "shape": "numberAnalogy",
          "prompt": "Tap the number that fits.",
-         "hint": "What happens to each number? Do the same.",
+         "hint": "What turns 3 into 12? Check it on 5. Then do it to 7.",
          "pic": {
           "kind": "numPairs",
           "pairs": [
@@ -6929,180 +7175,11 @@
           29,
           30
          ]
-        }
-       ],
-       "teach": {
-        "line": "Say how the first pair goes together.",
-        "pic": {
-         "kind": "wordPairs",
-         "pairs": [
-          [
-           "cat",
-           "kitten"
-          ],
-          [
-           "hen",
-           "chick"
-          ]
-         ]
-        }
-       }
-      },
-      {
-       "id": "3.2.2",
-       "title": "Opposites and senses",
-       "authored": true,
-       "boss": false,
-       "questions": [
-        {
-         "shape": "wordAnalogy",
-         "prompt": "Tap the word that fits.",
-         "hint": "Say how the first two go together. Use the same link.",
-         "pic": {
-          "kind": "wordPairs",
-          "pairs": [
-           [
-            "hot",
-            "cold"
-           ],
-           [
-            "big",
-            null
-           ]
-          ],
-          "rel": "opposite"
-         },
-         "answer": {
-          "type": "option",
-          "value": 1
-         },
-         "optionsText": [
-          "night",
-          "small",
-          "cold",
-          "down"
-         ]
-        },
-        {
-         "shape": "wordAnalogy",
-         "prompt": "Tap the word that fits.",
-         "hint": "Say how the first two go together. Use the same link.",
-         "pic": {
-          "kind": "wordPairs",
-          "pairs": [
-           [
-            "up",
-            "down"
-           ],
-           [
-            "day",
-            null
-           ]
-          ],
-          "rel": "opposite"
-         },
-         "answer": {
-          "type": "option",
-          "value": 2
-         },
-         "optionsText": [
-          "cold",
-          "small",
-          "night",
-          "down"
-         ]
-        },
-        {
-         "shape": "wordAnalogy",
-         "prompt": "Tap the word that fits.",
-         "hint": "Say how the first two go together. Use the same link.",
-         "pic": {
-          "kind": "wordPairs",
-          "pairs": [
-           [
-            "happy",
-            "sad"
-           ],
-           [
-            "fast",
-            null
-           ]
-          ],
-          "rel": "opposite"
-         },
-         "answer": {
-          "type": "option",
-          "value": 3
-         },
-         "optionsText": [
-          "sad",
-          "cold",
-          "small",
-          "slow"
-         ]
-        },
-        {
-         "shape": "wordAnalogy",
-         "prompt": "Tap the word that fits.",
-         "hint": "Say how the first two go together. Use the same link.",
-         "pic": {
-          "kind": "wordPairs",
-          "pairs": [
-           [
-            "eye",
-            "see"
-           ],
-           [
-            "ear",
-            null
-           ]
-          ],
-          "rel": "sense"
-         },
-         "answer": {
-          "type": "option",
-          "value": 0
-         },
-         "optionsText": [
-          "hear",
-          "see",
-          "smell",
-          "taste"
-         ]
-        },
-        {
-         "shape": "wordAnalogy",
-         "prompt": "Tap the word that fits.",
-         "hint": "Say how the first two go together. Use the same link.",
-         "pic": {
-          "kind": "wordPairs",
-          "pairs": [
-           [
-            "nose",
-            "smell"
-           ],
-           [
-            "tongue",
-            null
-           ]
-          ],
-          "rel": "sense"
-         },
-         "answer": {
-          "type": "option",
-          "value": 1
-         },
-         "optionsText": [
-          "hear",
-          "taste",
-          "smell",
-          "see"
-         ]
         },
         {
          "shape": "numberAnalogy",
          "prompt": "Tap the number that fits.",
-         "hint": "What happens to each number? Do the same.",
+         "hint": "What turns 25 into 16? Check it on 40. Then do it to 63.",
          "pic": {
           "kind": "numPairs",
           "pairs": [
@@ -7134,7 +7211,7 @@
         {
          "shape": "numberAnalogy",
          "prompt": "Tap the number that fits.",
-         "hint": "What happens to each number? Do the same.",
+         "hint": "What turns 6 into 18? Check it on 9. Then do it to 8.",
          "pic": {
           "kind": "numPairs",
           "pairs": [
@@ -7162,151 +7239,11 @@
           23,
           24
          ]
-        }
-       ],
-       "teach": {
-        "line": "Use the same link for the second pair.",
-        "pic": {
-         "kind": "wordPairs",
-         "pairs": [
-          [
-           "big",
-           "small"
-          ],
-          [
-           "up",
-           "down"
-          ]
-         ]
-        }
-       }
-      },
-      {
-       "id": "3.2.3",
-       "title": "Numbers that match",
-       "authored": true,
-       "boss": false,
-       "questions": [
-        {
-         "shape": "wordAnalogy",
-         "prompt": "Tap the word that fits.",
-         "hint": "Say how the first two go together. Use the same link.",
-         "pic": {
-          "kind": "wordPairs",
-          "pairs": [
-           [
-            "doctor",
-            "hospital"
-           ],
-           [
-            "teacher",
-            null
-           ]
-          ],
-          "rel": "work"
-         },
-         "answer": {
-          "type": "option",
-          "value": 2
-         },
-         "optionsText": [
-          "farm",
-          "plane",
-          "school",
-          "hospital"
-         ]
-        },
-        {
-         "shape": "wordAnalogy",
-         "prompt": "Tap the word that fits.",
-         "hint": "Say how the first two go together. Use the same link.",
-         "pic": {
-          "kind": "wordPairs",
-          "pairs": [
-           [
-            "farmer",
-            "farm"
-           ],
-           [
-            "cook",
-            null
-           ]
-          ],
-          "rel": "work"
-         },
-         "answer": {
-          "type": "option",
-          "value": 3
-         },
-         "optionsText": [
-          "farm",
-          "hospital",
-          "school",
-          "kitchen"
-         ]
-        },
-        {
-         "shape": "wordAnalogy",
-         "prompt": "Tap the word that fits.",
-         "hint": "Say how the first two go together. Use the same link.",
-         "pic": {
-          "kind": "wordPairs",
-          "pairs": [
-           [
-            "grass",
-            "green"
-           ],
-           [
-            "banana",
-            null
-           ]
-          ],
-          "rel": "colour"
-         },
-         "answer": {
-          "type": "option",
-          "value": 0
-         },
-         "optionsText": [
-          "yellow",
-          "green",
-          "white",
-          "black"
-         ]
-        },
-        {
-         "shape": "wordAnalogy",
-         "prompt": "Tap the word that fits.",
-         "hint": "Say how the first two go together. Use the same link.",
-         "pic": {
-          "kind": "wordPairs",
-          "pairs": [
-           [
-            "snow",
-            "white"
-           ],
-           [
-            "coal",
-            null
-           ]
-          ],
-          "rel": "colour"
-         },
-         "answer": {
-          "type": "option",
-          "value": 1
-         },
-         "optionsText": [
-          "yellow",
-          "black",
-          "white",
-          "green"
-         ]
         },
         {
          "shape": "numberAnalogy",
          "prompt": "Tap the number that fits.",
-         "hint": "What happens to each number? Do the same.",
+         "hint": "What turns 4 into 20? Check it on 7. Then do it to 9.",
          "pic": {
           "kind": "numPairs",
           "pairs": [
@@ -7338,7 +7275,7 @@
         {
          "shape": "numberAnalogy",
          "prompt": "Tap the number that fits.",
-         "hint": "What happens to each number? Do the same.",
+         "hint": "What turns 12 into 37? Check it on 30. Then do it to 47.",
          "pic": {
           "kind": "numPairs",
           "pairs": [
@@ -7370,7 +7307,7 @@
         {
          "shape": "numberAnalogy",
          "prompt": "Tap the number that fits.",
-         "hint": "What happens to each number? Do the same.",
+         "hint": "What turns 40 into 25? Check it on 62. Then do it to 81.",
          "pic": {
           "kind": "numPairs",
           "pairs": [
@@ -7430,7 +7367,7 @@
         {
          "shape": "wordAnalogy",
          "prompt": "Tap the word that fits.",
-         "hint": "Say how the first two go together. Use the same link.",
+         "hint": "A baby lion is a cub. What is a baby frog?",
          "pic": {
           "kind": "wordPairs",
           "pairs": [
@@ -7459,7 +7396,7 @@
         {
          "shape": "wordAnalogy",
          "prompt": "Tap the word that fits.",
-         "hint": "Say how the first two go together. Use the same link.",
+         "hint": "Wet is the opposite of dry. What is the opposite of full?",
          "pic": {
           "kind": "wordPairs",
           "pairs": [
@@ -7488,7 +7425,7 @@
         {
          "shape": "numberAnalogy",
          "prompt": "Tap the number that fits.",
-         "hint": "What happens to each number? Do the same.",
+         "hint": "What turns 2 into 12? Check it on 5. Then do it to 8.",
          "pic": {
           "kind": "numPairs",
           "pairs": [
@@ -7520,7 +7457,7 @@
         {
          "shape": "wordAnalogy",
          "prompt": "Tap the word that fits.",
-         "hint": "Say how the first two go together. Use the same link.",
+         "hint": "A spider lives in a web. Where does a rabbit live?",
          "pic": {
           "kind": "wordPairs",
           "pairs": [
@@ -7549,7 +7486,7 @@
         {
          "shape": "wordAnalogy",
          "prompt": "Tap the word that fits.",
-         "hint": "Say how the first two go together. Use the same link.",
+         "hint": "A pilot works in a plane. Where does a doctor work?",
          "pic": {
           "kind": "wordPairs",
           "pairs": [
@@ -7578,7 +7515,7 @@
         {
          "shape": "numberAnalogy",
          "prompt": "Tap the number that fits.",
-         "hint": "What happens to each number? Do the same.",
+         "hint": "What turns 21 into 40? Check it on 36. Then do it to 54.",
          "pic": {
           "kind": "numPairs",
           "pairs": [
@@ -7617,14 +7554,14 @@
      "stops": [
       {
        "id": "3.3.1",
-       "title": "The alphabet",
+       "title": "One step along",
        "authored": true,
        "boss": false,
        "questions": [
         {
          "shape": "alphabet",
          "prompt": "Tap the letter just after M.",
-         "hint": "Say the alphabet up to that letter.",
+         "hint": "Say the alphabet up to M. What comes next?",
          "pic": {
           "kind": "letter",
           "base": "M",
@@ -7644,7 +7581,7 @@
         {
          "shape": "alphabet",
          "prompt": "Tap the letter just before K.",
-         "hint": "Say the alphabet up to that letter.",
+         "hint": "Say the alphabet up to K. What came just before?",
          "pic": {
           "kind": "letter",
           "base": "K",
@@ -7663,7 +7600,7 @@
         {
          "shape": "alphabet",
          "prompt": "Tap the letter just after R.",
-         "hint": "Say the alphabet up to that letter.",
+         "hint": "Say the alphabet up to R. What comes next?",
          "pic": {
           "kind": "letter",
           "base": "R",
@@ -7683,7 +7620,7 @@
         {
          "shape": "alphabet",
          "prompt": "Tap the letter just before E.",
-         "hint": "Say the alphabet up to that letter.",
+         "hint": "Say the alphabet up to E. What came just before?",
          "pic": {
           "kind": "letter",
           "base": "E",
@@ -7702,7 +7639,7 @@
         {
          "shape": "wordCode",
          "prompt": "Tap how the word is written.",
-         "hint": "Look at one letter of the example at a time.",
+         "hint": "C turns into D. Do that to each letter of PEN.",
          "pic": {
           "kind": "example",
           "example": [
@@ -7726,7 +7663,7 @@
         {
          "shape": "wordCode",
          "prompt": "Tap how the word is written.",
-         "hint": "Look at one letter of the example at a time.",
+         "hint": "B turns into C. Do that to each letter of HAT.",
          "pic": {
           "kind": "example",
           "example": [
@@ -7750,7 +7687,7 @@
         {
          "shape": "wordCode",
          "prompt": "Tap how the word is written.",
-         "hint": "Look at one letter of the example at a time.",
+         "hint": "S turns into T. Do that to each letter of FIG.",
          "pic": {
           "kind": "example",
           "example": [
@@ -7773,7 +7710,7 @@
         }
        ],
        "teach": {
-        "line": "Each letter in the code moves one step along.",
+        "line": "Each letter moves one step along the alphabet.",
         "pic": {
          "kind": "example",
          "example": [
@@ -7795,7 +7732,7 @@
         {
          "shape": "wordCode",
          "prompt": "Tap how the word is written.",
-         "hint": "Look at one letter of the example at a time.",
+         "hint": "POT is TOP written backwards. Now write TEN backwards.",
          "pic": {
           "kind": "example",
           "example": [
@@ -7819,7 +7756,7 @@
         {
          "shape": "wordCode",
          "prompt": "Tap how the word is written.",
-         "hint": "Look at one letter of the example at a time.",
+         "hint": "NAP is PAN written backwards. Now write GUM backwards.",
          "pic": {
           "kind": "example",
           "example": [
@@ -7843,31 +7780,7 @@
         {
          "shape": "wordCode",
          "prompt": "Tap how the word is written.",
-         "hint": "Look at one letter of the example at a time.",
-         "pic": {
-          "kind": "example",
-          "example": [
-           "DOG",
-           "FQI"
-          ],
-          "word": "CUP",
-          "mode": "encode"
-         },
-         "answer": {
-          "type": "option",
-          "value": 1
-         },
-         "optionsText": [
-          "FXS",
-          "EWR",
-          "ASN",
-          "PUC"
-         ]
-        },
-        {
-         "shape": "wordCode",
-         "prompt": "Tap how the word is written.",
-         "hint": "Look at one letter of the example at a time.",
+         "hint": "DEB is BED written backwards. Now write RAT backwards.",
          "pic": {
           "kind": "example",
           "example": [
@@ -7879,26 +7792,50 @@
          },
          "answer": {
           "type": "option",
-          "value": 2
+          "value": 1
          },
          "optionsText": [
-          "RAT",
           "ART",
           "TAR",
-          "SBU"
+          "SBU",
+          "RAT"
          ]
         },
         {
          "shape": "wordCode",
          "prompt": "Tap how the word is written.",
-         "hint": "Look at one letter of the example at a time.",
+         "hint": "RATS is STAR written backwards. Now write POOL backwards.",
          "pic": {
           "kind": "example",
           "example": [
-           "JAM",
-           "IZL"
+           "STAR",
+           "RATS"
           ],
-          "word": "BOX",
+          "word": "POOL",
+          "mode": "encode"
+         },
+         "answer": {
+          "type": "option",
+          "value": 2
+         },
+         "optionsText": [
+          "POOL",
+          "OOPL",
+          "LOOP",
+          "QPPM"
+         ]
+        },
+        {
+         "shape": "wordCode",
+         "prompt": "Tap how the word is written.",
+         "hint": "GUM is MUG written backwards. Now write LAP backwards.",
+         "pic": {
+          "kind": "example",
+          "example": [
+           "MUG",
+           "GUM"
+          ],
+          "word": "LAP",
           "mode": "encode"
          },
          "answer": {
@@ -7906,50 +7843,58 @@
           "value": 3
          },
          "optionsText": [
-          "CPY",
-          "XOB",
-          "BOX",
-          "ANW"
+          "MBQ",
+          "LAP",
+          "ALP",
+          "PAL"
          ]
         },
         {
-         "shape": "alphabet",
-         "prompt": "Tap the letter two after P.",
-         "hint": "Say the alphabet up to that letter.",
+         "shape": "wordCode",
+         "prompt": "Tap how the word is written.",
+         "hint": "RAC is CAR written backwards. Now write BIG backwards.",
          "pic": {
-          "kind": "letter",
-          "base": "P",
-          "offset": 2
+          "kind": "example",
+          "example": [
+           "CAR",
+           "RAC"
+          ],
+          "word": "BIG",
+          "mode": "encode"
          },
          "answer": {
           "type": "option",
           "value": 0
          },
          "optionsText": [
-          "R",
-          "N",
-          "S",
-          "Q"
+          "GIB",
+          "CJH",
+          "BIG",
+          "IBG"
          ]
         },
         {
-         "shape": "alphabet",
-         "prompt": "Tap the letter two before H.",
-         "hint": "Say the alphabet up to that letter.",
+         "shape": "wordCode",
+         "prompt": "Tap how the word is written.",
+         "hint": "NUR is RUN written backwards. Now write FOX backwards.",
          "pic": {
-          "kind": "letter",
-          "base": "H",
-          "offset": -2
+          "kind": "example",
+          "example": [
+           "RUN",
+           "NUR"
+          ],
+          "word": "FOX",
+          "mode": "encode"
          },
          "answer": {
           "type": "option",
           "value": 1
          },
          "optionsText": [
-          "E",
-          "F",
-          "J",
-          "G"
+          "OFX",
+          "XOF",
+          "GPY",
+          "FOX"
          ]
         }
        ],
@@ -7976,7 +7921,7 @@
         {
          "shape": "numCode",
          "prompt": "A is 1. Tap the code.",
-         "hint": "A is 1. Count along the alphabet for the rest.",
+         "hint": "A is 1. Count along to C.",
          "pic": {
           "kind": "numExample",
           "example": [
@@ -8000,7 +7945,7 @@
         {
          "shape": "numCode",
          "prompt": "A is 1. Tap the code.",
-         "hint": "A is 1. Count along the alphabet for the rest.",
+         "hint": "A is 1. Count along to B.",
          "pic": {
           "kind": "numExample",
           "example": [
@@ -8024,7 +7969,7 @@
         {
          "shape": "numCode",
          "prompt": "A is 1. Tap the word.",
-         "hint": "A is 1. Count along the alphabet for the rest.",
+         "hint": "A is 1. Which letter is 2?",
          "pic": {
           "kind": "numExample",
           "example": [
@@ -8048,7 +7993,7 @@
         {
          "shape": "numCode",
          "prompt": "A is 1. Tap the word.",
-         "hint": "A is 1. Count along the alphabet for the rest.",
+         "hint": "A is 1. Which letter is 8?",
          "pic": {
           "kind": "numExample",
           "example": [
@@ -8072,7 +8017,7 @@
         {
          "shape": "numCode",
          "prompt": "A is 1. Tap the code.",
-         "hint": "A is 1. Count along the alphabet for the rest.",
+         "hint": "A is 1. Count along to F.",
          "pic": {
           "kind": "numExample",
           "example": [
@@ -8094,51 +8039,51 @@
          ]
         },
         {
-         "shape": "wordCode",
-         "prompt": "Tap how the word is written.",
-         "hint": "Look at one letter of the example at a time.",
+         "shape": "numCode",
+         "prompt": "A is 1. Tap the word.",
+         "hint": "A is 1. Which letter is 6?",
          "pic": {
-          "kind": "example",
+          "kind": "numExample",
           "example": [
-           "HIT",
-           "IJU"
+           "BIG",
+           "2 9 7"
           ],
-          "word": "BAG",
-          "mode": "encode"
-         },
-         "answer": {
-          "type": "option",
-          "value": 0
-         },
-         "optionsText": [
-          "CBH",
-          "AZF",
-          "GAB",
-          "DCI"
-         ]
-        },
-        {
-         "shape": "wordCode",
-         "prompt": "Tap how the word is written.",
-         "hint": "Look at one letter of the example at a time.",
-         "pic": {
-          "kind": "example",
-          "example": [
-           "STAR",
-           "RATS"
-          ],
-          "word": "POOL",
-          "mode": "encode"
+          "word": "6 1 4 5",
+          "mode": "decode"
          },
          "answer": {
           "type": "option",
           "value": 1
          },
          "optionsText": [
-          "OOPL",
-          "LOOP",
-          "QPPM",
-          "POOL"
+          "EZCD",
+          "FADE",
+          "EDAF",
+          "GBEF"
+         ]
+        },
+        {
+         "shape": "numCode",
+         "prompt": "A is 1. Tap the code.",
+         "hint": "A is 1. Count along to J.",
+         "pic": {
+          "kind": "numExample",
+          "example": [
+           "CAB",
+           "3 1 2"
+          ],
+          "word": "JADE",
+          "mode": "encode"
+         },
+         "answer": {
+          "type": "option",
+          "value": 2
+         },
+         "optionsText": [
+          "11 2 5 6",
+          "9 0 3 4",
+          "10 1 4 5",
+          "5 4 1 10"
          ]
         }
        ],
@@ -8165,7 +8110,7 @@
         {
          "shape": "alphabet",
          "prompt": "Tap the letter just after V.",
-         "hint": "Say the alphabet up to that letter.",
+         "hint": "Say the alphabet up to V. What comes next?",
          "pic": {
           "kind": "letter",
           "base": "V",
@@ -8173,19 +8118,19 @@
          },
          "answer": {
           "type": "option",
-          "value": 2
+          "value": 0
          },
          "optionsText": [
-          "X",
-          "Y",
           "W",
-          "U"
+          "U",
+          "X",
+          "Y"
          ]
         },
         {
          "shape": "numCode",
          "prompt": "A is 1. Tap the word.",
-         "hint": "A is 1. Count along the alphabet for the rest.",
+         "hint": "A is 1. Which letter is 2?",
          "pic": {
           "kind": "numExample",
           "example": [
@@ -8197,19 +8142,19 @@
          },
          "answer": {
           "type": "option",
-          "value": 1
+          "value": 3
          },
          "optionsText": [
-          "AZCFD",
-          "BADGE",
           "EGDAB",
-          "CBEHF"
+          "CBEHF",
+          "AZCFD",
+          "BADGE"
          ]
         },
         {
          "shape": "wordCode",
          "prompt": "Tap how the word is written.",
-         "hint": "Look at one letter of the example at a time.",
+         "hint": "M turns into N. Do that to each letter of DOT.",
          "pic": {
           "kind": "example",
           "example": [
@@ -8233,7 +8178,7 @@
         {
          "shape": "wordCode",
          "prompt": "Tap how the word is written.",
-         "hint": "Look at one letter of the example at a time.",
+         "hint": "SAW is WAS written backwards. Now write NOW backwards.",
          "pic": {
           "kind": "example",
           "example": [
@@ -8257,7 +8202,7 @@
         {
          "shape": "numCode",
          "prompt": "A is 1. Tap the code.",
-         "hint": "A is 1. Count along the alphabet for the rest.",
+         "hint": "A is 1. Count along to D.",
          "pic": {
           "kind": "numExample",
           "example": [
@@ -8269,33 +8214,32 @@
          },
          "answer": {
           "type": "option",
-          "value": 2
+          "value": 0
          },
          "optionsText": [
-          "5 6 2 7",
-          "3 4 0 5",
           "4 5 1 6",
-          "6 1 5 4"
+          "6 1 5 4",
+          "5 6 2 7",
+          "3 4 0 5"
          ]
         },
         {
          "shape": "alphabet",
-         "prompt": "Tap the letter two after T.",
-         "hint": "Say the alphabet up to that letter.",
+         "prompt": "Tap the letter just before T.",
+         "hint": "Say the alphabet up to T. What came just before?",
          "pic": {
           "kind": "letter",
           "base": "T",
-          "offset": 2
+          "offset": -1
          },
          "answer": {
           "type": "option",
-          "value": 3
+          "value": 2
          },
          "optionsText": [
-          "R",
-          "W",
           "U",
-          "V"
+          "R",
+          "S"
          ]
         }
        ]
@@ -8322,7 +8266,7 @@
         {
          "shape": "oddWord",
          "prompt": "Tap the one that does not belong.",
-         "hint": "Say what three of them are.",
+         "hint": "An apple is a fruit. Which one is not?",
          "pic": {
           "kind": "words",
           "words": [
@@ -8352,7 +8296,7 @@
         {
          "shape": "oddWord",
          "prompt": "Tap the one that does not belong.",
-         "hint": "Say what three of them are.",
+         "hint": "A train is something you ride in. Which one is not?",
          "pic": {
           "kind": "words",
           "words": [
@@ -8382,7 +8326,7 @@
         {
          "shape": "oddWord",
          "prompt": "Tap the one that does not belong.",
-         "hint": "Say what three of them are.",
+         "hint": "Red is a colour. Which one is not?",
          "pic": {
           "kind": "words",
           "words": [
@@ -8412,7 +8356,7 @@
         {
          "shape": "oddWord",
          "prompt": "Tap the one that does not belong.",
-         "hint": "Say what three of them are.",
+         "hint": "A hand is a part of your body. Which one is not?",
          "pic": {
           "kind": "words",
           "words": [
@@ -8442,7 +8386,7 @@
         {
          "shape": "oddWord",
          "prompt": "Tap the one that does not belong.",
-         "hint": "Say what three of them are.",
+         "hint": "A crow is a bird. Which one is not?",
          "pic": {
           "kind": "words",
           "words": [
@@ -8470,52 +8414,22 @@
          ]
         },
         {
-         "shape": "oddNumber",
+         "shape": "oddWord",
          "prompt": "Tap the one that does not belong.",
-         "hint": "Are they odd or even? Do they end in 0 or 5?",
+         "hint": "A shirt is something you wear. Which one is not?",
          "pic": {
           "kind": "words",
           "words": [
-           "2",
-           "4",
-           "7",
-           "8"
+           "shirt",
+           "coat",
+           "skirt",
+           "onion"
           ],
-          "nums": [
-           2,
-           4,
-           7,
-           8
-          ]
-         },
-         "answer": {
-          "type": "option",
-          "value": 0
-         },
-         "optionsText": [
-          "7",
-          "8",
-          "2",
-          "4"
-         ]
-        },
-        {
-         "shape": "oddNumber",
-         "prompt": "Tap the one that does not belong.",
-         "hint": "Are they odd or even? Do they end in 0 or 5?",
-         "pic": {
-          "kind": "words",
-          "words": [
-           "10",
-           "40",
-           "30",
-           "35"
-          ],
-          "nums": [
-           10,
-           40,
-           30,
-           35
+          "groups": [
+           "clothes",
+           "clothes",
+           "clothes",
+           "vegetable"
           ]
          },
          "answer": {
@@ -8523,24 +8437,51 @@
           "value": 1
          },
          "optionsText": [
-          "30",
-          "35",
-          "10",
-          "40"
+          "skirt",
+          "onion",
+          "shirt",
+          "coat"
+         ]
+        },
+        {
+         "shape": "oddWord",
+         "prompt": "Tap the one that does not belong.",
+         "hint": "A truck is something you ride in. Which one is not?",
+         "pic": {
+          "kind": "words",
+          "words": [
+           "truck",
+           "cycle",
+           "bus",
+           "cherry"
+          ],
+          "groups": [
+           "vehicle",
+           "vehicle",
+           "vehicle",
+           "fruit"
+          ]
+         },
+         "answer": {
+          "type": "option",
+          "value": 2
+         },
+         "optionsText": [
+          "cycle",
+          "bus",
+          "cherry",
+          "truck"
          ]
         }
        ],
        "teach": {
         "line": "Find what three of them have in common.",
         "pic": {
-         "kind": "words",
-         "words": [
-          "mango",
-          "apple",
-          "bus",
-          "banana"
+         "kind": "card",
+         "lines": [
+          "mango, apple, bus, banana"
          ],
-         "reveal": "bus"
+         "conclusion": "Three are fruit. So the bus."
         }
        }
       },
@@ -8553,7 +8494,7 @@
         {
          "shape": "oddWord",
          "prompt": "Tap the one that does not belong.",
-         "hint": "Say what three of them are.",
+         "hint": "A potato is a vegetable. Which one is not?",
          "pic": {
           "kind": "words",
           "words": [
@@ -8571,19 +8512,19 @@
          },
          "answer": {
           "type": "option",
-          "value": 1
+          "value": 3
          },
          "optionsText": [
-          "onion",
-          "guava",
           "cabbage",
-          "potato"
+          "potato",
+          "onion",
+          "guava"
          ]
         },
         {
          "shape": "oddWord",
          "prompt": "Tap the one that does not belong.",
-         "hint": "Say what three of them are.",
+         "hint": "A sock is something you wear. Which one is not?",
          "pic": {
           "kind": "words",
           "words": [
@@ -8601,19 +8542,19 @@
          },
          "answer": {
           "type": "option",
-          "value": 2
+          "value": 0
          },
          "optionsText": [
-          "cap",
-          "dress",
           "eagle",
-          "sock"
+          "sock",
+          "cap",
+          "dress"
          ]
         },
         {
          "shape": "oddWord",
          "prompt": "Tap the one that does not belong.",
-         "hint": "Say what three of them are.",
+         "hint": "A circle is a shape. Which one is not?",
          "pic": {
           "kind": "words",
           "words": [
@@ -8631,19 +8572,19 @@
          },
          "answer": {
           "type": "option",
-          "value": 3
+          "value": 1
          },
          "optionsText": [
-          "circle",
-          "square",
           "triangle",
-          "pink"
+          "pink",
+          "circle",
+          "square"
          ]
         },
         {
          "shape": "oddWord",
          "prompt": "Tap the one that does not belong.",
-         "hint": "Say what three of them are.",
+         "hint": "A cow is an animal with four legs. Which one is not?",
          "pic": {
           "kind": "words",
           "words": [
@@ -8661,250 +8602,19 @@
          },
          "answer": {
           "type": "option",
-          "value": 0
+          "value": 2
          },
          "optionsText": [
-          "pigeon",
-          "cow",
           "goat",
-          "dog"
-         ]
-        },
-        {
-         "shape": "oddNumber",
-         "prompt": "Tap the one that does not belong.",
-         "hint": "Are they odd or even? Do they end in 0 or 5?",
-         "pic": {
-          "kind": "words",
-          "words": [
-           "15",
-           "55",
-           "35",
-           "42"
-          ],
-          "nums": [
-           15,
-           55,
-           35,
-           42
-          ]
-         },
-         "answer": {
-          "type": "option",
-          "value": 2
-         },
-         "optionsText": [
-          "55",
-          "35",
-          "42",
-          "15"
-         ]
-        },
-        {
-         "shape": "oddNumber",
-         "prompt": "Tap the one that does not belong.",
-         "hint": "Are they odd or even? Do they end in 0 or 5?",
-         "pic": {
-          "kind": "words",
-          "words": [
-           "3",
-           "7",
-           "9",
-           "6"
-          ],
-          "nums": [
-           3,
-           7,
-           9,
-           6
-          ]
-         },
-         "answer": {
-          "type": "option",
-          "value": 3
-         },
-         "optionsText": [
-          "3",
-          "7",
-          "9",
-          "6"
-         ]
-        },
-        {
-         "shape": "oddNumber",
-         "prompt": "Tap the one that does not belong.",
-         "hint": "Are they odd or even? Do they end in 0 or 5?",
-         "pic": {
-          "kind": "words",
-          "words": [
-           "12",
-           "14",
-           "16",
-           "19"
-          ],
-          "nums": [
-           12,
-           14,
-           16,
-           19
-          ]
-         },
-         "answer": {
-          "type": "option",
-          "value": 0
-         },
-         "optionsText": [
-          "19",
-          "12",
-          "14",
-          "16"
-         ]
-        }
-       ],
-       "teach": {
-        "line": "Fruit, animals, clothes: which group is each one in?",
-        "pic": {
-         "kind": "words",
-         "words": [
-          "cap",
-          "sock",
-          "crow",
-          "shirt"
-         ],
-         "reveal": "crow"
-        }
-       }
-      },
-      {
-       "id": "4.1.3",
-       "title": "Odd numbers out",
-       "authored": true,
-       "boss": false,
-       "questions": [
-        {
-         "shape": "oddNumber",
-         "prompt": "Tap the one that does not belong.",
-         "hint": "Are they odd or even? Do they end in 0 or 5?",
-         "pic": {
-          "kind": "words",
-          "words": [
-           "35",
-           "15",
-           "45",
-           "18"
-          ],
-          "nums": [
-           35,
-           15,
-           45,
-           18
-          ]
-         },
-         "answer": {
-          "type": "option",
-          "value": 1
-         },
-         "optionsText": [
-          "45",
-          "18",
-          "35",
-          "15"
-         ]
-        },
-        {
-         "shape": "oddNumber",
-         "prompt": "Tap the one that does not belong.",
-         "hint": "Are they odd or even? Do they end in 0 or 5?",
-         "pic": {
-          "kind": "words",
-          "words": [
-           "60",
-           "50",
-           "70",
-           "55"
-          ],
-          "nums": [
-           60,
-           50,
-           70,
-           55
-          ]
-         },
-         "answer": {
-          "type": "option",
-          "value": 2
-         },
-         "optionsText": [
-          "50",
-          "70",
-          "55",
-          "60"
-         ]
-        },
-        {
-         "shape": "oddNumber",
-         "prompt": "Tap the one that does not belong.",
-         "hint": "Are they odd or even? Do they end in 0 or 5?",
-         "pic": {
-          "kind": "words",
-          "words": [
-           "8",
-           "13",
-           "17",
-           "11"
-          ],
-          "nums": [
-           8,
-           13,
-           17,
-           11
-          ]
-         },
-         "answer": {
-          "type": "option",
-          "value": 3
-         },
-         "optionsText": [
-          "13",
-          "17",
-          "11",
-          "8"
-         ]
-        },
-        {
-         "shape": "oddNumber",
-         "prompt": "Tap the one that does not belong.",
-         "hint": "Are they odd or even? Do they end in 0 or 5?",
-         "pic": {
-          "kind": "words",
-          "words": [
-           "22",
-           "26",
-           "24",
-           "31"
-          ],
-          "nums": [
-           22,
-           26,
-           24,
-           31
-          ]
-         },
-         "answer": {
-          "type": "option",
-          "value": 0
-         },
-         "optionsText": [
-          "31",
-          "22",
-          "26",
-          "24"
+          "dog",
+          "pigeon",
+          "cow"
          ]
         },
         {
          "shape": "oddWord",
          "prompt": "Tap the one that does not belong.",
-         "hint": "Say what three of them are.",
+         "hint": "A boat is something you ride in. Which one is not?",
          "pic": {
           "kind": "words",
           "words": [
@@ -8922,19 +8632,19 @@
          },
          "answer": {
           "type": "option",
-          "value": 1
+          "value": 3
          },
          "optionsText": [
-          "truck",
-          "spinach",
           "boat",
-          "plane"
+          "plane",
+          "truck",
+          "spinach"
          ]
         },
         {
          "shape": "oddWord",
          "prompt": "Tap the one that does not belong.",
-         "hint": "Say what three of them are.",
+         "hint": "A knee is a part of your body. Which one is not?",
          "pic": {
           "kind": "words",
           "words": [
@@ -8952,19 +8662,19 @@
          },
          "answer": {
           "type": "option",
-          "value": 2
+          "value": 0
          },
          "optionsText": [
-          "elbow",
-          "foot",
           "scarf",
-          "knee"
+          "knee",
+          "elbow",
+          "foot"
          ]
         },
         {
          "shape": "oddWord",
          "prompt": "Tap the one that does not belong.",
-         "hint": "Say what three of them are.",
+         "hint": "A papaya is a fruit. Which one is not?",
          "pic": {
           "kind": "words",
           "words": [
@@ -8982,27 +8692,252 @@
          },
          "answer": {
           "type": "option",
+          "value": 1
+         },
+         "optionsText": [
+          "orange",
+          "peacock",
+          "papaya",
+          "cherry"
+         ]
+        }
+       ],
+       "teach": {
+        "line": "Fruit, animals, clothes: which group is each one in?",
+        "pic": {
+         "kind": "card",
+         "lines": [
+          "cap, sock, crow, shirt"
+         ],
+         "conclusion": "Three are clothes. So the crow."
+        }
+       }
+      },
+      {
+       "id": "4.1.3",
+       "title": "Odd numbers out",
+       "authored": true,
+       "boss": false,
+       "questions": [
+        {
+         "shape": "oddNumber",
+         "prompt": "Tap the one that does not belong.",
+         "hint": "Which numbers are even? Which are odd?",
+         "pic": {
+          "kind": "words",
+          "words": [
+           "35",
+           "15",
+           "45",
+           "18"
+          ],
+          "nums": [
+           35,
+           15,
+           45,
+           18
+          ]
+         },
+         "answer": {
+          "type": "option",
+          "value": 0
+         },
+         "optionsText": [
+          "18",
+          "35",
+          "15",
+          "45"
+         ]
+        },
+        {
+         "shape": "oddNumber",
+         "prompt": "Tap the one that does not belong.",
+         "hint": "Which numbers are even? Which are odd?",
+         "pic": {
+          "kind": "words",
+          "words": [
+           "60",
+           "50",
+           "70",
+           "55"
+          ],
+          "nums": [
+           60,
+           50,
+           70,
+           55
+          ]
+         },
+         "answer": {
+          "type": "option",
+          "value": 1
+         },
+         "optionsText": [
+          "70",
+          "55",
+          "60",
+          "50"
+         ]
+        },
+        {
+         "shape": "oddNumber",
+         "prompt": "Tap the one that does not belong.",
+         "hint": "Which numbers are even? Which are odd?",
+         "pic": {
+          "kind": "words",
+          "words": [
+           "8",
+           "13",
+           "17",
+           "11"
+          ],
+          "nums": [
+           8,
+           13,
+           17,
+           11
+          ]
+         },
+         "answer": {
+          "type": "option",
+          "value": 2
+         },
+         "optionsText": [
+          "17",
+          "11",
+          "8",
+          "13"
+         ]
+        },
+        {
+         "shape": "oddNumber",
+         "prompt": "Tap the one that does not belong.",
+         "hint": "Which numbers are even? Which are odd?",
+         "pic": {
+          "kind": "words",
+          "words": [
+           "2",
+           "4",
+           "7",
+           "8"
+          ],
+          "nums": [
+           2,
+           4,
+           7,
+           8
+          ]
+         },
+         "answer": {
+          "type": "option",
           "value": 3
          },
          "optionsText": [
-          "papaya",
-          "cherry",
-          "orange",
-          "peacock"
+          "8",
+          "2",
+          "4",
+          "7"
+         ]
+        },
+        {
+         "shape": "oddNumber",
+         "prompt": "Tap the one that does not belong.",
+         "hint": "Which numbers are even? Which are odd?",
+         "pic": {
+          "kind": "words",
+          "words": [
+           "10",
+           "40",
+           "30",
+           "35"
+          ],
+          "nums": [
+           10,
+           40,
+           30,
+           35
+          ]
+         },
+         "answer": {
+          "type": "option",
+          "value": 0
+         },
+         "optionsText": [
+          "35",
+          "10",
+          "40",
+          "30"
+         ]
+        },
+        {
+         "shape": "oddNumber",
+         "prompt": "Tap the one that does not belong.",
+         "hint": "Which numbers are even? Which are odd?",
+         "pic": {
+          "kind": "words",
+          "words": [
+           "15",
+           "55",
+           "35",
+           "42"
+          ],
+          "nums": [
+           15,
+           55,
+           35,
+           42
+          ]
+         },
+         "answer": {
+          "type": "option",
+          "value": 1
+         },
+         "optionsText": [
+          "35",
+          "42",
+          "15",
+          "55"
+         ]
+        },
+        {
+         "shape": "oddNumber",
+         "prompt": "Tap the one that does not belong.",
+         "hint": "Which numbers are even? Which are odd?",
+         "pic": {
+          "kind": "words",
+          "words": [
+           "3",
+           "7",
+           "9",
+           "6"
+          ],
+          "nums": [
+           3,
+           7,
+           9,
+           6
+          ]
+         },
+         "answer": {
+          "type": "option",
+          "value": 2
+         },
+         "optionsText": [
+          "7",
+          "9",
+          "6",
+          "3"
          ]
         }
        ],
        "teach": {
         "line": "Is it odd or even? Does it end in 0 or 5?",
         "pic": {
-         "kind": "words",
-         "words": [
-          "2",
-          "4",
-          "6",
-          "9"
+         "kind": "card",
+         "lines": [
+          "2, 4, 6, 9"
          ],
-         "reveal": "9"
+         "conclusion": "Three are even. So 9."
         }
        }
       },
@@ -9015,7 +8950,7 @@
         {
          "shape": "oddWord",
          "prompt": "Tap the one that does not belong.",
-         "hint": "Say what three of them are.",
+         "hint": "A zebra is an animal with four legs. Which one is not?",
          "pic": {
           "kind": "words",
           "words": [
@@ -9033,19 +8968,19 @@
          },
          "answer": {
           "type": "option",
-          "value": 0
+          "value": 2
          },
          "optionsText": [
-          "duck",
-          "zebra",
           "elephant",
-          "horse"
+          "horse",
+          "duck",
+          "zebra"
          ]
         },
         {
          "shape": "oddNumber",
          "prompt": "Tap the one that does not belong.",
-         "hint": "Are they odd or even? Do they end in 0 or 5?",
+         "hint": "Which numbers are even? Which are odd?",
          "pic": {
           "kind": "words",
           "words": [
@@ -9063,19 +8998,19 @@
          },
          "answer": {
           "type": "option",
-          "value": 1
+          "value": 3
          },
          "optionsText": [
-          "90",
-          "45",
           "40",
-          "80"
+          "80",
+          "90",
+          "45"
          ]
         },
         {
          "shape": "oddWord",
          "prompt": "Tap the one that does not belong.",
-         "hint": "Say what three of them are.",
+         "hint": "Yellow is a colour. Which one is not?",
          "pic": {
           "kind": "words",
           "words": [
@@ -9093,19 +9028,19 @@
          },
          "answer": {
           "type": "option",
-          "value": 1
+          "value": 3
          },
          "optionsText": [
-          "black",
-          "scooter",
           "yellow",
-          "brown"
+          "brown",
+          "black",
+          "scooter"
          ]
         },
         {
          "shape": "oddNumber",
          "prompt": "Tap the one that does not belong.",
-         "hint": "Are they odd or even? Do they end in 0 or 5?",
+         "hint": "Which numbers are even? Which are odd?",
          "pic": {
           "kind": "words",
           "words": [
@@ -9123,19 +9058,19 @@
          },
          "answer": {
           "type": "option",
-          "value": 2
+          "value": 0
          },
          "optionsText": [
-          "9",
-          "3",
           "12",
-          "7"
+          "7",
+          "9",
+          "3"
          ]
         },
         {
          "shape": "oddWord",
          "prompt": "Tap the one that does not belong.",
-         "hint": "Say what three of them are.",
+         "hint": "A radish is a vegetable. Which one is not?",
          "pic": {
           "kind": "words",
           "words": [
@@ -9153,19 +9088,19 @@
          },
          "answer": {
           "type": "option",
-          "value": 2
+          "value": 0
          },
          "optionsText": [
-          "peas",
-          "brinjal",
           "grapes",
-          "radish"
+          "radish",
+          "peas",
+          "brinjal"
          ]
         },
         {
          "shape": "oddNumber",
          "prompt": "Tap the one that does not belong.",
-         "hint": "Are they odd or even? Do they end in 0 or 5?",
+         "hint": "Look at the last digit of each number.",
          "pic": {
           "kind": "words",
           "words": [
@@ -9183,13 +9118,13 @@
          },
          "answer": {
           "type": "option",
-          "value": 3
+          "value": 1
          },
          "optionsText": [
-          "36",
-          "38",
           "34",
-          "30"
+          "30",
+          "36",
+          "38"
          ]
         }
        ]
@@ -9209,7 +9144,7 @@
         {
          "shape": "weekday",
          "prompt": "Read the clue. Tap the day.",
-         "hint": "Say the days of the week in order.",
+         "hint": "Start at Monday. Say the next 2 days.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -9234,7 +9169,7 @@
         {
          "shape": "weekday",
          "prompt": "Read the clue. Tap the day.",
-         "hint": "Say the days of the week in order.",
+         "hint": "Start at Friday. Say the next 3 days.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -9259,7 +9194,7 @@
         {
          "shape": "weekday",
          "prompt": "Read the clue. Tap the day.",
-         "hint": "Say the days of the week in order.",
+         "hint": "Start at Thursday. Count back 2 days.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -9284,7 +9219,7 @@
         {
          "shape": "weekday",
          "prompt": "Read the clue. Tap the day.",
-         "hint": "Say the days of the week in order.",
+         "hint": "Tomorrow is Sunday. Today is one day before.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -9309,7 +9244,7 @@
         {
          "shape": "weekday",
          "prompt": "Read the clue. Tap the day.",
-         "hint": "Say the days of the week in order.",
+         "hint": "Yesterday was Tuesday. Say the next two days.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -9332,194 +9267,9 @@
          ]
         },
         {
-         "shape": "month",
-         "prompt": "Tap the month.",
-         "hint": "Say the months in order from January.",
-         "pic": {
-          "kind": "card",
-          "lines": [
-           "Which month comes just after June?"
-          ],
-          "base": "June",
-          "offset": 1
-         },
-         "answer": {
-          "type": "option",
-          "value": 0
-         },
-         "optionsText": [
-          "July",
-          "May",
-          "August",
-          "June"
-         ]
-        },
-        {
-         "shape": "month",
-         "prompt": "Tap the month.",
-         "hint": "Say the months in order from January.",
-         "pic": {
-          "kind": "card",
-          "lines": [
-           "Which month comes just before March?"
-          ],
-          "base": "March",
-          "offset": -1
-         },
-         "answer": {
-          "type": "option",
-          "value": 1
-         },
-         "optionsText": [
-          "January",
-          "February",
-          "April",
-          "March"
-         ]
-        }
-       ],
-       "teach": {
-        "line": "After Sunday comes Monday again.",
-        "pic": {
-         "kind": "card",
-         "lines": [
-          "Today is Friday.",
-          "Tomorrow is Saturday."
-         ]
-        }
-       }
-      },
-      {
-       "id": "4.2.2",
-       "title": "Reading the clock",
-       "authored": true,
-       "boss": false,
-       "questions": [
-        {
-         "shape": "clock",
-         "prompt": "Tap the time the clock shows.",
-         "hint": "The short hand shows the hour.",
-         "pic": {
-          "kind": "clock",
-          "h": 3,
-          "m": 0,
-          "form": "read",
-          "delta": 0,
-          "lines": []
-         },
-         "answer": {
-          "type": "option",
-          "value": 0
-         },
-         "optionsText": [
-          "3 o'clock",
-          "half past 3",
-          "4 o'clock",
-          "12 o'clock"
-         ]
-        },
-        {
-         "shape": "clock",
-         "prompt": "Tap the time the clock shows.",
-         "hint": "The short hand shows the hour.",
-         "pic": {
-          "kind": "clock",
-          "h": 7,
-          "m": 30,
-          "form": "read",
-          "delta": 0,
-          "lines": []
-         },
-         "answer": {
-          "type": "option",
-          "value": 1
-         },
-         "optionsText": [
-          "6 o'clock",
-          "half past 7",
-          "7 o'clock",
-          "half past 8"
-         ]
-        },
-        {
-         "shape": "clock",
-         "prompt": "Tap the time.",
-         "hint": "The short hand shows the hour.",
-         "pic": {
-          "kind": "clock",
-          "h": 2,
-          "m": 0,
-          "form": "after",
-          "delta": 3,
-          "lines": [
-           "What time is it 3 hours later?"
-          ]
-         },
-         "answer": {
-          "type": "option",
-          "value": 2
-         },
-         "optionsText": [
-          "6 o'clock",
-          "half past 5",
-          "5 o'clock",
-          "11 o'clock"
-         ]
-        },
-        {
-         "shape": "clock",
-         "prompt": "Tap the time.",
-         "hint": "The short hand shows the hour.",
-         "pic": {
-          "kind": "clock",
-          "h": 11,
-          "m": 0,
-          "form": "after",
-          "delta": 2,
-          "lines": [
-           "What time is it 2 hours later?"
-          ]
-         },
-         "answer": {
-          "type": "option",
-          "value": 3
-         },
-         "optionsText": [
-          "9 o'clock",
-          "2 o'clock",
-          "half past 1",
-          "1 o'clock"
-         ]
-        },
-        {
-         "shape": "clock",
-         "prompt": "Tap the time.",
-         "hint": "The short hand shows the hour.",
-         "pic": {
-          "kind": "clock",
-          "h": 6,
-          "m": 30,
-          "form": "before",
-          "delta": 2,
-          "lines": [
-           "What time was it 2 hours before?"
-          ]
-         },
-         "answer": {
-          "type": "option",
-          "value": 0
-         },
-         "optionsText": [
-          "half past 4",
-          "half past 8",
-          "half past 5",
-          "4 o'clock"
-         ]
-        },
-        {
          "shape": "weekday",
          "prompt": "Read the clue. Tap the day.",
-         "hint": "Say the days of the week in order.",
+         "hint": "Start at Saturday. Say the next 2 days.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -9544,15 +9294,15 @@
         {
          "shape": "weekday",
          "prompt": "Read the clue. Tap the day.",
-         "hint": "Say the days of the week in order.",
+         "hint": "Tomorrow is Wednesday. Today is one day before.",
          "pic": {
           "kind": "card",
           "lines": [
-           "Today is Monday.",
-           "What day was it 1 days ago?"
+           "Tomorrow is Wednesday.",
+           "What day is it today?"
           ],
-          "form": "ago",
-          "day": "Monday",
+          "form": "today",
+          "day": "Wednesday",
           "n": 1
          },
          "answer": {
@@ -9560,104 +9310,155 @@
           "value": 2
          },
          "optionsText": [
+          "Wednesday",
           "Monday",
-          "Saturday",
-          "Sunday",
-          "Tuesday"
+          "Tuesday",
+          "Thursday"
          ]
         }
        ],
        "teach": {
-        "line": "The short hand shows the hour.",
+        "line": "After Sunday comes Monday again.",
         "pic": {
-         "kind": "clock",
-         "h": 4,
-         "m": 0,
-         "form": "read",
-         "lines": [],
-         "reveal": "4 o'clock"
+         "kind": "card",
+         "lines": [
+          "Today is Friday.",
+          "Tomorrow is Saturday."
+         ]
         }
        }
       },
       {
-       "id": "4.2.3",
-       "title": "Months of the year",
+       "id": "4.2.2",
+       "title": "Reading the clock",
        "authored": true,
        "boss": false,
        "questions": [
         {
-         "shape": "month",
-         "prompt": "Tap the month.",
-         "hint": "Say the months in order from January.",
+         "shape": "clock",
+         "prompt": "Tap the time the clock shows.",
+         "hint": "The long hand is on 12. Where is the short hand?",
          "pic": {
-          "kind": "card",
-          "lines": [
-           "Which month comes two months after November?"
-          ],
-          "base": "November",
-          "offset": 2
-         },
-         "answer": {
-          "type": "option",
-          "value": 2
-         },
-         "optionsText": [
-          "February",
-          "December",
-          "January",
-          "September"
-         ]
-        },
-        {
-         "shape": "month",
-         "prompt": "Tap the month.",
-         "hint": "Say the months in order from January.",
-         "pic": {
-          "kind": "card",
-          "lines": [
-           "Which month comes just after September?"
-          ],
-          "base": "September",
-          "offset": 1
-         },
-         "answer": {
-          "type": "option",
-          "value": 3
-         },
-         "optionsText": [
-          "August",
-          "November",
-          "September",
-          "October"
-         ]
-        },
-        {
-         "shape": "month",
-         "prompt": "Tap the month.",
-         "hint": "Say the months in order from January.",
-         "pic": {
-          "kind": "card",
-          "lines": [
-           "Which month comes just before January?"
-          ],
-          "base": "January",
-          "offset": -1
+          "kind": "clock",
+          "h": 3,
+          "m": 0,
+          "form": "read",
+          "delta": 0,
+          "lines": []
          },
          "answer": {
           "type": "option",
           "value": 0
          },
          "optionsText": [
-          "December",
-          "February",
-          "January",
-          "November"
+          "3 o'clock",
+          "half past 3",
+          "4 o'clock",
+          "12 o'clock"
+         ]
+        },
+        {
+         "shape": "clock",
+         "prompt": "Tap the time the clock shows.",
+         "hint": "The long hand on 6 means half past. Look at the short hand.",
+         "pic": {
+          "kind": "clock",
+          "h": 7,
+          "m": 30,
+          "form": "read",
+          "delta": 0,
+          "lines": []
+         },
+         "answer": {
+          "type": "option",
+          "value": 1
+         },
+         "optionsText": [
+          "6 o'clock",
+          "half past 7",
+          "7 o'clock",
+          "half past 8"
          ]
         },
         {
          "shape": "clock",
          "prompt": "Tap the time.",
-         "hint": "The short hand shows the hour.",
+         "hint": "Start at 2 o'clock. Count on 3 hours.",
+         "pic": {
+          "kind": "clock",
+          "h": 2,
+          "m": 0,
+          "form": "after",
+          "delta": 3,
+          "lines": [
+           "What time is it 3 hours later?"
+          ]
+         },
+         "answer": {
+          "type": "option",
+          "value": 2
+         },
+         "optionsText": [
+          "6 o'clock",
+          "half past 5",
+          "5 o'clock",
+          "11 o'clock"
+         ]
+        },
+        {
+         "shape": "clock",
+         "prompt": "Tap the time.",
+         "hint": "Start at 11 o'clock. Count on 2 hours.",
+         "pic": {
+          "kind": "clock",
+          "h": 11,
+          "m": 0,
+          "form": "after",
+          "delta": 2,
+          "lines": [
+           "What time is it 2 hours later?"
+          ]
+         },
+         "answer": {
+          "type": "option",
+          "value": 3
+         },
+         "optionsText": [
+          "9 o'clock",
+          "2 o'clock",
+          "half past 1",
+          "1 o'clock"
+         ]
+        },
+        {
+         "shape": "clock",
+         "prompt": "Tap the time.",
+         "hint": "Start at half past 6. Count back 2 hours.",
+         "pic": {
+          "kind": "clock",
+          "h": 6,
+          "m": 30,
+          "form": "before",
+          "delta": 2,
+          "lines": [
+           "What time was it 2 hours before?"
+          ]
+         },
+         "answer": {
+          "type": "option",
+          "value": 0
+         },
+         "optionsText": [
+          "half past 4",
+          "half past 8",
+          "half past 5",
+          "4 o'clock"
+         ]
+        },
+        {
+         "shape": "clock",
+         "prompt": "Tap the time.",
+         "hint": "Start at half past 9. Count on 4 hours.",
          "pic": {
           "kind": "clock",
           "h": 9,
@@ -9682,7 +9483,7 @@
         {
          "shape": "clock",
          "prompt": "Tap the time.",
-         "hint": "The short hand shows the hour.",
+         "hint": "Start at 1 o'clock. Count back 3 hours.",
          "pic": {
           "kind": "clock",
           "h": 1,
@@ -9703,55 +9504,185 @@
           "10 o'clock",
           "4 o'clock"
          ]
-        },
+        }
+       ],
+       "teach": {
+        "line": "The short hand shows the hour. Hours later: move it on.",
+        "pic": {
+         "kind": "clock",
+         "h": 4,
+         "m": 0,
+         "form": "read",
+         "lines": [],
+         "reveal": "4 o'clock"
+        }
+       }
+      },
+      {
+       "id": "4.2.3",
+       "title": "Months of the year",
+       "authored": true,
+       "boss": false,
+       "questions": [
         {
-         "shape": "weekday",
-         "prompt": "Read the clue. Tap the day.",
-         "hint": "Say the days of the week in order.",
+         "shape": "month",
+         "prompt": "Tap the month.",
+         "hint": "Say the months up to November. Then two more.",
          "pic": {
           "kind": "card",
           "lines": [
-           "Tomorrow is Wednesday.",
-           "What day is it today?"
+           "Which month comes two months after November?"
           ],
-          "form": "today",
-          "day": "Wednesday",
-          "n": 1
-         },
-         "answer": {
-          "type": "option",
-          "value": 3
-         },
-         "optionsText": [
-          "Thursday",
-          "Wednesday",
-          "Monday",
-          "Tuesday"
-         ]
-        },
-        {
-         "shape": "weekday",
-         "prompt": "Read the clue. Tap the day.",
-         "hint": "Say the days of the week in order.",
-         "pic": {
-          "kind": "card",
-          "lines": [
-           "Yesterday was Saturday.",
-           "What day is it tomorrow?"
-          ],
-          "form": "tomorrow",
-          "day": "Saturday",
-          "n": 1
+          "base": "November",
+          "offset": 2
          },
          "answer": {
           "type": "option",
           "value": 0
          },
          "optionsText": [
-          "Monday",
-          "Sunday",
-          "Tuesday",
-          "Wednesday"
+          "January",
+          "September",
+          "February",
+          "December"
+         ]
+        },
+        {
+         "shape": "month",
+         "prompt": "Tap the month.",
+         "hint": "Say the months up to September. What comes next?",
+         "pic": {
+          "kind": "card",
+          "lines": [
+           "Which month comes just after September?"
+          ],
+          "base": "September",
+          "offset": 1
+         },
+         "answer": {
+          "type": "option",
+          "value": 1
+         },
+         "optionsText": [
+          "September",
+          "October",
+          "August",
+          "November"
+         ]
+        },
+        {
+         "shape": "month",
+         "prompt": "Tap the month.",
+         "hint": "Say the months up to January. What came before?",
+         "pic": {
+          "kind": "card",
+          "lines": [
+           "Which month comes just before January?"
+          ],
+          "base": "January",
+          "offset": -1
+         },
+         "answer": {
+          "type": "option",
+          "value": 2
+         },
+         "optionsText": [
+          "January",
+          "November",
+          "December",
+          "February"
+         ]
+        },
+        {
+         "shape": "month",
+         "prompt": "Tap the month.",
+         "hint": "Say the months up to June. What comes next?",
+         "pic": {
+          "kind": "card",
+          "lines": [
+           "Which month comes just after June?"
+          ],
+          "base": "June",
+          "offset": 1
+         },
+         "answer": {
+          "type": "option",
+          "value": 3
+         },
+         "optionsText": [
+          "May",
+          "August",
+          "June",
+          "July"
+         ]
+        },
+        {
+         "shape": "month",
+         "prompt": "Tap the month.",
+         "hint": "Say the months up to March. What came before?",
+         "pic": {
+          "kind": "card",
+          "lines": [
+           "Which month comes just before March?"
+          ],
+          "base": "March",
+          "offset": -1
+         },
+         "answer": {
+          "type": "option",
+          "value": 0
+         },
+         "optionsText": [
+          "February",
+          "April",
+          "March",
+          "January"
+         ]
+        },
+        {
+         "shape": "month",
+         "prompt": "Tap the month.",
+         "hint": "Say the months up to July. What came before?",
+         "pic": {
+          "kind": "card",
+          "lines": [
+           "Which month comes just before July?"
+          ],
+          "base": "July",
+          "offset": -1
+         },
+         "answer": {
+          "type": "option",
+          "value": 1
+         },
+         "optionsText": [
+          "May",
+          "June",
+          "August",
+          "July"
+         ]
+        },
+        {
+         "shape": "month",
+         "prompt": "Tap the month.",
+         "hint": "Say the months up to December. What comes next?",
+         "pic": {
+          "kind": "card",
+          "lines": [
+           "Which month comes just after December?"
+          ],
+          "base": "December",
+          "offset": 1
+         },
+         "answer": {
+          "type": "option",
+          "value": 2
+         },
+         "optionsText": [
+          "February",
+          "December",
+          "January",
+          "November"
          ]
         }
        ],
@@ -9774,7 +9705,7 @@
         {
          "shape": "weekday",
          "prompt": "Read the clue. Tap the day.",
-         "hint": "Say the days of the week in order.",
+         "hint": "Start at Sunday. Count back 3 days.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -9787,19 +9718,19 @@
          },
          "answer": {
           "type": "option",
-          "value": 1
+          "value": 3
          },
          "optionsText": [
-          "Saturday",
-          "Thursday",
           "Wednesday",
-          "Friday"
+          "Friday",
+          "Saturday",
+          "Thursday"
          ]
         },
         {
          "shape": "clock",
          "prompt": "Tap the time the clock shows.",
-         "hint": "The short hand shows the hour.",
+         "hint": "The long hand on 6 means half past. Look at the short hand.",
          "pic": {
           "kind": "clock",
           "h": 12,
@@ -9822,7 +9753,7 @@
         {
          "shape": "month",
          "prompt": "Tap the month.",
-         "hint": "Say the months in order from January.",
+         "hint": "Say the months up to August. Then two more.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -9833,19 +9764,19 @@
          },
          "answer": {
           "type": "option",
-          "value": 1
+          "value": 3
          },
          "optionsText": [
-          "September",
-          "October",
           "June",
-          "November"
+          "November",
+          "September",
+          "October"
          ]
         },
         {
          "shape": "clock",
          "prompt": "Tap the time.",
-         "hint": "The short hand shows the hour.",
+         "hint": "Start at 8 o'clock. Count on 5 hours.",
          "pic": {
           "kind": "clock",
           "h": 8,
@@ -9870,7 +9801,7 @@
         {
          "shape": "weekday",
          "prompt": "Read the clue. Tap the day.",
-         "hint": "Say the days of the week in order.",
+         "hint": "Start at Wednesday. Say the next 4 days.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -9883,19 +9814,19 @@
          },
          "answer": {
           "type": "option",
-          "value": 2
+          "value": 0
          },
          "optionsText": [
-          "Monday",
-          "Tuesday",
           "Sunday",
-          "Saturday"
+          "Saturday",
+          "Monday",
+          "Tuesday"
          ]
         },
         {
          "shape": "month",
          "prompt": "Tap the month.",
-         "hint": "Say the months in order from January.",
+         "hint": "Say the months up to May. What came before?",
          "pic": {
           "kind": "card",
           "lines": [
@@ -9906,13 +9837,13 @@
          },
          "answer": {
           "type": "option",
-          "value": 2
+          "value": 0
          },
          "optionsText": [
-          "May",
-          "March",
           "April",
-          "June"
+          "June",
+          "May",
+          "March"
          ]
         }
        ]
@@ -9932,7 +9863,7 @@
         {
          "shape": "combos",
          "prompt": "Read the story. Tap how many ways.",
-         "hint": "Take one of the first. How many can go with it?",
+         "hint": "Take one of the tops. It can go with 3 skirts. Now the rest.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -9959,7 +9890,7 @@
         {
          "shape": "combos",
          "prompt": "Read the story. Tap how many ways.",
-         "hint": "Take one of the first. How many can go with it?",
+         "hint": "Take one of the caps. It can go with 2 shirts. Now the rest.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -9986,7 +9917,7 @@
         {
          "shape": "combos",
          "prompt": "Read the story. Tap how many ways.",
-         "hint": "Take one of the first. How many can go with it?",
+         "hint": "Find the ways for breads and fillings first. Each goes with 2 drinks.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -10014,7 +9945,7 @@
         {
          "shape": "combos",
          "prompt": "Read the story. Tap how many ways.",
-         "hint": "Take one of the first. How many can go with it?",
+         "hint": "Take one of the cones. It can go with 5 flavours. Now the rest.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -10039,108 +9970,85 @@
          ]
         },
         {
-         "shape": "story",
-         "prompt": "Read the story. Tap the answer.",
-         "hint": "Is something joining, leaving, or being compared?",
+         "shape": "combos",
+         "prompt": "Read the story. Tap how many ways.",
+         "hint": "Take one of the hats. It can go with 4 scarves. Now the rest.",
          "pic": {
           "kind": "card",
           "lines": [
-           "Isha has 63 shells.",
-           "She gives away 28, then gets 17.",
-           "How many now?"
+           "Isha has 2 hats and 4 scarves.",
+           "She picks one of each.",
+           "How many different ways?"
           ],
-          "schema": "leavejoin",
           "nums": [
-           63,
-           28,
-           17
+           2,
+           4
           ]
          },
          "answer": {
           "type": "number",
-          "value": 52
+          "value": 8
          },
          "choices": [
-          18,
-          35,
-          52,
-          108
+          8,
+          9,
+          10,
+          11
          ]
         },
         {
-         "shape": "rank",
-         "prompt": "Tap who is the fastest.",
-         "hint": "Put them in order, one clue at a time.",
+         "shape": "combos",
+         "prompt": "Read the story. Tap how many ways.",
+         "hint": "Take one of the shirts. It can go with 3 caps. Now the rest.",
          "pic": {
           "kind": "card",
           "lines": [
-           "Sara is faster than Tom.",
-           "Dev is slower than Sara."
+           "Dev has 3 shirts and 3 caps.",
+           "He picks one of each.",
+           "How many different ways?"
           ],
-          "dim": "fast",
-          "people": [
-           "Dev",
-           "Sara",
-           "Tom"
-          ],
-          "clues": [
-           [
-            "Sara",
-            "Tom",
-            "more"
-           ],
-           [
-            "Dev",
-            "Sara",
-            "less"
-           ]
-          ],
-          "ask": "top"
+          "nums": [
+           3,
+           3
+          ]
          },
          "answer": {
-          "type": "option",
-          "value": 2
+          "type": "number",
+          "value": 9
          },
-         "optionsText": [
-          "Tom",
-          "Dev",
-          "Sara"
+         "choices": [
+          6,
+          9,
+          10,
+          11
          ]
         },
         {
-         "shape": "relation",
-         "prompt": "Tap who Kavya is to Nikhil.",
-         "hint": "Draw the family: who is above, who is beside?",
+         "shape": "combos",
+         "prompt": "Read the story. Tap how many ways.",
+         "hint": "Find the ways for tops and skirts first. Each goes with 2 shoes.",
          "pic": {
           "kind": "card",
           "lines": [
-           "Kavya is Aman's wife.",
-           "Aman is Nikhil's father."
+           "Sara has 2 tops, 2 skirts, 2 shoes.",
+           "She picks one of each.",
+           "How many different ways?"
           ],
-          "facts": [
-           [
-            "Kavya",
-            "wife",
-            "Aman"
-           ],
-           [
-            "Aman",
-            "father",
-            "Nikhil"
-           ]
-          ],
-          "x": "Kavya",
-          "y": "Nikhil"
+          "nums": [
+           2,
+           2,
+           2
+          ]
          },
          "answer": {
-          "type": "option",
-          "value": 3
+          "type": "number",
+          "value": 8
          },
-         "optionsText": [
-          "father",
-          "sister",
-          "grandmother",
-          "mother"
+         "choices": [
+          4,
+          6,
+          8,
+          9
          ]
         }
        ],
@@ -10165,7 +10073,7 @@
         {
          "shape": "combos",
          "prompt": "Read the story. Tap how many ways.",
-         "hint": "Take one of the first. How many can go with it?",
+         "hint": "Find the ways for hairbands and clips first. Each goes with 3 bangles.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -10184,16 +10092,16 @@
           "value": 18
          },
          "choices": [
-          18,
-          19,
-          20,
-          21
+          6,
+          8,
+          9,
+          18
          ]
         },
         {
          "shape": "combos",
          "prompt": "Read the story. Tap how many ways.",
-         "hint": "Take one of the first. How many can go with it?",
+         "hint": "Take one of the shirts. It can go with 5 shorts. Now the rest.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -10211,16 +10119,16 @@
           "value": 20
          },
          "choices": [
-          9,
           20,
           21,
-          22
+          22,
+          23
          ]
         },
         {
          "shape": "equation",
          "prompt": "Tap the number for the box.",
-         "hint": "What number makes both sides the same?",
+         "hint": "Add back: put 55 and 26 together.",
          "pic": {
           "kind": "equation",
           "left": 81,
@@ -10234,16 +10142,16 @@
           "value": 81
          },
          "choices": [
+          71,
           81,
           82,
-          83,
-          84
+          83
          ]
         },
         {
          "shape": "queueCalc",
          "prompt": "Read the clues. Tap the answer.",
-         "hint": "Draw the line in your head.",
+         "hint": "3 in front of Mia, 6 behind. Now add Mia.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -10262,16 +10170,16 @@
           "value": 10
          },
          "choices": [
-          7,
-          8,
-          9,
-          10
+          10,
+          11,
+          12,
+          13
          ]
         },
         {
          "shape": "turns",
          "prompt": "Tap the way Sahil faces now.",
-         "hint": "Turn your own body the same way.",
+         "hint": "Start at West. Left goes back: North, West, South, East.",
          "pic": {
           "kind": "compass",
           "lines": [
@@ -10298,7 +10206,7 @@
         {
          "shape": "wordAnalogy",
          "prompt": "Tap the word that fits.",
-         "hint": "Say how the first two go together. Use the same link.",
+         "hint": "Tomato is red. What colour is the sky?",
          "pic": {
           "kind": "wordPairs",
           "pairs": [
@@ -10327,7 +10235,7 @@
         {
          "shape": "alphabet",
          "prompt": "Tap the letter just before W.",
-         "hint": "Say the alphabet up to that letter.",
+         "hint": "Say the alphabet up to W. What came just before?",
          "pic": {
           "kind": "letter",
           "base": "W",
@@ -10335,12 +10243,12 @@
          },
          "answer": {
           "type": "option",
-          "value": 2
+          "value": 0
          },
          "optionsText": [
+          "V",
           "X",
-          "U",
-          "V"
+          "U"
          ]
         }
        ],
@@ -10363,7 +10271,7 @@
         {
          "shape": "series",
          "prompt": "Tap the missing number.",
-         "hint": "How does each number change to the next?",
+         "hint": "Find the jump from 26 to 33. Then from 33 to 40.",
          "pic": {
           "kind": "series",
           "terms": [
@@ -10390,7 +10298,7 @@
         {
          "shape": "oddWord",
          "prompt": "Tap the one that does not belong.",
-         "hint": "Say what three of them are.",
+         "hint": "A guava is a fruit. Which one is not?",
          "pic": {
           "kind": "words",
           "words": [
@@ -10408,19 +10316,19 @@
          },
          "answer": {
           "type": "option",
-          "value": 3
+          "value": 1
          },
          "optionsText": [
-          "apple",
-          "guava",
           "cherry",
-          "bus"
+          "bus",
+          "apple",
+          "guava"
          ]
         },
         {
          "shape": "weekday",
          "prompt": "Read the clue. Tap the day.",
-         "hint": "Say the days of the week in order.",
+         "hint": "Start at Tuesday. Say the next 5 days.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -10433,19 +10341,19 @@
          },
          "answer": {
           "type": "option",
-          "value": 3
+          "value": 1
          },
          "optionsText": [
-          "Thursday",
-          "Monday",
           "Saturday",
-          "Sunday"
+          "Sunday",
+          "Thursday",
+          "Monday"
          ]
         },
         {
          "shape": "riddle",
          "prompt": "Tap the number I am.",
-         "hint": "Work backwards from the end.",
+         "hint": "Start at 35 and double it. Then undo the first step.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -10471,14 +10379,14 @@
          "choices": [
           35,
           36,
-          41,
-          42
+          42,
+          43
          ]
         },
         {
          "shape": "queueWho",
          "prompt": "Tap who is 2nd from the back.",
-         "hint": "Find which end is the front first.",
+         "hint": "Find the back of the line. Count 2 from there.",
          "pic": {
           "kind": "line",
           "n": 4,
@@ -10493,19 +10401,19 @@
          },
          "answer": {
           "type": "option",
-          "value": 3
+          "value": 0
          },
          "optionsText": [
+          "Raj",
           "Anu",
           "Rani",
-          "Veer",
-          "Raj"
+          "Veer"
          ]
         },
         {
          "shape": "numberAnalogy",
          "prompt": "Tap the number that fits.",
-         "hint": "What happens to each number? Do the same.",
+         "hint": "What turns 7 into 70? Check it on 4. Then do it to 9.",
          "pic": {
           "kind": "numPairs",
           "pairs": [
@@ -10537,7 +10445,7 @@
         {
          "shape": "shelf",
          "prompt": "Tap two places left of the circle.",
-         "hint": "Hold up your left hand to check which side is left.",
+         "hint": "Put your finger on the circle. Move two to the left.",
          "pic": {
           "kind": "shelf",
           "items": [
@@ -10553,9 +10461,14 @@
          },
          "answer": {
           "type": "option",
-          "value": 0
+          "value": 1
          },
          "optionCells": [
+          {
+           "kind": "star",
+           "color": "primary",
+           "rotation": 0
+          },
           {
            "kind": "heart",
            "color": "primary",
@@ -10568,11 +10481,6 @@
           },
           {
            "kind": "square",
-           "color": "primary",
-           "rotation": 0
-          },
-          {
-           "kind": "star",
            "color": "primary",
            "rotation": 0
           }
@@ -10599,7 +10507,7 @@
         {
          "shape": "relationWho",
          "prompt": "Tap Nina's aunt.",
-         "hint": "Find each person's place in the family.",
+         "hint": "Find Nina's parent first. Then look beside that parent.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -10640,7 +10548,7 @@
         {
          "shape": "story",
          "prompt": "Read the story. Tap the answer.",
-         "hint": "Is something joining, leaving, or being compared?",
+         "hint": "Count in 5s, once for each bag.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -10660,15 +10568,15 @@
          },
          "choices": [
           12,
-          30,
-          34,
-          35
+          35,
+          36,
+          40
          ]
         },
         {
          "shape": "rank",
          "prompt": "Tap who is the second oldest.",
-         "hint": "Put them in order, one clue at a time.",
+         "hint": "Line them up, oldest first. Who comes next?",
          "pic": {
           "kind": "card",
           "lines": [
@@ -10704,19 +10612,19 @@
          },
          "answer": {
           "type": "option",
-          "value": 1
+          "value": 0
          },
          "optionsText": [
-          "Priya",
           "Ali",
           "Lila",
-          "Yash"
+          "Yash",
+          "Priya"
          ]
         },
         {
          "shape": "wordCode",
          "prompt": "Tap how the word is written.",
-         "hint": "Look at one letter of the example at a time.",
+         "hint": "L turns into M. Do that to each letter of SIP.",
          "pic": {
           "kind": "example",
           "example": [
@@ -10740,7 +10648,7 @@
         {
          "shape": "clock",
          "prompt": "Tap the time.",
-         "hint": "The short hand shows the hour.",
+         "hint": "Start at half past 10. Count on 3 hours.",
          "pic": {
           "kind": "clock",
           "h": 10,
@@ -10765,7 +10673,7 @@
         {
          "shape": "weekday",
          "prompt": "Read the clue. Tap the day.",
-         "hint": "Say the days of the week in order.",
+         "hint": "Start at Friday. Count back 4 days.",
          "pic": {
           "kind": "card",
           "lines": [
@@ -10778,13 +10686,13 @@
          },
          "answer": {
           "type": "option",
-          "value": 0
+          "value": 2
          },
          "optionsText": [
-          "Monday",
-          "Tuesday",
           "Sunday",
-          "Wednesday"
+          "Wednesday",
+          "Monday",
+          "Tuesday"
          ]
         }
        ]

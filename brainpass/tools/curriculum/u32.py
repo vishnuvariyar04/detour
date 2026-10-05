@@ -57,7 +57,7 @@ S321 = [
 
     q("count", "The list checks on every square he lands on. How many times "
       "does it say yes? Tap the number.",
-      "Three landings, and a star waiting on each of them.",
+      "Count each square he lands on. Is a star there?",
       checks_fired(_a3), visual=_a3, kind="fires"),
 
     skipped_step("Nupo never picks this star up. Tap the step that is "
@@ -92,7 +92,7 @@ S322 = [
              "Look above Nupo first, then read the check.", _b1),
 
     can_move("Is the way up clear for Nupo? Tap Yes or No.",
-             "There is a wall drawn in the square above him.", _b2, "up"),
+             "Look at the square just above him. Is a wall or the edge there?", _b2, "up"),
 
     yesno("Does Nupo land on the flag at the end? Tap Yes or No.",
           "Work down the list, taking whichever road the check picks.",

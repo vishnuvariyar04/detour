@@ -1,0 +1,4 @@
+# Copy to android/posthog.properties (gitignored) and fill in.
+# PostHog Cloud EU project -> Settings -> Project token (starts with phc_).
+# The host is fixed to https://eu.i.posthog.com in app/build.gradle.kts.
+projectToken=phc_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx

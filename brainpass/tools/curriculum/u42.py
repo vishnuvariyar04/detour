@@ -190,7 +190,7 @@ S423 = [
       box_value(_c3, C), visual=_c3, kind="var", varName=C),
 
     q("count", "And what is in KEYS? Tap the number.",
-      "Only one row in this list touches KEYS.",
+      "Read only the rows that say KEYS.",
       box_value(_c3, K), visual=_c3, kind="var", varName=K),
 
     q("chooseText", "This list has move rows and ADD rows. Which kind "

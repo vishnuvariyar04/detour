@@ -24,6 +24,7 @@ answer it:
 """
 import collections, json, math, os, re, sys
 from PIL import ImageFont
+import pz_emit as EMIT
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.join(HERE, "..", "..")
@@ -275,6 +276,7 @@ def main():
     items, stops, bosses = [], 0, 0
     for sec in d["sections"]:
         for u in sec["units"]:
+            u_id = f"{sec['n']}.{u['n']}"
             shapes_here = set()
             for st in u["stops"]:
                 stops += 1
@@ -292,6 +294,19 @@ def main():
                     if teach and json.dumps(teach["pic"], sort_keys=True) == \
                             json.dumps(q.get("pic"), sort_keys=True):
                         bad(st["id"], f"the teach card shows question #{i}")
+            taught = set()
+            for st in u["stops"]:
+                kinds = {q["shape"] for q in st["questions"]}
+                if st.get("boss"):
+                    if u_id != "4.3" and not kinds <= taught:
+                        bad(st["id"], f"the boss asks {sorted(kinds - taught)}, never taught in its unit")
+                    continue
+                allowed = EMIT.STOP_SHAPES.get(st["id"])
+                if allowed is not None:
+                    for i, q in enumerate(st["questions"]):
+                        if q["shape"] not in allowed:
+                            bad(f"{st['id']}#{i}", f"a {q['shape']} question in a stop that teaches {sorted(allowed)}")
+                    taught |= allowed
             if len(shapes_here) < 2:
                 bad(f"unit {sec['n']}.{u['n']}", "uses only one kind of question")
 

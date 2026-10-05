@@ -113,6 +113,24 @@ def choices4(ans, mistakes, seed, lo=None, k=None, allowed=None):
 
 # ============================================================ sequences
 
+def _ord(n):
+    if 10 <= n % 100 <= 20:
+        return f"{n}th"
+    return f"{n}{ {1: 'st', 2: 'nd', 3: 'rd'}.get(n % 10, 'th')}"
+
+
+def _steps_hint(shown):
+    """Name the first two neighbouring steps the child can see."""
+    pairs = [(shown[i], shown[i + 1]) for i in range(len(shown) - 1)
+             if shown[i] is not None and shown[i + 1] is not None]
+    (a, b), (c, d) = pairs[0], pairs[1]
+    return f"Work out the step from {a} to {b}, then from {c} to {d}. Do they change?"
+
+
+# Every hint below is written from the question's own numbers, words or
+# picture: the first step a child can take, never the answer. A hint shared by
+# every question of a kind read as random under most of them.
+
 def arith(a, d, n):
     return [a + d * i for i in range(n)]
 
@@ -194,7 +212,7 @@ def sequence(prompt, terms, gap, hint=None, extra_mistakes=()):
     ans = terms[gap]
     seed = _seed(prompt, shown)
     return _q("sequence", prompt,
-              hint or "Look at how each number becomes the next.",
+              hint or _steps_hint(shown),
               {"kind": "sequence", "terms": shown, "gapAt": gap},
               {"type": "number", "value": ans},
               **_numbers(ans, list(extra_mistakes) +
@@ -214,7 +232,8 @@ def nth_term(prompt, a, d, shown_count, position, hint=None):
     ans = a + d * (position - 1)
     seed = _seed(prompt, terms, position)
     return _q("nthTerm", prompt,
-              hint or "How many steps are there from the 1st term to that one?",
+              hint or (f"How many steps from the 1st number to the {_ord(position)}? "
+                       f"Each step is {d:+d}."),
               {"kind": "sequence", "terms": terms, "askPosition": position},
               {"type": "number", "value": ans},
               **_numbers(ans, [d * position, a + d * position,
@@ -233,7 +252,9 @@ def nth_poly(prompt, f, shown_count, position, mistakes, hint=None):
     terms = by_position(f, shown_count)
     ans = f(position)
     seed = _seed(prompt, terms, position)
-    return _q("nthTerm", prompt, hint or "What does the position do to make each number?",
+    return _q("nthTerm", prompt,
+              hint or (f"The 1st is {f(1)}, the 2nd is {f(2)}, the 3rd is {f(3)}. "
+                       "How does each come from its position?"),
               {"kind": "sequence", "terms": terms, "askPosition": position},
               {"type": "number", "value": ans},
               **_numbers(ans, list(mistakes), seed))
@@ -250,7 +271,8 @@ def term_position(prompt, a, d, shown_count, position, hint=None):
     seed = _seed(prompt, terms, value)
     guess = Fraction(value, d)
     return _q("termPosition", prompt,
-              hint or "Take away the first term, then count the steps.",
+              hint or (f"How far is {value} from {a}? How many steps of {abs(d)} "
+                       "is that?"),
               {"kind": "sequence", "terms": terms, "askValue": value},
               {"type": "number", "value": position},
               **_numbers(position, [position - 1, position + 1, guess,
@@ -330,7 +352,9 @@ def seq_rule(prompt, terms, rules, hint=None):
         raise ValueError(f"rules fitting the pattern: {fits}; need exactly the first")
     if len(terms) < 5:
         raise ValueError("show at least five numbers")
-    q = _q("seqRule", prompt, hint or "Check the rule against every step, not just the first.",
+    q = _q("seqRule", prompt,
+           hint or (f"Test each rule on {terms[0]}, {terms[1]}, {terms[2]}. "
+                    "Keep the one that fits every step."),
            {"kind": "sequence", "terms": terms},
            {"type": "option", "value": 0},
            optionsText=[rule_text(r) for r in rules], optionRules=rules)
@@ -391,7 +415,19 @@ def if_then(prompt, rules, facts, ask, hint=None):
         raise ValueError("the question is already answered by a fact on the card")
     v = must(rules, facts, ask)
     ans = 0 if v is True else 1 if v is False else 2
-    return _q("ifThen", prompt, hint or "Only use what the clues actually say.",
+    if len(rules) > 1 or len(facts) != 1:
+        default = "Start from what this card is. Follow the rules one link at a time."
+    else:
+        (a, av, b, bv), (x, xv) = rules[0], facts[0]
+        if x == a:
+            default = ("The card matches the 'if' part. What does the rule say?"
+                       if xv == av else
+                       "The card does not match the 'if' part. Does the rule say anything then?")
+        else:
+            default = ("The card matches the 'then' part. Can a rule run backwards?"
+                       if xv == bv else
+                       "The 'then' part is false for this card. Could the 'if' part be true?")
+    return _q("ifThen", prompt, hint or default,
               {"kind": "clues",
                "lines": [rule_sentence(r) for r in rules] +
                         [fact_sentence(f) for f in facts],
@@ -471,9 +507,24 @@ def claim_truth(c):
     return 0 if hits == len(vals) else 2 if hits == 0 else 1
 
 
+def _claim_hint(c):
+    A = _members(c["a"], 3)
+    if c["op"] in ("plus", "times"):
+        B = _members(c["b"], 3)
+        sign = "+" if c["op"] == "plus" else "x"
+        tries = ", ".join(f"{x} {sign} {y}" for x, y in zip(A, [B[1], B[0], B[2]]))
+    elif c["op"] == "double":
+        tries = "doubling " + ", ".join(str(x) for x in A)
+    elif c["op"] == "square":
+        tries = ", ".join(f"{x}x{x}" for x in A)
+    else:
+        tries = ", ".join(str(x) for x in A)
+    return f"Try {tries}. Does it work every time?"
+
+
 def claim(prompt, c, hint=None):
     ans = claim_truth(c)
-    return _q("claim", prompt, hint or "Try a few numbers. Then think about why.",
+    return _q("claim", prompt, hint or _claim_hint(c),
               {"kind": "claim", "lines": [claim_sentence(c)], "claim": c},
               {"type": "option", "value": ans},
               optionsText=list(ALWAYS3), fixedOrder=True)
@@ -547,7 +598,18 @@ def deduce(prompt, people, things, noun, clues, who=None, what=None, hint=None):
         if len({key(s) for s in alone}) == 1:
             raise ValueError(f"the clue {c} gives the answer away on its own")
     ans = people.index(ans_val) if who is not None else things.index(ans_val)
-    q = _q("deduce", prompt, hint or "Cross out what each clue rules out.",
+    sure = [c for c in clues if c["t"] == "has"]
+    if sure:
+        default = f"Start with the sure thing: {clue_sentence(sure[0], noun)} Then cross out."
+    elif any(c["t"] == "neither" for c in clues):
+        n = next(c for c in clues if c["t"] == "neither")
+        default = (f"Cross out the {_thing(n['x'], noun)} for both {n['ps'][0]} and "
+                   f"{n['ps'][1]}. Then use the other clues.")
+    else:
+        default = ("Draw a grid of names and things. Cross out each clue, then see what is left."
+                   if what is None else
+                   f"Draw a grid. Cross out what each person cannot have. What is left for {what}?")
+    q = _q("deduce", prompt, hint or default,
            {"kind": "grid", "people": people, "things": things, "noun": noun,
             "clues": clues, "lines": [clue_sentence(c, noun) for c in clues],
             "who": who, "what": what},
@@ -585,7 +647,8 @@ def binary_read(prompt, values, on, hint=None):
     unlit = bits_value(values, [1 - b for b in on])
     backwards = bits_value(values, list(reversed(on)))
     smallest_lit = min((v for v, b in zip(values, on) if b), default=1)
-    return _q("binaryRead", prompt, hint or "Add up only the bulbs that are lit.",
+    return _q("binaryRead", prompt,
+              hint or f"{lit_count} bulbs are lit. Add the numbers on just those.",
               {"kind": "binary", "values": values, "on": on},
               {"type": "number", "value": ans},
               # These bulbs cannot show more than all of them lit. Offering a
@@ -621,7 +684,10 @@ def binary_pick(prompt, values, number, hint=None, show=None, plus=0):
     pic = {"kind": "binary", "values": values, "on": to_bits(number, values),
            "askPlus": plus} if show else {"kind": "binaryAsk", "values": values,
                                           "target": target}
-    q = _q("binaryPick", prompt, hint or "Start with the biggest bulb that fits.",
+    default = (f"The bulbs show {number}. Work out {number} + 1, then light the bulbs for it."
+               if show else
+               f"Which is the biggest bulb that fits in {target}? Light it, then make the rest.")
+    q = _q("binaryPick", prompt, hint or default,
            pic, {"type": "option", "value": 0}, optionBits=opts)
     return _rotate(q, ["optionBits"], _seed(prompt, values, number, plus))
 
@@ -674,7 +740,10 @@ def cipher_decode(prompt, plain, shift, hint=None):
         raise ValueError(f"{plain} is not in the word list")
     coded = shift_word(plain, shift)
     opts = [plain] + _word_distractors(plain, {coded}, _seed(plain, shift))
-    q = _q("cipher", prompt, hint or "Find each coded letter on the bottom row, then read the top.",
+    wraps = any(ALPHA.index(ch) + shift > 25 for ch in plain)
+    default = (f"Each letter moved {shift} along. Move each one back {shift}."
+               + (" Before A comes Z." if wraps else ""))
+    q = _q("cipher", prompt, hint or default,
            {"kind": "shift", "shift": shift, "word": coded, "mode": "decode"},
            {"type": "option", "value": 0}, optionsText=opts)
     return _rotate(q, ["optionsText"], _seed(prompt, plain, shift))
@@ -688,7 +757,10 @@ def cipher_encode(prompt, plain, shift, hint=None):
         if w != right and w not in wrong and w != plain:
             wrong.append(w)
     opts = [right] + wrong[:3]
-    q = _q("cipherWrite", prompt, hint or "Find each letter on the top row, then write the one below.",
+    wraps = any(ALPHA.index(ch) + shift > 25 for ch in plain)
+    default = (f"Move each letter of {plain} {shift} along the alphabet."
+               + (" After Z comes A." if wraps else ""))
+    q = _q("cipherWrite", prompt, hint or default,
            {"kind": "shift", "shift": shift, "word": plain, "mode": "encode"},
            {"type": "option", "value": 0}, optionsText=opts)
     return _rotate(q, ["optionsText"], _seed(prompt, plain, shift))
@@ -717,7 +789,8 @@ def symbol_decode(prompt, plain, hint=None):
     sym = {ch: order[i] for i, ch in enumerate(letters)}
     key = [{"glyph": sym[ch][0], "color": sym[ch][1], "letter": ch} for ch in letters]
     word = [{"glyph": sym[ch][0], "color": sym[ch][1]} for ch in plain]
-    q = _q("symbolCode", prompt, hint or "Swap each symbol for its letter, one at a time.",
+    q = _q("symbolCode", prompt,
+           hint or "Find each symbol in the key. Check its colour too.",
            {"kind": "symbols", "key": key, "word": word},
            {"type": "option", "value": 0}, optionsText=opts)
     return _rotate(q, ["optionsText"], _seed(prompt, plain))
@@ -726,7 +799,8 @@ def symbol_decode(prompt, plain, hint=None):
 def letter_code(prompt, plain, hint=None):
     codes = [ALPHA.index(ch) + 1 for ch in plain]
     opts = [plain] + _word_distractors(plain, set(), _seed(plain, "a1"))
-    q = _q("letterCode", prompt, hint or "Count along the alphabet: A is 1.",
+    q = _q("letterCode", prompt,
+           hint or f"A is 1, B is 2. Which letter is {codes[0]}? Then do the rest.",
            {"kind": "letters", "codes": codes},
            {"type": "option", "value": 0}, optionsText=opts)
     return _rotate(q, ["optionsText"], _seed(prompt, plain))
@@ -843,10 +917,17 @@ def net_face(prompt, cells, marks, target, hint=None):
     opp_label = OPPOSITE[faces[cells[ti]]]
     oi = next(i for i, c in enumerate(cells) if faces[c] == opp_label)
     adjacent = [marks[i] for i, c in enumerate(cells) if i not in (ti, oi)]
+    t, o = cells[ti], cells[oi]
+    straight = ((t[0] == o[0] or t[1] == o[1]) and abs(t[0] - o[0]) + abs(t[1] - o[1]) == 2
+                and ((t[0] + o[0]) / 2, (t[1] + o[1]) / 2) in set(cells))
+    default = (f"Look along the {target}'s row and column. Skip one square."
+               if straight else
+               f"Make the {target} the bottom. Fold the others up. What lands on top?")
     seed = _seed(prompt, cells, marks)
     adjacent.sort(key=lambda m: _seed(m, seed))
     opts = [cell(marks[oi])] + [cell(m) for m in adjacent[:3]]
-    q = _q("netFace", prompt, hint or "Pick one square to be the bottom and fold the rest up around it.",
+    q = _q("netFace", prompt,
+           hint or default,
            {"kind": "net", "cells": [list(c) for c in cells], "marks": marks,
             "target": target},
            {"type": "option", "value": 0}, optionCells=opts)
@@ -877,7 +958,10 @@ def net_pick(prompt, valid, invalid, odd_one="folds", hint=None):
     for n in opts:
         if _has_block(n):
             raise ValueError("a 2x2 block gives the answer away at a glance")
-    q = _q("netPick", prompt, hint or "Imagine folding each square up. Do two land on the same side?",
+    default = ("Three of these fail. In each, find two squares that land on the same face."
+               if odd_one == "folds" else
+               "Three of these fold. Find the one where two squares land on the same face.")
+    q = _q("netPick", prompt, hint or default,
            None, {"type": "option", "value": 0},
            optionNets=[[list(c) for c in n] for n in opts], askFolds=(odd_one == "folds"))
     return _rotate(q, ["optionNets"], _seed(prompt, opts))
@@ -921,7 +1005,8 @@ def dice(prompt, top, front, right, moves, w, h, start, hint=None):
     ans = s["T"]
     seed = _seed(prompt, top, front, right, moves)
     mistakes = [s["B"], tops[-2], s["E"], s["S"], top]
-    return _q("roll", prompt, hint or "Opposite faces add up to 7. Follow one roll at a time.",
+    return _q("roll", prompt,
+              hint or f"Opposite faces add to 7. Start with {top} on top and roll one step at a time.",
               {"kind": "roll", "w": w, "h": h, "start": list(start), "moves": moves,
                "top": top, "front": front, "right": right},
               {"type": "number", "value": ans},
@@ -1019,7 +1104,10 @@ def stack_view(prompt, heights, side, hint=None):
             break
     if len(opts) != 4:
         raise ValueError("could not find three different wrong views")
-    q = _q("stackView", prompt, hint or "From straight on you only see the tallest cube in each line.",
+    default = ("From the front, each column shows only its tallest stack. Go left to right."
+               if side == "front" else
+               "From the right, each row shows only its tallest stack. Go front to back.")
+    q = _q("stackView", prompt, hint or default,
            {"kind": "stack", "heights": heights, "side": side},
            {"type": "option", "value": 0}, optionViews=opts)
     return _rotate(q, ["optionViews"], _seed(prompt, heights, side))
@@ -1088,7 +1176,9 @@ def knights(prompt, people, says, ask, hint=None):
         raise ValueError("no one can say these things; there is no answer")
     vals = {w[ask] for w in worlds}
     ans = 2 if len(vals) > 1 else (0 if vals.pop() == "truth-teller" else 1)
-    return _q("knights", prompt, hint or "Pretend they are a truth-teller. Does it work? Then try liar.",
+    first = says[0][0]
+    return _q("knights", prompt,
+              hint or f"Pretend {first} tells the truth. Does everything fit? Then try liar.",
               {"kind": "truth", "lines": KK_RULE + [f'{s} says: "{kk_text(s, c)}"' for s, c in says],
                "people": people, "says": [[s, list(c)] for s, c in says], "ask": ask},
               {"type": "option", "value": ans},
@@ -1106,7 +1196,8 @@ def atbash(w):
 def mirror_decode(prompt, plain, hint=None):
     coded = atbash(plain)
     opts = [plain] + _word_distractors(plain, {coded}, _seed(plain, "atbash"))
-    q = _q("mirrorCode", prompt, hint or "Find each coded letter, then read the letter it swaps with.",
+    q = _q("mirrorCode", prompt,
+           hint or f"A swaps with Z, B with Y. What does {atbash(plain)[0]} swap with?",
            {"kind": "mirrorAlpha", "word": coded, "mode": "decode"},
            {"type": "option", "value": 0}, optionsText=opts)
     return _rotate(q, ["optionsText"], _seed(prompt, plain))
@@ -1119,7 +1210,8 @@ def mirror_encode(prompt, plain, hint=None):
               right[::-1], shift_word(plain, -1)):
         if w != right and w not in wrong and w != plain:
             wrong.append(w)
-    q = _q("mirrorWrite", prompt, hint or "Find each letter, then write the letter it swaps with.",
+    q = _q("mirrorWrite", prompt,
+           hint or f"A swaps with Z, B with Y. What does {plain[0]} swap with?",
            {"kind": "mirrorAlpha", "word": plain, "mode": "encode"},
            {"type": "option", "value": 0}, optionsText=[right] + wrong[:3])
     return _rotate(q, ["optionsText"], _seed(prompt, plain))
@@ -1164,7 +1256,9 @@ def crack(prompt, example, ask, rule, mode, hint=None):
         shown = _apply_rule(rule, ask)
         right = ask
         opts = [ask] + _word_distractors(ask, {shown, example}, _seed(ask, rule))
-    q = _q("crackCode", prompt, hint or "Compare the example letter by letter. What happened to each one?",
+    q = _q("crackCode", prompt,
+           hint or (f"Compare {example[0]} with {ex_code[0]}, then {example[1]} with "
+                    f"{ex_code[1]}. A shift, or a swap?"),
            {"kind": "example", "example": [example, ex_code], "word": shown, "mode": mode},
            {"type": "option", "value": 0}, optionsText=opts)
     return _rotate(q, ["optionsText"], _seed(prompt, example, ask))
@@ -1300,7 +1394,8 @@ def polycube_pick(prompt, target, wrong_shapes, seed_word, hint=None):
         imgs.append(img)
     if len(opts) != 4:
         raise ValueError("need three different wrong options")
-    q = _q("sameShape", prompt, hint or "Pick one cube in the shape and follow where its neighbours go.",
+    q = _q("sameShape", prompt,
+           hint or "Start at one end of the shape. Follow it cube by cube in each picture.",
            {"kind": "polycube", "cubes": [list(c) for c in tgt]},
            {"type": "option", "value": 0}, optionCubes=[[list(c) for c in o] for o in opts])
     return _rotate(q, ["optionCubes"], seed)
@@ -1341,7 +1436,10 @@ def cube_turn(prompt, marks, moves, ask, hint=None):
     if ans is None:
         raise ValueError("the asked face was never shown")
     opts = [cell(m) for m in marks]
-    q = _q("cubeTurn", prompt, hint or "Say where the top goes first, then the front.",
+    default = (f"Turn your hand the same way. Which face ends up {SIDE_WORDS[ask]}?"
+               if len(moves) == 1 else
+               "Do one turn at a time. After the first, say what is on each side.")
+    q = _q("cubeTurn", prompt, hint or default,
            {"kind": "turnCube", "marks": list(marks), "moves": list(moves),
             "steps": [TURN_WORDS[m] for m in moves], "ask": ask},
            {"type": "option", "value": marks.index(ans)}, optionCells=opts)
@@ -1402,6 +1500,33 @@ FLAT_TRAPS = {
 }
 
 
+CUT_HINTS = {
+    "across": "A straight cut across matches the end of the {name}. What shape is its end?",
+    "down": "Cut straight down the middle. Picture the side of the {name}.",
+    "short": "Cut straight across the short way. What shape is the end?",
+    "long": "Cut along the long way. Is the cut long and thin, or the same each way?",
+    "slant": "A slanted cut through a round solid gets stretched. Is it still round?",
+    "diagonal": "The cut runs from one edge to the far edge. Are its sides all the same?",
+    "corner": "The cut slices off one corner. How many faces does it touch?",
+    "middle": "The cut passes the middle and touches every face. Count them.",
+}
+CUT_HINT_OVERRIDE = {
+    ("cone", "across"): "Cut across a cone and the cut matches the base, only smaller.",
+    ("pyramid", "across"): "Cut across a pyramid and the cut matches the base, only smaller.",
+    ("cone", "down"): "Cut down through the tip. Are the edges of the cut straight or curved?",
+    ("pyramid", "down"): "Cut down through the tip. How many corners does the cut have?",
+    ("sphere", "across"): "Think of slicing an orange. What shape is the slice?",
+    ("cuboid", "across"): "This cut is level, like the top face. What shape is the top?",
+    ("sphere", "slant"): "Turn a ball any way you like. Does the slice change shape?",
+}
+
+
+def _cut_hint(solid, cut):
+    if (solid, cut) in CUT_HINT_OVERRIDE:
+        return CUT_HINT_OVERRIDE[(solid, cut)]
+    return CUT_HINTS[cut].format(name=SOLIDS[solid]["name"])
+
+
 def _section_pic(solid, cut):
     shape, p0, n = CUTS[(solid, cut)]
     return {"kind": "section", "solid": solid, "cut": cut,
@@ -1411,7 +1536,7 @@ def _section_pic(solid, cut):
 def section_shape(prompt, solid, cut, hint=None):
     shape = CUTS[(solid, cut)][0]
     opts = [shape] + FLAT_TRAPS[shape]
-    q = _q("sectionShape", prompt, hint or "Picture the cut face lying flat on the table.",
+    q = _q("sectionShape", prompt, hint or _cut_hint(solid, cut),
            _section_pic(solid, cut), {"type": "option", "value": 0}, optionShapes=opts)
     return _rotate(q, ["optionShapes"], _seed(prompt, solid, cut))
 
@@ -1421,7 +1546,8 @@ def section_sides(prompt, solid, cut, hint=None):
     if shape not in SIDES:
         raise ValueError(f"a {shape} has no straight sides to count")
     ans = SIDES[shape]
-    return _q("sectionSides", prompt, hint or "Count the faces of the solid the cut goes through.",
+    return _q("sectionSides", prompt,
+              hint or "Name the shape of the cut first. Then count its straight sides.",
               _section_pic(solid, cut), {"type": "number", "value": ans},
               **_numbers(ans, [3, 4, 5, 6, 8], _seed(prompt, solid, cut), lo=3,
                          allowed={3, 4, 5, 6, 8}))
@@ -1434,7 +1560,8 @@ def section_which(prompt, want, cuts, hint=None):
     hits = [i for i, (s, c) in enumerate(cuts) if CUTS[(s, c)][0] == want]
     if hits != [0]:
         raise ValueError(f"cuts giving a {want}: {hits}; need exactly the first")
-    q = _q("sectionWhich", prompt, hint or "Imagine each cut face lying flat.",
+    q = _q("sectionWhich", prompt,
+           hint or f"Picture each cut lying flat. Which one makes {'an' if want[0] in 'aeiou' else 'a'} {want}?",
            None, {"type": "option", "value": 0},
            optionSections=[_section_pic(s, c) for s, c in cuts])
     return _rotate(q, ["optionSections"], _seed(prompt, cuts))

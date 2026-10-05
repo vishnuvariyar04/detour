@@ -65,8 +65,8 @@ S111 = [
     equation(P_BOX, 48, "+", 25, 73, "left"),
     equation(P_BOX, 19, "+", 57, 76, "right"),
     equation(P_BOX, 64, "+", 28, 92, "result"),
-    riddle(P_RID, [("add", 17), ("double",)], 50),
-    riddle(P_RID, [("double",), ("add", 15)], 39),
+    equation(P_BOX, 47, "+", 36, 83, "left"),
+    equation(P_BOX, 58, "+", 17, 75, "right"),
 ]
 
 S112 = [
@@ -75,18 +75,18 @@ S112 = [
     equation(P_BOX, 45, "-", 19, 26, "left"),
     equation(P_BOX, 90, "-", 46, 44, "right"),
     equation(P_BOX, 63, "-", 35, 28, "result"),
-    riddle(P_RID, [("take", 9), ("half",)], 17),
-    riddle(P_RID, [("half",), ("take", 8)], 14),
+    equation(P_BOX, 82, "-", 47, 35, "left"),
+    equation(P_BOX, 61, "-", 24, 37, "right"),
 ]
 
 S113 = [
     riddle(P_RID, [("add", 25), ("half",)], 30),
     riddle(P_RID, [("double",), ("take", 13)], 41),
     riddle(P_RID, [("take", 16), ("double",)], 58),
-    equation(P_BOX, 38, "+", 47, 85, "left"),
-    equation(P_BOX, 100, "-", 57, 43, "right"),
-    equation(P_BOX, 29, "+", 34, 63, "right"),
-    riddle(P_RID, [("half",), ("add", 19)], 42),
+    riddle(P_RID, [("add", 17), ("double",)], 50),
+    riddle(P_RID, [("take", 9), ("half",)], 17),
+    riddle(P_RID, [("half",), ("take", 8)], 14),
+    riddle(P_RID, [("double",), ("add", 15)], 39),
 ]
 
 S114 = [
@@ -109,7 +109,7 @@ S121 = [
     story(P_STORY, "leave", "Meera", "sweets", 70, 34),
     story(P_STORY, "gain", "Aman", "shells", 29, 56),
     story(P_STORY, "leavejoin", "Tara", "balloons", 45, 17, c=26),
-    bars(P_BAR, "Ravi", 63, "Asha", 38, "diff"),
+    story(P_STORY, "join", "Asha", "beads", 46, 38),
 ]
 
 S122 = [
@@ -128,8 +128,8 @@ S123 = [
     story(P_STORY, "share", "", "mangoes", 32, 4),
     story(P_STORY, "groupsleave", "", "toffees", 4, 10, c=13),
     story(P_STORY, "share", "", "pencils", 45, 5),
-    bars(P_BAR, "Mia", 81, "Dev", 57, "low"),
-    bars(P_BAR, "Nina", 94, "Raj", 66, "top"),
+    story(P_STORY, "groups", "", "eggs", 3, 8),
+    story(P_STORY, "share", "", "stickers", 24, 3),
 ]
 
 S124 = [
@@ -266,13 +266,13 @@ S221 = [
     queue_back(back("Kabir"), "Kabir", 8, 8),
     queue_back(back("Neha"), "Neha", 10, 6),
     queue_who("Tap who is 2nd from the back.", ["Asha", "Ravi", "Tara", "Dev", "Zoya"], 2, "back"),
-    queue_who("Tap who is 3rd from the front.", ["Imran", "Diya", "Yash", "Lila", "Aman", "Sara"], 3, "front"),
+    queue_who("Tap who is 3rd from the back.", ["Pooja", "Tom", "Kavya", "Ali", "Rohan", "Isha"], 3, "back"),
 ]
 
 S222 = [
-    queue_who("Tap who is 4th from the front.", ["Nina", "Raj", "Anu", "Veer", "Mia"], 4, "front"),
-    queue_who("Tap who is 3rd from the back.", ["Pooja", "Tom", "Kavya", "Ali", "Rohan", "Isha"], 3, "back"),
-    queue_who("Tap who is 1st from the back.", ["Sahil", "Rani", "Karan", "Meera"], 1, "back"),
+    queue_calc(P_CLUE, "total", 2, 6, "Nina"),
+    queue_calc(P_CLUE, "total", 3, 9, "Raj"),
+    queue_calc(P_CLUE, "total", 5, 2, "Anu"),
     queue_calc(P_CLUE, "total", 3, 5, "Arjun"),
     queue_calc(P_CLUE, "total", 4, 4, "Priya"),
     queue_calc(P_CLUE, "total", 5, 6, "Om"),
@@ -284,9 +284,9 @@ S223 = [
     queue_calc(P_CLUE, "between", 8, 3, "Diya", "Kabir"),
     queue_calc(P_CLUE, "between", 1, 4, "Tara", "Imran"),
     queue_calc(P_CLUE, "between", 4, 10, "Yash", "Lila"),
-    queue_back(back("Veer"), "Veer", 5, 1),
-    queue_back(back("Anu"), "Anu", 10, 9),
-    queue_calc(P_CLUE, "total", 7, 3, "Nikhil"),
+    queue_calc(P_CLUE, "between", 3, 7, "Veer", "Rani"),
+    queue_calc(P_CLUE, "between", 9, 5, "Karan", "Meera"),
+    queue_calc(P_CLUE, "between", 1, 6, "Nikhil", "Sahil"),
 ]
 
 S224 = [
@@ -303,31 +303,31 @@ S224 = [
 S231 = [
     shelf("Tap the shape just left of the heart.", ["star", "circle", "heart", "square", "diamond"], "heart", "left", 1),
     shelf("Tap the shape just right of the star.", ["triangle", "star", "diamond", "circle", "heart"], "star", "right", 1),
-    shelf("Tap the shape just left of the square.", ["heart", "diamond", "triangle", "square", "star"], "square", "left", 1),
+    shelf("Tap the shape just left of the square.", ["diamond", "heart", "square", "star"], "square", "left", 1),
     shelf("Tap the shape just right of the circle.", ["circle", "heart", "star", "triangle", "square"], "circle", "right", 1),
-    shelf("Tap the shape just left of the diamond.", ["square", "star", "circle", "triangle", "diamond"], "diamond", "left", 1),
-    turns(face("Om"), "Om", "North", ["right"]),
-    turns(face("Riya"), "Riya", "East", ["left"]),
+    shelf("Tap two places left of the heart.", ["square", "triangle", "star", "heart", "circle"], "heart", "left", 2),
+    shelf("Tap two places right of the diamond.", ["diamond", "circle", "square", "star", "heart"], "diamond", "right", 2),
+    shelf("Tap two places right of the circle.", ["heart", "circle", "triangle", "diamond", "star"], "circle", "right", 2),
 ]
 
 S232 = [
     turns(face("Kabir"), "Kabir", "South", ["right"]),
     turns(face("Asha"), "Asha", "West", ["right"]),
     turns(face("Dev"), "Dev", "North", ["left"]),
-    turns(face("Tara"), "Tara", "East", ["right", "right"]),
-    turns(face("Imran"), "Imran", "South", ["left", "left"]),
-    shelf("Tap the shape just right of the triangle.", ["diamond", "square", "triangle", "heart", "circle"], "triangle", "right", 1),
-    shelf("Tap the shape just left of the star.", ["circle", "star", "heart", "diamond", "triangle"], "star", "left", 1),
+    turns(face("Om"), "Om", "North", ["right"]),
+    turns(face("Riya"), "Riya", "East", ["left"]),
+    turns(face("Ravi"), "Ravi", "East", ["right"]),
+    turns(face("Neha"), "Neha", "East", ["right", "left"]),
 ]
 
 S233 = [
     turns(face("Zoya"), "Zoya", "North", ["around"]),
     turns(face("Yash"), "Yash", "West", ["around"]),
-    turns(face("Neha"), "Neha", "East", ["right", "left"]),
     turns(face("Aman"), "Aman", "South", ["around", "left"]),
-    shelf("Tap two places left of the heart.", ["square", "triangle", "star", "heart", "circle"], "heart", "left", 2),
-    shelf("Tap two places right of the diamond.", ["diamond", "circle", "square", "star", "heart"], "diamond", "right", 2),
-    shelf("Tap two places right of the circle.", ["heart", "circle", "triangle", "diamond", "star"], "circle", "right", 2),
+    turns(face("Tara"), "Tara", "East", ["right", "right"]),
+    turns(face("Imran"), "Imran", "South", ["left", "left"]),
+    turns(face("Asha"), "Asha", "South", ["around"]),
+    turns(face("Mia"), "Mia", "North", ["left", "left"]),
 ]
 
 S234 = [
@@ -427,8 +427,8 @@ S321 = [
     word_analogy(P_AN, "baby", "cat", "duck"),
     word_analogy(P_AN, "home", "bird", "bee"),
     word_analogy(P_AN, "home", "dog", "horse"),
-    number_analogy(P_NAN, "add", 17, [8, 15], 26),
-    number_analogy(P_NAN, "times", 4, [3, 5], 7),
+    word_analogy(P_AN, "baby", "dog", "cat"),
+    word_analogy(P_AN, "home", "lion", "bird"),
 ]
 
 S322 = [
@@ -437,15 +437,15 @@ S322 = [
     word_analogy(P_AN, "opposite", "happy", "fast"),
     word_analogy(P_AN, "sense", "eye", "ear"),
     word_analogy(P_AN, "sense", "nose", "tongue"),
-    number_analogy(P_NAN, "take", 9, [25, 40], 63),
-    number_analogy(P_NAN, "times", 3, [6, 9], 8),
+    word_analogy(P_AN, "work", "doctor", "teacher"),
+    word_analogy(P_AN, "colour", "grass", "banana"),
 ]
 
 S323 = [
-    word_analogy(P_AN, "work", "doctor", "teacher"),
-    word_analogy(P_AN, "work", "farmer", "cook"),
-    word_analogy(P_AN, "colour", "grass", "banana"),
-    word_analogy(P_AN, "colour", "snow", "coal"),
+    number_analogy(P_NAN, "add", 17, [8, 15], 26),
+    number_analogy(P_NAN, "times", 4, [3, 5], 7),
+    number_analogy(P_NAN, "take", 9, [25, 40], 63),
+    number_analogy(P_NAN, "times", 3, [6, 9], 8),
     number_analogy(P_NAN, "times", 5, [4, 7], 9),
     number_analogy(P_NAN, "add", 25, [12, 30], 47),
     number_analogy(P_NAN, "take", 15, [40, 62], 81),
@@ -475,11 +475,11 @@ S331 = [
 S332 = [
     letter_code(P_CODE, "TOP", "TEN", ("reverse",)),
     letter_code(P_CODE, "PAN", "GUM", ("reverse",)),
-    letter_code(P_CODE, "DOG", "CUP", ("shift", 2)),
     letter_code(P_CODE, "BED", "RAT", ("reverse",)),
-    letter_code(P_CODE, "JAM", "BOX", ("shift", -1)),
-    alphabet("Tap the letter two after P.", "P", 2),
-    alphabet("Tap the letter two before H.", "H", -2),
+    letter_code(P_CODE, "STAR", "POOL", ("reverse",)),
+    letter_code(P_CODE, "MUG", "LAP", ("reverse",)),
+    letter_code(P_CODE, "CAR", "BIG", ("reverse",)),
+    letter_code(P_CODE, "RUN", "FOX", ("reverse",)),
 ]
 
 S333 = [
@@ -488,8 +488,8 @@ S333 = [
     number_code("A is 1. Tap the word.", "DIG", "BED", "decode"),
     number_code("A is 1. Tap the word.", "FED", "HID", "decode"),
     number_code("A is 1. Tap the code.", "HEAD", "FACE", "encode"),
-    letter_code(P_CODE, "HIT", "BAG", ("shift", 1)),
-    letter_code(P_CODE, "STAR", "POOL", ("reverse",)),
+    number_code("A is 1. Tap the word.", "BIG", "FADE", "decode"),
+    number_code("A is 1. Tap the code.", "CAB", "JADE", "encode"),
 ]
 
 S334 = [
@@ -498,7 +498,7 @@ S334 = [
     letter_code(P_CODE, "MAP", "DOT", ("shift", 1)),
     letter_code(P_CODE, "WAS", "NOW", ("reverse",)),
     number_code("A is 1. Tap the code.", "JIG", "DEAF", "encode"),
-    alphabet("Tap the letter two after T.", "T", 2),
+    alphabet("Tap the letter just before T.", "T", -1),
 ]
 
 
@@ -513,8 +513,8 @@ S411 = [
     odd_word(P_ODD, ["red", "blue", "shirt", "green"]),
     odd_word(P_ODD, ["hand", "nose", "ear", "cycle"]),
     odd_word(P_ODD, ["crow", "sparrow", "lion", "owl"]),
-    odd_number(P_ODD, [2, 4, 7, 8]),
-    odd_number(P_ODD, [10, 40, 30, 35]),
+    odd_word(P_ODD, ["shirt", "coat", "skirt", "onion"]),
+    odd_word(P_ODD, ["truck", "cycle", "bus", "cherry"]),
 ]
 
 S412 = [
@@ -522,19 +522,19 @@ S412 = [
     odd_word(P_ODD, ["sock", "cap", "dress", "eagle"]),
     odd_word(P_ODD, ["circle", "square", "triangle", "pink"]),
     odd_word(P_ODD, ["cow", "goat", "dog", "pigeon"]),
-    odd_number(P_ODD, [15, 55, 35, 42]),
-    odd_number(P_ODD, [3, 7, 9, 6]),
-    odd_number(P_ODD, [12, 14, 16, 19]),
+    odd_word(P_ODD, ["boat", "plane", "truck", "spinach"]),
+    odd_word(P_ODD, ["knee", "elbow", "foot", "scarf"]),
+    odd_word(P_ODD, ["papaya", "cherry", "orange", "peacock"]),
 ]
 
 S413 = [
     odd_number(P_ODD, [35, 15, 45, 18]),
     odd_number(P_ODD, [60, 50, 70, 55]),
     odd_number(P_ODD, [8, 13, 17, 11]),
-    odd_number(P_ODD, [22, 26, 24, 31]),
-    odd_word(P_ODD, ["boat", "plane", "truck", "spinach"]),
-    odd_word(P_ODD, ["knee", "elbow", "foot", "scarf"]),
-    odd_word(P_ODD, ["papaya", "cherry", "orange", "peacock"]),
+    odd_number(P_ODD, [2, 4, 7, 8]),
+    odd_number(P_ODD, [10, 40, 30, 35]),
+    odd_number(P_ODD, [15, 55, 35, 42]),
+    odd_number(P_ODD, [3, 7, 9, 6]),
 ]
 
 S414 = [
@@ -555,8 +555,8 @@ S421 = [
     weekday(P_DAY, "ago", "Thursday", 2),
     weekday(P_DAY, "today", "Sunday"),
     weekday(P_DAY, "tomorrow", "Tuesday"),
-    month(P_MONTH, "June", 1),
-    month(P_MONTH, "March", -1),
+    weekday(P_DAY, "after", "Saturday", 2),
+    weekday(P_DAY, "today", "Wednesday"),
 ]
 
 S422 = [
@@ -565,18 +565,18 @@ S422 = [
     clock(P_TIME, 2, 0, "after", 3),
     clock(P_TIME, 11, 0, "after", 2),
     clock(P_TIME, 6, 30, "before", 2),
-    weekday(P_DAY, "after", "Saturday", 2),
-    weekday(P_DAY, "ago", "Monday", 1),
+    clock(P_TIME, 9, 30, "after", 4),
+    clock(P_TIME, 1, 0, "before", 3),
 ]
 
 S423 = [
     month(P_MONTH, "November", 2),
     month(P_MONTH, "September", 1),
     month(P_MONTH, "January", -1),
-    clock(P_TIME, 9, 30, "after", 4),
-    clock(P_TIME, 1, 0, "before", 3),
-    weekday(P_DAY, "today", "Wednesday"),
-    weekday(P_DAY, "tomorrow", "Saturday"),
+    month(P_MONTH, "June", 1),
+    month(P_MONTH, "March", -1),
+    month(P_MONTH, "July", -1),
+    month(P_MONTH, "December", 1),
 ]
 
 S424 = [
@@ -597,11 +597,9 @@ S431 = [
     combos(P_WAYS, "Om", 5, "caps", 2, "shirts"),
     combos(P_WAYS, "Zoya", 2, "breads", 3, "fillings", 2, "drinks"),
     combos(P_WAYS, "Kabir", 3, "cones", 5, "flavours"),
-    story(P_STORY, "leavejoin", "Isha", "shells", 63, 28, c=17),
-    rank("Tap who is the fastest.", "fast", ["Dev", "Sara", "Tom"],
-         [("Sara", "Tom", "more"), ("Dev", "Sara", "less")], "top"),
-    relation(rel("Kavya", "Nikhil"), [("Kavya", "wife", "Aman"), ("Aman", "father", "Nikhil")],
-             "Kavya", "Nikhil"),
+    combos(P_WAYS, "Isha", 2, "hats", 4, "scarves"),
+    combos(P_WAYS, "Dev", 3, "shirts", 3, "caps"),
+    combos(P_WAYS, "Sara", 2, "tops", 2, "skirts", 2, "shoes"),
 ]
 
 S432 = [

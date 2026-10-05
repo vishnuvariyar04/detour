@@ -10,8 +10,11 @@ void main() {
     for (final band in Band.values) {
       for (var i = 0; i < 200; i++) {
         final q = generateMath(band);
-        expect(int.tryParse(q.answer), isNotNull,
-            reason: 'math answer should be an integer: ${q.prompt}');
+        expect(
+          int.tryParse(q.answer),
+          isNotNull,
+          reason: 'math answer should be an integer: ${q.prompt}',
+        );
       }
     }
   });
@@ -22,8 +25,24 @@ void main() {
         final q = generatePattern(band);
         final parts = q.prompt.replaceAll(', ?', '').split(', ');
         final nums = parts.map(int.parse).toList();
-        final step = nums[1] - nums[0];
-        expect(int.parse(q.answer), nums.last + step);
+        final answer = int.parse(q.answer);
+        final differences = [
+          for (var i = 1; i < nums.length; i++) nums[i] - nums[i - 1],
+        ];
+        final doubles = nums
+            .skip(1)
+            .toList()
+            .asMap()
+            .entries
+            .every((e) => e.value == nums[e.key] * 2);
+        if (doubles) {
+          expect(answer, nums.last * 2);
+        } else if (differences.toSet().length == 1) {
+          expect(answer, nums.last + differences.first);
+        } else {
+          expect(differences, [3, -1, 3, -1]);
+          expect(answer, nums.last + 3);
+        }
       }
     }
   });

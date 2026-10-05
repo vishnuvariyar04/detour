@@ -135,7 +135,17 @@ def equation(prompt, left, op, right, result, hide, hint=None):
                     "result": [digit_sub(left, right), left + right, right]}[hide]
     pic = {"kind": "equation", "left": left, "op": op, "right": right, "result": result,
            "hide": hide}
-    return _q("equation", prompt, hint or "What number makes both sides the same?",
+    if hide == "result":
+        default = (f"Add {left} and {right}. Add the tens, then the ones." if op == "+"
+                   else f"Take {right} from {left}. Take the tens, then the ones.")
+    elif op == "+":
+        known = left if hide == "right" else right
+        default = f"Start at {known}. How far is it up to {result}?"
+    elif hide == "right":
+        default = f"How far is it from {result} up to {left}?"
+    else:
+        default = f"Add back: put {result} and {right} together."
+    return _q("equation", prompt, hint or default,
               pic, {"type": "number", "value": ans},
               **_numbers(ans, mistakes + [ans + 1, ans - 1]))
 
@@ -170,7 +180,12 @@ def riddle(prompt, steps, result, hint=None):
     lines = ["I am a number.", middle.replace("I halve it", "I halve").replace(
         "I double it", "I double"), f"Now I am {result}."]
     forward = _riddle_apply(steps, result)
-    return _q("riddle", prompt, hint or "Work backwards from the end.",
+    last = steps[-1]
+    undo = {"add": f"take away {last[1] if len(last) > 1 else ''}",
+            "take": f"add {last[1] if len(last) > 1 else ''}",
+            "double": "halve it", "half": "double it"}[last[0]]
+    default = f"Start at {result} and {undo}. Then undo the first step."
+    return _q("riddle", prompt, hint or default,
               {"kind": "card", "lines": lines, "steps": [list(s) for s in steps], "result": result},
               {"type": "number", "value": ans},
               **_numbers(ans, [result, forward if forward is not None else result + 1,
@@ -253,7 +268,24 @@ def story(prompt, schema, name, thing, a, b, other=None, c=None, hint=None):
         raise ValueError("a fair share must come out even")
     if ans < 0 or ans > 100:
         raise ValueError(f"the answer {ans} is out of range for seven")
-    return _q("story", prompt, hint or "Is something joining, leaving, or being compared?",
+    default = {
+        "join": f"{_he(name)} gets more. Add {a} and {b}.",
+        "leave": f"{_he(name)} gives some away. Take {b} from {a}.",
+        "gain": f"Start at {a}. How far is it up to {b}?",
+        "total": f"Put the red and the blue together.",
+        "part": f"Take the big ones away from all {a}.",
+        "more": f"{other} has more than {name}. So add.",
+        "fewer": f"{other} has fewer than {name}. So take away.",
+        "diff": f"Take the smaller number from the bigger one.",
+        "groups": f"Count in {b}s, once for each bag.",
+        "share": f"Share {a} into {b} equal piles.",
+        "legs": f"Count in {b}s, once for each one.",
+        "joinleave": f"First add {b}. Then take away {c}.",
+        "leavejoin": f"First take away {b}. Then add {c}.",
+        "groupsleave": f"First find how many in all. Then take away {c}.",
+        "twototal": f"Add all three numbers.",
+    }[schema]
+    return _q("story", prompt, hint or default,
               {"kind": "card", "lines": lines, "schema": schema,
                "nums": [a, b] if c is None else [a, b, c]},
               {"type": "number", "value": ans}, **_numbers(ans, mistakes))
@@ -269,7 +301,10 @@ def bars(prompt, top_name, top, low_name, low, hide, hint=None):
              "diff": None if hide == "diff" else diff}
     mistakes = {"top": [no_carry(low, diff), low - diff, low], "low": [digit_sub(top, diff), top + diff, diff],
                 "diff": [digit_sub(top, low), top + low, low]}[hide]
-    return _q("bars", prompt, hint or "The longer bar is the shorter bar plus the gap.",
+    default = {"diff": "The gap is the long bar take away the short bar.",
+               "top": "The long bar is the short bar and the gap together.",
+               "low": "The short bar is the long bar take away the gap."}[hide]
+    return _q("bars", prompt, hint or default,
               {"kind": "bars", "names": [top_name, low_name], "values": [top, low],
                "shown": shown, "hide": hide},
               {"type": "number", "value": ans}, **_numbers(ans, mistakes))
@@ -287,7 +322,11 @@ def series(prompt, terms, gap, hint=None):
         mistakes.append(terms[gap - 1] + (terms[gap - 1] - terms[gap - 2]) + 1)
     if 0 < gap < len(terms) - 1:
         mistakes.append(terms[gap - 1] + 1)
-    return _q("series", prompt, hint or "How does each number change to the next?",
+    pairs = [(shown[i], shown[i + 1]) for i in range(len(shown) - 1)
+             if None not in shown[i:i + 2]]
+    (x, y), (w, z) = pairs[0], pairs[1]
+    default = f"Find the jump from {x} to {y}. Then from {w} to {z}."
+    return _q("series", prompt, hint or default,
               {"kind": "series", "terms": shown, "gapAt": gap},
               {"type": "number", "value": ans}, **_numbers(ans, mistakes))
 
@@ -326,7 +365,8 @@ def series_rule(prompt, terms, rules, hint=None):
     fits = [i for i, r in enumerate(rules) if rule_run(r, terms[0], len(terms)) == terms]
     if fits != [0]:
         raise ValueError(f"rules that fit: {fits}; need exactly the first")
-    q = _q("seriesRule", prompt, hint or "Check the rule on every step, not just the first.",
+    q = _q("seriesRule", prompt,
+           hint or f"Try each rule on {terms[0]}. Does it make {terms[1]}? Check the rest.",
            {"kind": "series", "terms": terms}, {"type": "option", "value": 0},
            optionsText=[rule_words(r) for r in rules], optionRules=[list(r) for r in rules])
     q["_rotate"] = ["optionsText", "optionRules"]
@@ -364,7 +404,10 @@ def rank(prompt, dim, people, clues, ask, hint=None):
         raise ValueError(f'the prompt does not ask for the "{word}"')
     ans = answers.pop()
     lines = [f"{a} is {more if w == 'more' else less} than {b}." for a, b, w in clues]
-    q = _q("rank", prompt, hint or "Put them in order, one clue at a time.",
+    default = {"top": f"Line them up, {most} first. Who is at the front?",
+               "bottom": f"Line them up, {most} first. Who comes last?",
+               "second": f"Line them up, {most} first. Who comes next?"}[ask]
+    q = _q("rank", prompt, hint or default,
            {"kind": "card", "lines": lines, "dim": dim, "people": list(people),
             "clues": [list(c) for c in clues], "ask": ask},
            {"type": "option", "value": list(people).index(ans)}, optionsText=list(people))
@@ -381,7 +424,8 @@ def rank_count(prompt, dim, people, clues, who, hint=None):
         raise ValueError("the clues do not settle the count")
     ans = counts.pop()
     lines = [f"{a} is {more if w == 'more' else DIMS[dim][1]} than {b}." for a, b, w in clues]
-    return _q("rankCount", prompt, hint or "Put them in order first, then count.",
+    return _q("rankCount", prompt,
+              hint or f"Line them up, {DIMS[dim][2]} first. Count who is before {who}.",
               {"kind": "card", "lines": lines, "dim": dim, "people": list(people),
                "clues": [list(c) for c in clues], "who": who},
               {"type": "number", "value": ans},
@@ -397,7 +441,8 @@ def queue_back(prompt, name, n, front, hint=None):
     if not 1 <= front <= n <= 10:
         raise ValueError("a line of up to ten")
     ans = n - front + 1
-    return _q("queueBack", prompt, hint or "Count from the other end of the line.",
+    return _q("queueBack", prompt,
+              hint or f"Start at the back end. Count each child up to {name}.",
               {"kind": "line", "n": n, "mark": front, "name": name},
               {"type": "number", "value": ans},
               **_numbers(ans, [front, n - front, ans + 1], lo=1))
@@ -409,13 +454,18 @@ def queue_calc(prompt, kind, a, b, name=None, other=None, hint=None):
         lines = [f"{name} is {ordinal(a)} from the front.", f"{name} is {ordinal(b)} from the back.",
                  "How many are in the line?"]
         ans, mistakes = a + b - 1, [a + b, a + b + 1, max(a, b)]
+        front = "Nobody" if a == 1 else str(a - 1)
+        behind = "nobody" if b == 1 else str(b - 1)
+        default = f"{front} in front of {name}, {behind} behind. Now add {name}."
     else:
         lines = [f"{name} is {ordinal(a)} in the line.", f"{other} is {ordinal(b)} in the line.",
                  "How many stand between them?"]
         ans, mistakes = abs(a - b) - 1, [abs(a - b), abs(a - b) + 1, a + b]
+        lo, hi = sorted((a, b))
+        default = f"Say the places from {ordinal(lo)} to {ordinal(hi)}. Skip those two."
         if ans < 1:
             raise ValueError("nobody stands between them")
-    return _q("queueCalc", prompt, hint or "Draw the line in your head.",
+    return _q("queueCalc", prompt, hint or default,
               {"kind": "card", "lines": lines, "calc": kind, "nums": [a, b]},
               {"type": "number", "value": ans}, **_numbers(ans, mistakes, lo=0))
 
@@ -431,7 +481,8 @@ def queue_who(prompt, names, nth, end, hint=None):
     for c in [wrong] + [names[(idx + d) % len(names)] for d in (1, -1, 2)]:
         if c not in opts:
             opts.append(c)
-    q = _q("queueWho", prompt, hint or "Find which end is the front first.",
+    q = _q("queueWho", prompt,
+           hint or f"Find the {end} of the line. Count {nth} from there.",
            {"kind": "line", "n": len(names), "names": list(names), "nth": nth, "end": end},
            {"type": "option", "value": 0}, optionsText=opts[:4])
     return _options(q, "optionsText")
@@ -455,7 +506,15 @@ def turns(prompt, name, start, moves, hint=None):
     else:
         lines = [f"{name} faces {start}.", f"{_he(name)} {TURN_TEXT[moves[0]]}.",
                  f"Then {_he(name).lower()} {TURN_TEXT[moves[1]]}."]
-    return _q("turns", prompt, hint or "Turn your own body the same way.",
+    if len(moves) == 2:
+        default = f"Start at {start}. Do the first turn. Then the second."
+    elif moves[0] == "right":
+        default = f"Start at {start}. Right goes on: North, East, South, West."
+    elif moves[0] == "left":
+        default = f"Start at {start}. Left goes back: North, West, South, East."
+    else:
+        default = f"Start at {start}. Around means face the other way."
+    return _q("turns", prompt, hint or default,
               {"kind": "compass", "lines": lines, "start": start, "moves": list(moves)},
               {"type": "option", "value": ans}, optionsText=list(DIRS), fixedOrder=True)
 
@@ -480,7 +539,9 @@ def shelf(prompt, items, target, side, steps, hint=None):
              [items[k] for k in (j + 1, j - 1, t) if 0 <= k < len(items)] + list(items):
         if c not in opts and c != target:
             opts.append(c)
-    q = _q("shelf", prompt, hint or "Hold up your left hand to check which side is left.",
+    q = _q("shelf", prompt,
+           hint or f"Put your finger on the {target}. Move {'one' if steps == 1 else 'two'} "
+                   f"to the {side}.",
            {"kind": "shelf", "items": list(items), "target": target, "side": side, "steps": steps},
            {"type": "option", "value": 0},
            optionCells=[{"kind": k, "color": "primary", "rotation": 0} for k in opts[:4]])
@@ -585,7 +646,8 @@ def relation(prompt, facts, x, y, hint=None):
         raise ValueError("the prompt asks about other people")
     ans = relation_term(facts, x, y)
     opts = [ans] + RELATION_TRAPS[ans][:3]
-    q = _q("relation", prompt, hint or "Draw the family: who is above, who is beside?",
+    q = _q("relation", prompt,
+           hint or f"Start at {x}. Follow the clues one at a time to {y}.",
            {"kind": "card", "lines": [fact_line(f) for f in facts],
             "facts": [list(f) for f in facts], "x": x, "y": y},
            {"type": "option", "value": 0}, optionsText=opts)
@@ -613,7 +675,18 @@ def relation_who(prompt, facts, y, term, hint=None):
     if len(people) < 3:
         raise ValueError("need at least three names to choose from")
     opts = [hits[0]] + [p for p in people if p != hits[0]][:3]
-    q = _q("relationWho", prompt, hint or "Find each person's place in the family.",
+    default = {
+        "father": f"Who is a parent of {y}? Find the man.",
+        "mother": f"Who is a parent of {y}? Find the woman.",
+        "sister": f"Who has the same parents as {y}? Find the girl.",
+        "brother": f"Who has the same parents as {y}? Find the boy.",
+        "grandmother": f"Find {y}'s parent first. Then that parent's mother.",
+        "grandfather": f"Find {y}'s parent first. Then that parent's father.",
+        "aunt": f"Find {y}'s parent first. Then look beside that parent.",
+        "uncle": f"Find {y}'s parent first. Then look beside that parent.",
+        "cousin": f"Find {y}'s aunt or uncle first. Then their child.",
+    }[term]
+    q = _q("relationWho", prompt, hint or default,
            {"kind": "card", "lines": [fact_line(f) for f in facts],
             "facts": [list(f) for f in facts], "y": y, "term": term},
            {"type": "option", "value": 0}, optionsText=opts)
@@ -667,7 +740,19 @@ def word_analogy(prompt, rel, a, c, extra_wrong=(), hint=None):
     opts = opts[:4]
     if sum(1 for o in opts if o == ans) != 1:
         raise ValueError("the answer appears twice")
-    q = _q("wordAnalogy", prompt, hint or "Say how the first two go together. Use the same link.",
+    default = {
+        "baby": f"A baby {a} is a {b}. What is a baby {c}?",
+        "home": f"A {a} lives in a {b}. Where does a {c} live?",
+        "opposite": f"{a.capitalize()} is the opposite of {b}. What is the opposite of {c}?",
+        "sense": f"We {b} with an {a} . What do we do with a {c}?".replace(" .", "."),
+        "work": f"A {a} works in a {b}. Where does a {c} work?",
+        "colour": f"{a.capitalize()} is {b}. What colour is {'' if c in ('coal', 'snow', 'grass') else 'the '}{c}?",
+    }[rel]
+    if rel == "sense":
+        default = f"We {b} with our {a}s. What do we do with our {c}s?"
+        if c == "nose" or c == "tongue":
+            default = f"We {b} with our {a}s. What do we do with our {c}?"
+    q = _q("wordAnalogy", prompt, hint or default,
            {"kind": "wordPairs", "pairs": [[a, b], [c, None]], "rel": rel},
            {"type": "option", "value": 0}, optionsText=opts)
     return _options(q, "optionsText")
@@ -692,7 +777,9 @@ def number_analogy(prompt, rule, k, examples, ask, hint=None):
         raise ValueError("out of range")
     first = pairs[0]
     slip = ask + (first[1] - first[0])
-    return _q("numberAnalogy", prompt, hint or "What happens to each number? Do the same.",
+    default = (f"What turns {pairs[0][0]} into {pairs[0][1]}? Check it on "
+               f"{pairs[1][0]}. Then do it to {ask}.")
+    return _q("numberAnalogy", prompt, hint or default,
               {"kind": "numPairs", "pairs": pairs + [[ask, None]]},
               {"type": "number", "value": ans},
               **_numbers(ans, [slip, ans + 1, ans - 1, ask]))
@@ -724,7 +811,10 @@ def letter_code(prompt, example, ask, rule, hint=None):
     for w in wrong:
         if w not in opts:
             opts.append(w)
-    q = _q("wordCode", prompt, hint or "Look at one letter of the example at a time.",
+    default = (f"{ex} is {example} written backwards. Now write {ask} backwards."
+               if rule[0] == "reverse"
+               else f"{example[0]} turns into {ex[0]}. Do that to each letter of {ask}.")
+    q = _q("wordCode", prompt, hint or default,
            {"kind": "example", "example": [example, ex], "word": ask, "mode": "encode"},
            {"type": "option", "value": 0}, optionsText=opts[:4])
     return _options(q, "optionsText")
@@ -751,7 +841,9 @@ def number_code(prompt, example, ask, mode, hint=None):
     for w in wrong:
         if w not in opts:
             opts.append(w)
-    q = _q("numCode", prompt, hint or "A is 1. Count along the alphabet for the rest.",
+    default = (f"A is 1. Count along to {ask[0]}." if mode == "encode"
+               else f"A is 1. Which letter is {shown.split()[0]}?")
+    q = _q("numCode", prompt, hint or default,
            {"kind": "numExample", "example": [example, _nums(example)], "word": shown, "mode": mode},
            {"type": "option", "value": 0}, optionsText=opts[:4])
     return _options(q, "optionsText")
@@ -771,7 +863,11 @@ def alphabet(prompt, base, offset, hint=None):
     for w in wrong:
         if w not in opts and w != base:
             opts.append(w)
-    q = _q("alphabet", prompt, hint or "Say the alphabet up to that letter.",
+    default = {1: f"Say the alphabet up to {base}. What comes next?",
+               -1: f"Say the alphabet up to {base}. What came just before?",
+               2: f"Say the alphabet up to {base}. Then two more.",
+               -2: f"Say the alphabet up to {base}. Go back two."}[offset]
+    q = _q("alphabet", prompt, hint or default,
            {"kind": "letter", "base": base, "offset": offset},
            {"type": "option", "value": 0}, optionsText=opts[:4])
     return _options(q, "optionsText")
@@ -806,7 +902,15 @@ def odd_word(prompt, words, hint=None):
     odd = [i for i, c in enumerate(names) if names.count(c) == 1]
     if len(common) != 1 or len(odd) != 1:
         raise ValueError(f"not three-and-one: {names}")
-    q = _q("oddWord", prompt, hint or "Say what three of them are.",
+    w = next(x for i, x in enumerate(words) if i != odd[0] and not x.endswith("s"))
+    kind = {"fruit": "a fruit", "vegetable": "a vegetable",
+            "animal": "an animal with four legs", "bird": "a bird",
+            "vehicle": "something you ride in", "colour": "a colour",
+            "body": "a part of your body", "clothes": "something you wear",
+            "shape": "a shape"}[common[0]]
+    lead = (w.capitalize() if common[0] == "colour"
+            else f"{'An' if w[0] in 'aeiou' else 'A'} {w}")
+    q = _q("oddWord", prompt, hint or f"{lead} is {kind}. Which one is not?",
            {"kind": "words", "words": list(words), "groups": names},
            {"type": "option", "value": odd[0]}, optionsText=list(words))
     return _options(q, "optionsText")
@@ -832,7 +936,16 @@ def odd_number(prompt, nums, hint=None):
     picks = {i for _, i in readings}
     if len(picks) != 1:
         raise ValueError(f"readings {readings}: need exactly one odd number")
-    q = _q("oddNumber", prompt, hint or "Are they odd or even? Do they end in 0 or 5?",
+    props = {r for r, _ in readings}
+    if "even" in props:
+        default = "Which numbers are even? Which are odd?"
+    elif "fives" in props or "tens" in props:
+        default = "Look at the last digit of each number."
+    elif "two digits" in props:
+        default = "How many digits does each number have?"
+    else:
+        default = "Look at the first digit of each number."
+    q = _q("oddNumber", prompt, hint or default,
            {"kind": "words", "words": [str(n) for n in nums], "nums": list(nums)},
            {"type": "option", "value": picks.pop()}, optionsText=[str(n) for n in nums])
     return _options(q, "optionsText")
@@ -850,7 +963,8 @@ def weekday(prompt, form, day, n=1, hint=None):
     if form == "after":
         lines, ans, slip = [f"Today is {day}.", f"What day is it in {n} days?"], i + n, i - n
     elif form == "ago":
-        lines, ans, slip = [f"Today is {day}.", f"What day was it {n} days ago?"], i - n, i + n
+        lines, ans, slip = [f"Today is {day}.",
+                            f"What day was it {n} day{'s' if n != 1 else ''} ago?"], i - n, i + n
     elif form == "today":
         lines, ans, slip = [f"Tomorrow is {day}.", "What day is it today?"], i - 1, i + 1
     elif form == "tomorrow":
@@ -862,7 +976,11 @@ def weekday(prompt, form, day, n=1, hint=None):
     for j in (slip, ans + 1, ans - 1, ans + 2):
         if DAYS[j % 7] not in opts:
             opts.append(DAYS[j % 7])
-    q = _q("weekday", prompt, hint or "Say the days of the week in order.",
+    default = {"after": f"Start at {day}. Say the next {n} day{'s' if n != 1 else ''}.",
+               "ago": f"Start at {day}. Count back {n} day{'s' if n != 1 else ''}.",
+               "today": f"Tomorrow is {day}. Today is one day before.",
+               "tomorrow": f"Yesterday was {day}. Say the next two days."}[form]
+    q = _q("weekday", prompt, hint or default,
            {"kind": "card", "lines": lines, "form": form, "day": day, "n": n},
            {"type": "option", "value": 0}, optionsText=opts[:4])
     return _options(q, "optionsText")
@@ -877,7 +995,10 @@ def month(prompt, base, offset, hint=None):
     for j in (i - offset, ans + 1, ans - 1, i):
         if MONTHS[j % 12] not in opts:
             opts.append(MONTHS[j % 12])
-    q = _q("month", prompt, hint or "Say the months in order from January.",
+    default = {1: f"Say the months up to {base}. What comes next?",
+               -1: f"Say the months up to {base}. What came before?",
+               2: f"Say the months up to {base}. Then two more."}[offset]
+    q = _q("month", prompt, hint or default,
            {"kind": "card", "lines": lines, "base": base, "offset": offset},
            {"type": "option", "value": 0}, optionsText=opts[:4])
     return _options(q, "optionsText")
@@ -906,7 +1027,14 @@ def clock(prompt, h, m, form, delta=0, hint=None):
     for w in wrong:
         if w not in opts:
             opts.append(w)
-    q = _q("clock", prompt, hint or "The short hand shows the hour.",
+    if form == "read":
+        default = ("The long hand is on 12. Where is the short hand?" if m == 0
+                   else "The long hand on 6 means half past. Look at the short hand.")
+    elif form == "after":
+        default = f"Start at {time_words(h, m)}. Count on {delta} hours."
+    else:
+        default = f"Start at {time_words(h, m)}. Count back {delta} hours."
+    q = _q("clock", prompt, hint or default,
            {"kind": "clock", "h": h, "m": m, "form": form, "delta": delta, "lines": lines},
            {"type": "option", "value": 0}, optionsText=opts[:4])
     return _options(q, "optionsText")
@@ -926,6 +1054,9 @@ def combos(prompt, name, a, a_noun, b, b_noun, c=None, c_noun=None, hint=None):
         lines = [f"{name} has {a} {a_noun}, {b} {b_noun}, {c} {c_noun}.",
                  f"{_he(name)} picks one of each.", "How many different ways?"]
         ans, mistakes, nums = a * b * c, [a + b + c, a * b, a * b + c], [a, b, c]
-    return _q("combos", prompt, hint or "Take one of the first. How many can go with it?",
+    default = (f"Take one of the {a_noun}. It can go with {b} {b_noun}. Now the rest."
+               if c is None else
+               f"Find the ways for {a_noun} and {b_noun} first. Each goes with {c} {c_noun}.")
+    return _q("combos", prompt, hint or default,
               {"kind": "card", "lines": lines, "nums": nums},
               {"type": "number", "value": ans}, **_numbers(ans, mistakes))

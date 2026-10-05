@@ -58,7 +58,7 @@ S111 = [
    options=[[U, U, R], [U, R, R]]),
 
  q("fix", "Put the steps in order so Nupo gets the star.",
-   "The star is two squares up and one across. Do both UP steps first.",
+   "Find the star. Count the squares up and across to it.",
    order([U, U, R]), visual=g(stars=[(1, 2)], walls=[(1, 0)]),
    blocks=[R, U, U], slots=3),
 ]
@@ -241,8 +241,8 @@ TEACH_BOARDS = {
     "4.1.1": g(4, 4, (0, 0), walls=[(1, 0)], program=[R, U, R]),
     "4.1.2": g(4, 4, (0, 0), walls=[(0, 2)], program=[U, U, U]),
     "4.1.3": g(4, 4, (0, 0), program=[R, U, R, U]),
-    "4.2.1": g(4, 4, (0, 0), vars={"COINS": 0},
-               program=["add:COINS:1", "add:COINS:4", "add:COINS:2"]),
+    "4.2.1": g(4, 4, (0, 0), vars={"STARS": 0},
+               program=["add:STARS:1", "add:STARS:1", "add:STARS:1"]),
     "4.2.2": g(4, 4, (0, 0), vars={"COINS": 4},
                program=["set:COINS:1", "add:COINS:2"]),
     "4.2.3": g(4, 4, (0, 0), vars={"COINS": 0},

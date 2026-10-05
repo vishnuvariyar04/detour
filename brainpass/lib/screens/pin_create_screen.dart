@@ -114,8 +114,8 @@ class _PinCreateScreenState extends State<PinCreateScreen> {
                         duration: const Duration(milliseconds: 200),
                         child: Text(
                           _confirming
-                              ? 'Type it once more'
-                              : 'Create your parent PIN',
+                              ? 'Once more'
+                              : 'Create a parent PIN',
                           key: ValueKey(_confirming),
                           style: AppText.title,
                         ),
@@ -124,7 +124,7 @@ class _PinCreateScreenState extends State<PinCreateScreen> {
                       Text(
                         _confirming
                             ? 'Same four digits.'
-                            : 'Four digits only you know. It opens parent settings.',
+                            : 'Only you can change settings.',
                         textAlign: TextAlign.center,
                         style: AppText.body,
                       ),

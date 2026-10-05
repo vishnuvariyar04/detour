@@ -57,15 +57,15 @@ TITLES = {
     "1.2.3": ("Which position?", "Take away the 1st number, divide by the step, then add 1."),
     "1.2.4": ("The nth term", None),
     "1.3.1": ("Squares and triangles", "Square numbers are 1x1, 2x2, 3x3. Triangle numbers add 1, 2, 3, 4."),
-    "1.3.2": ("Cube numbers", "Cube numbers are 1x1x1, 2x2x2, 3x3x3."),
+    "1.3.2": ("Cubes and big squares", "Cubes are 1x1x1, 2x2x2, 3x3x3. The 12th square is 12x12."),
     "1.3.3": ("The gaps between the gaps", "If the steps keep growing, look at how much they grow by."),
     "1.3.4": ("Squares and cubes", None),
-    "2.1.1": ("What must be true", "If the first part is true, the second part must be true too."),
+    "2.1.1": ("What must be true", "If the first part is true, so is the second. If the second is false, so is the first."),
     "2.1.2": ("When you cannot tell", "A rule only works one way. Do not run it backwards."),
     "2.1.3": ("Truth-tellers and liars", "Pretend they tell the truth. If that cannot work, they are lying."),
     "2.1.4": ("If and then", None),
     "2.2.1": ("Odd and even", "One example that fails means it is not always true."),
-    "2.2.2": ("Multiples", "A multiple of 5 always ends in 5 or 0."),
+    "2.2.2": ("Multiples", "List a few multiples, like 6, 12, 18, and test the claim on each."),
     "2.2.3": ("Square numbers", "A square number is a number times itself, like 3x3 or 4x4."),
     "2.2.4": ("Always, sometimes, never", None),
     "2.3.1": ("Three friends", "Each person has exactly one thing, and no two have the same."),
@@ -80,7 +80,7 @@ TITLES = {
     "3.2.2": ("Wrapping round", "After Z, the alphabet starts again at A."),
     "3.2.3": ("Writing in code", "Find each letter on the top row. Its code is below it."),
     "3.2.4": ("Shift ciphers", None),
-    "3.3.1": ("Symbol keys", "Each symbol always stands for the same letter."),
+    "3.3.1": ("Symbol and number keys", "Each symbol or number always stands for the same letter."),
     "3.3.2": ("The back-to-front alphabet", "A swaps with Z and B swaps with Y. One key codes and decodes."),
     "3.3.3": ("Crack the code", "Compare the example letter by letter to find the rule, then use it."),
     "3.3.4": ("Substitution", None),
@@ -89,11 +89,11 @@ TITLES = {
     "4.1.3": ("Will it fold?", "A net fails if two squares fold onto the same side."),
     "4.1.4": ("Cube nets", None),
     "4.2.1": ("Same shape, turned", "Turning keeps the shape. A mirror image never matches, however you turn it."),
-    "4.2.2": ("Turning a cube", "Follow one face at a time as the cube tips over."),
+    "4.2.2": ("Turning a cube", "Follow one face at a time as it tips. On a dice, opposite faces add to 7."),
     "4.2.3": ("From another side", "From straight on you only see the tallest cube in each line."),
     "4.2.4": ("Rotating in 3D", None),
-    "4.3.1": ("Straight cuts", "Cut a prism straight across and the cut is the same shape as its end."),
-    "4.3.2": ("Cones, pyramids and spheres", "Cut straight across and the cut face matches the base."),
+    "4.3.1": ("Straight cuts", "Straight across, the cut matches the end. Straight down, it matches the side."),
+    "4.3.2": ("Round and pointed solids", "A cut across matches the base, only smaller. Try a cut down through the tip too."),
     "4.3.3": ("Slanted cuts", "Picture the cut face lying flat, then trace round its edge."),
     "4.3.4": ("Cross-sections", None),
 }
@@ -187,7 +187,7 @@ TEACH_PICS = {
                          {"t": "not", "p": "Rohan", "x": "mango"}], "apple"),
     "3.1.1": {"kind": "binary", "values": U.V4, "on": [0, 1, 1, 1], "showSum": True},
     "3.1.2": {"kind": "binary", "values": U.V5, "on": [1, 0, 0, 1, 0], "showSum": True},
-    "3.1.3": {"kind": "binary", "values": U.V4, "on": [0, 1, 1, 1], "after": [1, 0, 0, 0]},
+    "3.1.3": {"kind": "binary", "values": U.V4, "on": [1, 1, 0, 1], "showSum": True},
     "3.2.1": {"kind": "shift", "shift": 2, "word": K.shift_word("DOG", 2), "mode": "decode", "reveal": "DOG"},
     "3.2.2": {"kind": "shift", "shift": 3, "word": K.shift_word("XYZ", 3), "mode": "decode", "reveal": "XYZ"},
     "3.2.3": {"kind": "shift", "shift": 1, "word": "SUN", "mode": "encode", "reveal": K.shift_word("SUN", 1)},
@@ -253,6 +253,28 @@ def balance_slots(questions):
 
 def _drawable(qs):
     return all(q["shape"] in DRAWN_TODAY for q in qs)
+
+
+# What each stop may ask. A question of a kind not listed for its stop practises
+# some other stop's idea, so its teach card would be about something else;
+# rs_simulate.py refuses it, and holds each boss to what its own unit taught.
+STOP_SHAPES = {
+    "1.1.1": {"sequence", "seqRule"}, "1.1.2": {"sequence"}, "1.1.3": {"sequence", "seqRule"},
+    "1.2.1": {"nthTerm"}, "1.2.2": {"nthTerm"}, "1.2.3": {"termPosition"},
+    "1.3.1": {"sequence", "seqRule"}, "1.3.2": {"sequence", "nthTerm"},
+    "1.3.3": {"sequence", "seqRule"},
+    "2.1.1": {"ifThen"}, "2.1.2": {"ifThen"}, "2.1.3": {"knights"},
+    "2.2.1": {"claim"}, "2.2.2": {"claim"}, "2.2.3": {"claim"},
+    "2.3.1": {"deduce"}, "2.3.2": {"deduce"}, "2.3.3": {"deduce"},
+    "3.1.1": {"binaryRead"}, "3.1.2": {"binaryRead"}, "3.1.3": {"binaryPick"},
+    "3.2.1": {"cipher"}, "3.2.2": {"cipher", "cipherWrite"}, "3.2.3": {"cipherWrite"},
+    "3.3.1": {"symbolCode", "letterCode"}, "3.3.2": {"mirrorCode", "mirrorWrite"},
+    "3.3.3": {"crackCode"},
+    "4.1.1": {"netFace"}, "4.1.2": {"netFace"}, "4.1.3": {"netPick"},
+    "4.2.1": {"sameShape"}, "4.2.2": {"cubeTurn", "roll"}, "4.2.3": {"stackView"},
+    "4.3.1": {"sectionShape", "sectionSides"}, "4.3.2": {"sectionShape", "sectionWhich"},
+    "4.3.3": {"sectionShape", "sectionWhich"},
+}
 
 
 def build():

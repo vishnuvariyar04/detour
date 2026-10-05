@@ -13,7 +13,7 @@ App: `app.nupo.kid` · Target audience: **includes children (5–11)**
 - **Does your app collect or share any of the required user data types?** → **Yes**
 - **Is all of the user data collected by your app encrypted in transit?** → **Yes**
 - **Do you provide a way for users to request that their data be deleted?**
-  → **Yes** (in-app: Settings → Account → Delete account; plus the deletion URL)
+  → **Yes** (in-app: Parent tab → Account → Delete account; plus the deletion URL https://www.nupo.app/data-deletion)
 
 ---
 
@@ -39,6 +39,20 @@ App: `app.nupo.kid` · Target audience: **includes children (5–11)**
   that account and is deleted with it.
 - The parent's own display name from their Google account is also stored.
 
+### Personal info → User IDs
+- Collected: **Yes** · Shared: **No**
+- Required: **Required**
+- Purposes: **App functionality**, **Analytics**, **Account management**
+- The parent account's Firebase UID: the account key in Firestore, the
+  RevenueCat app user id (so a subscription follows the account), and the id
+  analytics events are joined to (Firebase `setUserId`, PostHog `identify`).
+
+### Personal info → Other info
+- Collected: **Yes** · Shared: **No** · Required: **Required**
+- Purposes: **App functionality**
+- The child's AGE in years and age band, picked by the parent and saved to
+  the account so the right lessons are chosen and a reinstall restores them.
+
 ### App activity → Other user-generated content
 - Collected: **Yes** · Shared: **No**
 - Purposes: **App functionality**
@@ -54,7 +68,8 @@ App: `app.nupo.kid` · Target audience: **includes children (5–11)**
   Fraud prevention either: `login_failed` exists to catch a BROKEN sign-in, not
   a fraudulent one, and the purpose must match the actual use.
 - Ephemeral: **No.** Events are uploaded to Google and retained (the GA4
-  property is set to 14 months).
+  property is set to 14 months), and to PostHog Cloud EU (retention per the
+  PostHog plan).
 - Required or optional: **Required.** `Analytics.init()` enables collection
   unconditionally and there is no opt-out in parent settings. If an opt-out is
   ever added (a switch calling `setAnalyticsCollectionEnabled(false)`), change
@@ -66,9 +81,21 @@ App: `app.nupo.kid` · Target audience: **includes children (5–11)**
   as `invalid-credential`, never the email or the message shown), and — from
   the native guard — that a lesson was shown, earned, or skipped by parent PIN,
   plus a once-a-day active marker.
+- **PostHog (Cloud EU, Frankfurt) was added alongside Firebase in October
+  2026.** The
+  same events go to both, plus learning metrics from the gate: per question
+  the skill, stop id (e.g. "2.1.3"), question KIND, right/wrong, hint opened,
+  and seconds taken; teach card shown; lesson session finished; stop reached.
+  Plus parent-home events (settings opened, protection toggled, sign-out,
+  account deleted). PostHog attaches device model, OS version, app version,
+  locale and the client IP (GeoIP). Turn on "Discard client IP data" in the
+  PostHog project settings to drop the IP after geolocation.
 - **No child answers, no question text, no names, and no free text** typed by
-  a parent are ever sent. Only age BAND, chosen subject, and counts.
-- Identifier: the Firebase **app instance ID** only. The advertising ID (AAID)
+  a parent are ever sent. Only age BAND, chosen subject, ids, counts and
+  right/wrong.
+- Identifier: the Firebase **app instance ID**, and PostHog's random
+  anonymous id, which is joined to the account's Firebase UID once the parent
+  signs in (the same UID Firebase Analytics already gets via `setUserId`). The advertising ID (AAID)
   is stripped from the manifest, `google_analytics_ssaid_collection_enabled` is
   false, and ad personalisation / ad user data are both disabled — see the
   `google_analytics_*` meta-data in `AndroidManifest.xml`. Those flags are what
@@ -77,9 +104,11 @@ App: `app.nupo.kid` · Target audience: **includes children (5–11)**
 - The full event list, with the reason each one exists, is `lib/analytics.dart`
   and `android/.../Analytics.kt`. Adding an event means revisiting this file
   and `PRIVACY_POLICY.md`.
-- This form covers the ANDROID app only. iOS also uses PostHog (US region, no
-  session replay, no autocapture) — that belongs in App Store Connect's privacy
-  questionnaire and in `PRIVACY_POLICY.md`, not here.
+- This form covers the ANDROID app only, which sends PostHog events to
+  PostHog Cloud EU (PostHog, Inc. as a processor, so "Shared" stays **No**).
+  iOS uses PostHog
+  Cloud EU project (no session replay, no autocapture) — that belongs in App
+  Store Connect's privacy questionnaire and in `PRIVACY_POLICY.md`, not here.
 
 ### Financial info → Purchase history
 - Collected: **Yes** · Shared: **No**
@@ -106,9 +135,9 @@ App: `app.nupo.kid` · Target audience: **includes children (5–11)**
   (changed 2026-08-25 with Google Sign-In and saved-setup restore)
 - Contacts, Calendar, SMS/Call logs — **No**
 - Photos / videos / audio / files — **No**
-- **Child's learning data** (questions shown, answers, accuracy, streaks) —
-  **No.** It is computed and stored **on-device only** and never transmitted,
-  so it is not "collected" under Play's definition.
+- **Child's answers and question text** — **No.** They stay on-device.
+  What IS sent is per-question right/wrong, hint opened and seconds taken —
+  declared above under **App activity → App interactions** (Analytics).
 - Web browsing history, installed-apps list — **No** (the gated-app list stays
   on-device; only a *count* is sent, which is not a listed data type).
 
@@ -120,21 +149,22 @@ App: `app.nupo.kid` · Target audience: **includes children (5–11)**
   keep this **consistent with the no-AAID technical config** (they must agree,
   or you get flagged).
 - **Ads:** **No, my app does not contain ads.**
-- **Privacy policy URL:** _<host PRIVACY_POLICY.md and paste the URL>_
-- **Account deletion URL:** _<host DATA_DELETION.md and paste the URL>_
+- **Privacy policy URL:** https://www.nupo.app/privacy
+- **Account deletion URL:** https://www.nupo.app/data-deletion
 - **Financial features / Play Billing:** declare subscriptions.
 
 ---
 
 ## Sanity cross-check before submitting
 
-- [ ] Email address = the only Personal info; purposes Account mgmt + App func.
+- [ ] Personal info = Email address, Name, User IDs, Other info (age).
 - [ ] Purchase history = Yes (Play Billing).
 - [ ] Device or other IDs = **No** (AD_ID removed; no hardware IDs read; the
       Firebase app instance ID is not a "Device or other ID" for this form).
 - [ ] Nothing ticked for location, contacts, messages, photos, child answers.
 - [ ] Encryption in transit = Yes; Deletion available = Yes + URL.
-- [ ] App interactions = **Yes** (Firebase Analytics, added after 1.2.0),
+- [ ] App interactions = **Yes** (Firebase Analytics, added after 1.2.0, and
+      PostHog Cloud EU, added October 2026),
       purpose **Analytics only**, ephemeral **No**, collection **required**.
 - [ ] Advertising or marketing purpose left UNTICKED everywhere — it would
       contradict the stripped AD_ID and the Families declaration.

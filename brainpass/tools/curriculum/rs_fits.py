@@ -192,17 +192,31 @@ def check_pic(qid, q):
 
 
 def wrap_rows(lines):
-    rows = 0
-    for line in lines:
+    """Rows the clue card (Draw.clueCard, Oct 2026) wraps [lines] to.
+
+    Mirrors the Kotlin layout: two or more clues get a 22dp number badge and a
+    10dp gap; a closing question is its own row at weight 900 beside a "?"
+    badge; and 18dp is held back on every row so the number pills fit.
+    """
+    lines = [str(l) for l in lines]
+    ask = lines[-1] if len(lines) >= 2 and lines[-1].strip().endswith("?") else None
+    facts = lines[:-1] if ask is not None else lines
+    badge = 32 if len(facts) >= 2 else 0
+
+    def rows_of(line, room, weight):
         cur, n = "", 1
-        for w in str(line).split(" "):
+        for w in line.split(" "):
             t = (cur + " " + w) if cur else w
-            if width(t, 15, 700) > BODY - 28 and cur:
+            if width(t, 15, weight) > room and cur:
                 n += 1
                 cur = w
             else:
                 cur = t
-        rows += n
+        return n
+
+    rows = sum(rows_of(l, BODY - 28 - badge - 18, 700) for l in facts)
+    if ask is not None:
+        rows += rows_of(ask, BODY - 28 - 32 - 18, 900)
     return rows
 
 

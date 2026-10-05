@@ -17,6 +17,7 @@ import '../safe_apps.dart';
 import '../storage.dart';
 import '../theme.dart';
 import '../widgets.dart';
+import 'onboarding/onb_kit.dart';
 
 class AppPickerScreen extends StatefulWidget {
   final VoidCallback onNext;
@@ -99,15 +100,9 @@ class _AppPickerScreenState extends State<AppPickerScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Where should lessons appear?',
-                          style: AppText.title),
-                      const SizedBox(height: 8),
-                      Text(
-                        'A short lesson runs before each of these opens for '
-                        'your kid.',
-                        style: AppText.body,
-                      ),
-                      const SizedBox(height: 20),
+                      const Text('Where should lessons appear?',
+                          style: OnbText.titleSm),
+                      const SizedBox(height: 18),
 
                       // Preset apps
                       Container(
@@ -216,16 +211,21 @@ class _AppPickerScreenState extends State<AppPickerScreen> {
                 padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
                 child: Column(
                   children: [
-                    PrimaryButton(
+                    ChunkyButton(
                       label: _selected.isEmpty
                           ? 'Pick at least one app'
                           : 'Continue',
                       onPressed: _selected.isEmpty ? null : _save,
                     ),
-                    const SizedBox(height: 12),
-                    InfoPill(
-                      icon: Symbols.call_rounded,
-                      text: 'Phone, messages and clock always stay open.',
+                    const SizedBox(height: 10),
+                    const Text(
+                      'Calls, messages and the clock always stay open.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textMuted,
+                      ),
                     ),
                   ],
                 ),

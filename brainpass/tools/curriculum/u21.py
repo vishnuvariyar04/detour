@@ -133,7 +133,7 @@ S213 = [
    visual=_c5, options=[rep(3, [R, U]), rep(2, [R, U]), rep(3, [U, U])]),
 
  q("count", "How many moves does this loop make? Tap the number.",
-   "One step inside, four times round.",
+   "Count the steps inside. Then count how many times it runs.",
    moves_made(_c1), visual=_c1, kind="moves"),
 ]
 

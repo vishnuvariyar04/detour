@@ -148,10 +148,10 @@ S123 = [
 S124 = [
     nth_term(P_NTH(100), 7, 4, 5, 100),
     term_position(P_POS(206), 3, 7, 5, 30),
-    sequence(P_NEXT, arith(17, 19, 6), 5),
+    nth_term(P_NTH(35), 9, 13, 5, 35),
     nth_term(P_NTH(50), -20, 6, 5, 50),
     term_position(P_POS(25), 100, -3, 5, 26),
-    sequence(P_MISS, arith(9, 13, 6), 2),
+    term_position(P_POS(200), 2, 11, 5, 19),
 ]
 
 # ---- 1.3 Squares, cubes, second differences --------------------------------
@@ -177,7 +177,7 @@ S132 = [
     nth_poly(P_NTH(12), sq, 5, 12, [121, 169, 24, 132]),
     nth_poly(P_NTH(10), cube, 5, 10, [729, 1331, 30, 100]),
     nth_poly(P_NTH(15), sq, 5, 15, [196, 256, 30, 215]),
-    nth_poly(P_NTH(20), tri, 5, 20, [190, 231, 40, 200]),
+    nth_poly(P_NTH(8), cube, 5, 8, [343, 729, 24, 64]),
 ]
 
 # The gaps between the gaps are constant. Not one of these is an adding or a
@@ -201,7 +201,7 @@ S134 = [
     nth_poly(P_NTH(25), sq, 5, 25, [576, 676, 50, 600]),
     sequence(P_MISS, by_position(tri, 7, start=6), 4),
     sequence(P_NEXT, grow(10, 5, 4, 6), 5),
-    nth_term(P_NTH(100), 15, -2, 5, 100),
+    sequence(P_MISS, by_position(cube, 6, start=3), 2),
     seq_rule(P_RULE, by_position(cube, 5),
              [{"t": "cube", "b": 0}, {"t": "mul", "k": 8}, {"t": "add", "k": 7},
               {"t": "grow", "step": 7, "inc": 12}]),
@@ -262,10 +262,12 @@ S214 = [
             [("star", True)], "shiny"),
     if_then(P_IF, [("big", True, "spots", True), ("spots", True, "purple", True)],
             [("purple", True)], "big"),
-    claim(P_CLAIM, {"a": "odd", "op": "plus", "b": "odd", "is": "even"}),
+    knights(P_KK("Om"), ["Mia", "Om"],
+            [("Mia", ("is", "Om", "liar")), ("Om", ("one_liar",))], "Om"),
     knights(P_KK("Anu"), ["Rohan", "Anu"],
             [("Rohan", ("one_liar",)), ("Anu", ("is", "Rohan", "liar"))], "Anu"),
-    claim(P_CLAIM, {"a": "even", "op": "is", "is": "m4"}),
+    if_then(P_IF, [("stripe", True, "big", False), ("big", False, "purple", True)],
+            [("stripe", True)], "purple"),
 ]
 
 # ---- 2.2 Always, sometimes, never ------------------------------------------
@@ -305,11 +307,10 @@ S223 = [
 S224 = [
     claim(P_CLAIM, {"a": "m3", "op": "times", "b": "m4", "is": "m6"}),
     claim(P_CLAIM, {"a": "odd", "op": "plus", "b": "odd", "is": "m4"}),
-    if_then(P_IF, [("spots", True, "big", True), ("big", True, "shiny", True)],
-            [("shiny", True)], "spots"),
+    claim(P_CLAIM, {"a": "m3", "op": "plus", "b": "m6", "is": "m3"}),
     claim(P_CLAIM, {"a": "m6", "op": "plus", "b": "odd", "is": "even"}),
     claim(P_CLAIM, {"a": "m5", "op": "times", "b": "even", "is": "m10"}),
-    if_then(P_IF, [("purple", True, "stripe", True)], [("stripe", False)], "purple"),
+    claim(P_CLAIM, {"a": "odd", "op": "times", "b": "m5", "is": "m10"}),
 ]
 
 # ---- 2.3 Who has what ------------------------------------------------------
@@ -375,7 +376,9 @@ S233 = [
     deduce(P_WHAT("Dev"), ["Priya", "Dev", "Isha"], ["mango", "apple", "banana"], "",
            [{"t": "neither", "ps": ["Priya", "Dev"], "x": "apple"},
             {"t": "not", "p": "Dev", "x": "mango"}], what="Dev"),
-    claim(P_CLAIM, {"a": "m4", "op": "plus", "b": "m4", "is": "m4"}),
+    deduce(P_WHAT("Meera"), ["Meera", "Joy", "Sam"], ["cat", "dog", "bird"], "",
+           [{"t": "not", "p": "Joy", "x": "cat"}, {"t": "not", "p": "Joy", "x": "dog"},
+            {"t": "not", "p": "Meera", "x": "cat"}], what="Meera"),
     deduce(P_WHAT("Rohan"), ["Rohan", "Tara", "Imran"], ["red", "blue", "green"], "bag",
            [{"t": "either", "ps": ["Rohan", "Tara"], "x": "green"},
             {"t": "not", "p": "Rohan", "x": "green"}, {"t": "not", "p": "Imran", "x": "red"}],
@@ -383,8 +386,10 @@ S233 = [
     deduce(P_WHAT("Anu"), ["Neha", "Sam", "Anu"], ["cat", "dog", "bird"], "",
            [{"t": "neither", "ps": ["Neha", "Anu"], "x": "bird"},
             {"t": "not", "p": "Anu", "x": "cat"}], what="Anu"),
-    if_then(P_IF, [("big", True, "star", False), ("star", False, "shiny", True)],
-            [("big", True)], "shiny"),
+    deduce(P_WHAT("Isha"), ["Arjun", "Isha", "Tara"], ["drum", "flute", "guitar"], "",
+           [{"t": "either", "ps": ["Arjun", "Tara"], "x": "guitar"},
+            {"t": "not", "p": "Tara", "x": "guitar"}, {"t": "not", "p": "Isha", "x": "drum"}],
+           what="Isha"),
 ]
 
 # Four friends and four things: 24 arrangements, so the clues have to be chained.
@@ -400,15 +405,22 @@ S234 = [
            [{"t": "has", "p": "Priya", "x": "piano"},
             {"t": "neither", "ps": ["Dev", "Isha"], "x": "drum"},
             {"t": "not", "p": "Isha", "x": "flute"}], what="Dev"),
-    claim(P_CLAIM, {"a": "m5", "op": "plus", "b": "m10", "is": "m10"}),
+    deduce(P_WHO("dog"), ["Ravi", "Zoya", "Dev", "Neha"], ["cat", "dog", "fish", "bird"], "",
+           [{"t": "has", "p": "Zoya", "x": "fish"},
+            {"t": "neither", "ps": ["Ravi", "Dev"], "x": "bird"},
+            {"t": "not", "p": "Ravi", "x": "cat"}], who="dog"),
     deduce(P_WHO("green bag"), ["Rohan", "Tara", "Imran", "Neha"],
            ["red", "blue", "green", "yellow"], "bag",
            [{"t": "not", "p": "Rohan", "x": "red"},
             {"t": "not", "p": "Rohan", "x": "green"},
             {"t": "either", "ps": ["Rohan", "Tara"], "x": "red"},
             {"t": "neither", "ps": ["Rohan", "Imran"], "x": "yellow"}], who="green"),
-    if_then(P_IF, [("spots", False, "purple", True), ("purple", True, "big", False)],
-            [("big", True)], "spots"),
+    deduce(P_WHAT("Kabir"), ["Kabir", "Asha", "Om", "Tara"],
+           ["red", "blue", "green", "yellow"], "bag",
+           [{"t": "either", "ps": ["Asha", "Om"], "x": "red"},
+            {"t": "not", "p": "Om", "x": "red"},
+            {"t": "neither", "ps": ["Kabir", "Tara"], "x": "blue"},
+            {"t": "not", "p": "Tara", "x": "yellow"}], what="Kabir"),
     deduce(P_WHAT("Joy"), ["Sam", "Anu", "Joy", "Arjun"],
            ["mango", "apple", "banana", "grapes"], "",
            [{"t": "neither", "ps": ["Sam", "Anu"], "x": "grapes"},
@@ -446,7 +458,7 @@ S311 = [
     binary_read(P_BULBS, V4, [1, 0, 0, 1]),
     binary_read(P_BULBS, V4, [0, 1, 0, 1]),
     binary_read(P_BULBS, V4, [1, 1, 1, 0]),
-    binary_pick(P_SHOW(10), V4, 10),
+    binary_read(P_BULBS, V4, [1, 0, 1, 0]),
 ]
 
 S312 = [
@@ -455,8 +467,8 @@ S312 = [
     binary_read(P_BULBS, V5, [0, 1, 1, 1, 1]),
     binary_read(P_BULBS, V6, [1, 0, 1, 0, 1, 1]),
     binary_read(P_BULBS, V6, [1, 1, 0, 1, 0, 0]),
-    binary_pick(P_SHOW(19), V5, 19),
-    binary_pick(P_SHOW(37), V6, 37),
+    binary_read(P_BULBS, V5, [1, 0, 0, 1, 1]),
+    binary_read(P_BULBS, V6, [1, 0, 0, 1, 0, 1]),
 ]
 
 # One more than the number shown. Most of these carry, which is where binary
@@ -467,8 +479,8 @@ S313 = [
     binary_pick(P_MORE, V5, 11, show=True, plus=1),
     binary_pick(P_MORE, V5, 23, show=True, plus=1),
     binary_pick(P_MORE, V6, 31, show=True, plus=1),
-    binary_read(P_BULBS, V6, [1, 0, 0, 1, 1, 0]),
-    binary_read(P_BULBS, V5, [1, 1, 1, 1, 1]),
+    binary_pick(P_SHOW(21), V5, 21),
+    binary_pick(P_SHOW(9), V4, 9),
 ]
 
 S314 = [
@@ -491,7 +503,7 @@ S321 = [
     cipher_decode(P_DECODE, "PEN", 1),
     cipher_decode(P_DECODE, "BOX", 2),
     cipher_decode(P_DECODE, "FIG", 3),
-    cipher_encode(P_ENCODE, "HAT", 1),
+    cipher_decode(P_DECODE, "JAM", 2),
 ]
 
 # Letters near the end of the alphabet, so the code wraps past Z back to A.
@@ -511,8 +523,8 @@ S323 = [
     cipher_encode(P_ENCODE, "STAR", 4),
     cipher_encode(P_ENCODE, "MOON", 1),
     cipher_encode(P_ENCODE, "SNOW", 5),
-    cipher_decode(P_DECODE, "MANGO", 2),
-    cipher_decode(P_DECODE, "ZEBRA", 3),
+    cipher_encode(P_ENCODE, "LAMP", 2),
+    cipher_encode(P_ENCODE, "BIRD", 3),
 ]
 
 S324 = [
@@ -668,7 +680,7 @@ S411 = [
     net_q(turn(NETS[4], 3), 3, True),
     net_q(NETS[9], 4, True),
     net_q(turn(NETS[10], 2), 5, True),
-    net_pick(P_FOLDS, [NETS[0]], [FAKES[1], FAKES[5], FAKES[8]]),
+    net_q(NETS[3], 0, True),
 ]
 
 S412 = [
@@ -678,7 +690,7 @@ S412 = [
     net_q(turn(NETS[6], 3), 2, False),
     net_q(NETS[7], 3, False),
     net_q(turn(NETS[8], 1), 4, False),
-    net_pick(P_FOLDS, [turn(NETS[7], 1)], [FAKES[4], FAKES[9], turn(FAKES[11], 1)]),
+    net_q(NETS[2], 5, False),
 ]
 
 S413 = [
@@ -697,7 +709,7 @@ S414 = [
     net_q(turn(NETS[7], 3), 6, False),
     net_pick(P_FOLDS, [turn(NETS[9], 1)], [FAKES[2], turn(FAKES[4], 1), FAKES[0]]),
     net_q(NETS[6], 7, False),
-    dice(P_ROLL, 1, 2, 3, ["right", "down"], 4, 3, [0, 0]),
+    net_q(turn(NETS[4], 1), 2, True),
 ]
 
 # ---- stacks used by 4.2's views ---------------------------------------------
@@ -752,9 +764,9 @@ S423 = [
     stack_view(P_RIGHT, H[4], "right"),
     stack_view(P_RIGHT, H[6], "right"),
     stack_view(P_FRONT, H[9], "front"),
-    stack_count(P_COUNT, H[1]),
-    stack_count(P_COUNT, H[5]),
-    polycube_pick(P_SAME, PC5[15], [PC5[16], PC5[11], PC5[19]], "h"),
+    stack_view(P_FRONT, H[10], "front"),
+    stack_view(P_RIGHT, H[13], "right"),
+    stack_view(P_FRONT, H[14], "front"),
 ]
 
 S424 = [
@@ -775,7 +787,7 @@ S424 = [
 S431 = [
     section_shape(P_CUT, "cube", "across"),
     section_shape(P_CUT, "cuboid", "short"),
-    section_shape(P_CUT, "cylinder", "across"),
+    section_sides(P_SIDES, "cube", "down"),
     section_shape(P_CUT, "cylinder", "down"),
     section_shape(P_CUT, "triprism", "across"),
     section_shape(P_CUT, "hexprism", "down"),
@@ -790,7 +802,7 @@ S432 = [
     section_shape(P_CUT, "sphere", "across"),
     section_which(P_WHICH("triangle"), "triangle",
                   [("cone", "down"), ("cylinder", "down"), ("sphere", "across"), ("cuboid", "across")]),
-    section_sides(P_SIDES, "cube", "down"),
+    section_shape(P_CUT, "cylinder", "across"),
 ]
 
 S433 = [

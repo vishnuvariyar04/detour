@@ -5,7 +5,7 @@ number available was Play Console's **installed audience** — how many devices
 currently have Nupo — which says nothing about what those people did.
 
 **This guide is the ANDROID app.** iOS runs its own analytics — Firebase
-Analytics plus PostHog (US region, manual events only, no session replay or
+Analytics plus PostHog (Cloud EU, the same project as Android, manual events only, no session replay or
 autocapture) — wired separately in the iOS project. The two do not share event
 names, so do not assume a funnel built here reads the same there.
 
@@ -13,6 +13,55 @@ Two files define everything: `lib/analytics.dart` (parent app) and
 `android/app/src/main/kotlin/com/brainpass/brainpass/Analytics.kt` (the kid's
 lock). Each event has a comment saying why it exists. **Read those before
 adding anything**, and see "Rules" at the bottom.
+
+---
+
+## PostHog (Cloud EU), alongside Firebase — added October 2026
+
+Every event in both files goes to Firebase AND to PostHog Cloud EU
+(`eu.i.posthog.com`, data stored in Frankfurt). One
+SDK instance serves both sides: `PostHogInit.kt` (a ContentProvider) starts it
+at process start, the guard logs through `Analytics.kt`, and the parent app
+logs through `posthog_flutter`, whose own AUTO_INIT is off. So the kid's
+`question_answered` and the parent's `setup_complete` land on the same person,
+joined to the Firebase UID at sign-in (`identify`), and `reset()` on sign-out.
+
+**Setup:** copy `android/posthog.properties.example` to
+`android/posthog.properties` (gitignored) and fill in `projectToken` from the
+EU project, or set `POSTHOG_PROJECT_TOKEN` for CI. The host is fixed in
+`app/build.gradle.kts`. With no token, PostHog stays off and the build still
+works on Firebase alone.
+In the PostHog project settings, turn on **Discard client IP data**.
+
+**Off, deliberately (child audience):** session replay, autocapture, native
+screen views, deep links, feature flags. **On:** Application Opened /
+Installed / Updated / Backgrounded lifecycle events.
+
+Every event carries `surface`: `parent_app` (Flutter) or `kid_gate` (native).
+Parent screens arrive as `$screen` (`story`, `login`, `onboarding/<step>`,
+`permission/<name>`, `paywall`, `home`, `home/<tab>`, `settings/<what>`).
+Person properties (`age_band`, `subject`, `apps_gated`, `perm_*`,
+`signin_method`, …) arrive via `$set`.
+
+Events only PostHog-era code sends (also to Firebase):
+
+| Event | From | Properties |
+|---|---|---|
+| `teach_shown` | gate | skill, stop |
+| `question_answered` | gate | skill, stop, shape, boss, correct, hint_used, review, seconds |
+| `hint_opened` | gate | skill, stop, shape |
+| `stop_reached` | gate | skill, stop, position |
+| `lesson_session_done` | gate | skill, asked, correct |
+| `home_tab` | parent | tab |
+| `pin_unlock` | parent | ok |
+| `protection_toggled` | parent | on |
+| `settings_opened` | parent | what |
+| `signed_out`, `account_deleted` | parent | — |
+
+Useful first insights: `question_answered` correct rate broken down by `stop`
+(a lesson that teaches badly), `hint_opened` / `question_answered` by `shape`,
+the funnel `story_shown → login_success → setup_complete → kid_active_day`,
+and retention on `kid_active_day`.
 
 ---
 
@@ -90,7 +139,7 @@ biggest percentage drop between two adjacent rows is what to fix next.
 | 7 | `login_shown` | Reached the **mandatory** sign-in gate |
 | 8 | `login_attempt` | Tapped Google or submitted email |
 | 9 | `login_success` | Got an account |
-| 10 | `onb_step` × 11 | The 7 questions + picker, rules, PIN, permissions intro |
+| 10 | `onb_step` × 9 | Name, buddy, course, how it teaches, path, picker, the trade, PIN, permissions intro |
 | 11 | `permission_shown` / `_granted` | Per permission: overlay, usage, battery, autostart |
 | 12 | `setup_complete` | **Activation.** The engine has rules and is gating |
 | 13 | `paywall_shown` → `purchase_completed` | Money — dormant while Android is free |
@@ -102,7 +151,13 @@ to off. The events are wired and will start reporting the day you turn it on.
 To build it: **Explore → Funnel exploration**, add each event as a step. For
 step 10 use one step per `step_name` value (`child_name`, `child_age`, ...) —
 they are parameter values on a single `onb_step` event, so the funnel does not
-burn eleven event names.
+burn nine event names. Since the course-first onboarding (Oct 2026) the steps
+are `child_name`, `owl_name`, `course`, `how_it_teaches`, `roadmap`,
+`app_picker`, `app_rules`, `pin`, `permissions_intro`. The child's age moved
+into the story before sign-in, so `child_age` is no longer sent; earlier builds
+sent the older eleven-step list (`child_age`, `subject`, `month_plan`,
+`projection`, `why_it_works`, …). `story_answered` still fires when the demo
+question is solved — it is now a real lesson from the parent's chosen age.
 
 ### The two places people actually die
 

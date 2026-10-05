@@ -31,6 +31,16 @@
 // GuardService), not from here. Retention read only from this file would be
 // retention of the parent settings screen, which nobody opens twice.
 //
+// ## PostHog (Cloud EU), alongside Firebase
+//
+// Every event, user property and identity call below also goes to PostHog.
+// PostHog is started NATIVELY (PostHogInit.kt, at process start) so the guard
+// and this app share one SDK instance and one distinct id: the kid-side events
+// from Analytics.kt land on the same person as the parent's setup funnel.
+// posthog_flutter here only forwards to that instance. With no PostHog token in
+// the build the native SDK never starts and these calls do nothing.
+// Session replay and autocapture are OFF (see Analytics.kt).
+//
 // ## Fail-safe
 //
 // Every call swallows its errors and returns void. Analytics must never break
@@ -38,6 +48,7 @@
 
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/foundation.dart';
+import 'package:posthog_flutter/posthog_flutter.dart';
 
 class Analytics {
   static FirebaseAnalytics? _fa;
@@ -55,6 +66,14 @@ class Analytics {
   static Future<void> _log(String name, [Map<String, Object?>? params]) async {
     final fa = _fa;
     if (kDebugMode) debugPrint('[analytics] $name ${params ?? ''}');
+    try {
+      await Posthog().capture(eventName: name, properties: {
+        'surface': 'parent_app',
+        if (params != null)
+          for (final e in params.entries)
+            if (e.value != null) e.key: e.value as Object,
+      });
+    } catch (_) {}
     if (fa == null) return;
     try {
       await fa.logEvent(
@@ -78,6 +97,14 @@ class Analytics {
   }
 
   static Future<void> _prop(String name, String? value) async {
+    try {
+      if (value != null) {
+        await Posthog().capture(
+          eventName: '\$set',
+          userProperties: {name: value},
+        );
+      }
+    } catch (_) {}
     final fa = _fa;
     if (fa == null) return;
     try {
@@ -90,6 +117,14 @@ class Analytics {
   // -------------------------------------------------------------------------
 
   static Future<void> setUser(String? uid, {String? method}) async {
+    try {
+      if (uid == null) {
+        // Signed out: the next parent on this phone starts a fresh person.
+        await Posthog().reset();
+      } else {
+        await Posthog().identify(userId: uid);
+      }
+    } catch (_) {}
     final fa = _fa;
     if (fa != null) {
       try {
@@ -119,13 +154,24 @@ class Analytics {
   static Future<void> setPermissionProp(String permission, bool granted) =>
       _prop('perm_$permission', granted ? 'yes' : 'no');
 
+  /// A screen view in PostHog (Firebase logs its own screen_view). Names are
+  /// fixed strings from this file, never anything the parent typed.
+  static Future<void> _screen(String name) async {
+    try {
+      await Posthog().screen(screenName: name);
+    } catch (_) {}
+  }
+
   // -------------------------------------------------------------------------
-  // 1 · The scroll story (`story_screen.dart`) — the pitch, before login.
+  // 1 · The tapped story (`story_flow.dart`) — the pitch, before login.
   // -------------------------------------------------------------------------
 
   /// The story screen painted. The gap between `first_open` (automatic) and
   /// this is install-to-open drop.
-  static Future<void> storyShown() => _log('story_shown');
+  static Future<void> storyShown() {
+    _screen('story');
+    return _log('story_shown');
+  }
 
   /// "Get started" tapped — the parent is actually scrolling.
   static Future<void> storyStarted() => _log('story_started');
@@ -151,7 +197,10 @@ class Analytics {
   //     most important block in the file.
   // -------------------------------------------------------------------------
 
-  static Future<void> loginShown() => _log('login_shown');
+  static Future<void> loginShown() {
+    _screen('login');
+    return _log('login_shown');
+  }
 
   /// [method] is 'google' | 'email' | 'email_create' | 'password_reset'.
   static Future<void> loginAttempt(String method) =>
@@ -179,12 +228,10 @@ class Analytics {
   /// `onboarding_flow.dart`; the index IS the funnel order.
   static const onbSteps = <String>[
     'child_name',
-    'child_age',
-    'subject',
     'owl_name',
-    'month_plan',
-    'projection',
-    'why_it_works',
+    'course',
+    'how_it_teaches',
+    'roadmap',
     'app_picker',
     'app_rules',
     'pin',
@@ -193,8 +240,10 @@ class Analytics {
 
   /// A setup step was shown. [index] is its position in the whole flow so the
   /// funnel keeps its order even though the permission steps vary by OEM.
-  static Future<void> onbStep(int index, String name) =>
-      _log('onb_step', {'step_index': index, 'step_name': name});
+  static Future<void> onbStep(int index, String name) {
+    _screen('onboarding/$name');
+    return _log('onb_step', {'step_index': index, 'step_name': name});
+  }
 
   /// The app picker: how many apps were actually ticked. Zero means the gate
   /// can never fire and the product does nothing.
@@ -207,8 +256,10 @@ class Analytics {
   // -------------------------------------------------------------------------
 
   /// [permission] is 'overlay' | 'usage' | 'battery' | 'autostart'.
-  static Future<void> permissionShown(String permission) =>
-      _log('permission_shown', {'permission': permission});
+  static Future<void> permissionShown(String permission) {
+    _screen('permission/$permission');
+    return _log('permission_shown', {'permission': permission});
+  }
 
   /// They tapped the button that sends them to the system screen. A big gap
   /// between this and [permissionGranted] means they got lost in Settings.
@@ -242,12 +293,46 @@ class Analytics {
   /// A returning parent whose saved setup was pulled back down on sign-in.
   static Future<void> setupRestored() => _log('setup_restored');
 
-  static Future<void> paywallShown() => _log('paywall_shown');
+  static Future<void> paywallShown() {
+    _screen('paywall');
+    return _log('paywall_shown');
+  }
   static Future<void> purchaseCompleted() => _log('purchase_completed');
   static Future<void> restoreCompleted() => _log('restore_completed');
 
   /// The post-setup landing. [enabled] false means a parent who turned the
   /// whole thing off — churn about to happen.
-  static Future<void> homeShown(bool enabled) =>
-      _log('home_shown', {'enabled': enabled});
+  static Future<void> homeShown(bool enabled) {
+    _screen('home');
+    return _log('home_shown', {'enabled': enabled});
+  }
+
+  // -------------------------------------------------------------------------
+  // 6 · Coming back: the parent home (`home_shell.dart`,
+  //     `parent_home_screen.dart`). What a parent returns to change is what the
+  //     setup flow got wrong.
+  // -------------------------------------------------------------------------
+
+  /// [tab] is 'roadmap' (the child's journey) or 'parent' (settings).
+  static Future<void> homeTab(String tab) {
+    _screen('home/$tab');
+    return _log('home_tab', {'tab': tab});
+  }
+
+  /// The PIN screen in front of the parent tab. [ok] false is a cancel.
+  static Future<void> pinUnlock(bool ok) => _log('pin_unlock', {'ok': ok});
+
+  /// The master switch. Turning it off is churn about to happen.
+  static Future<void> protectionToggled(bool on) =>
+      _log('protection_toggled', {'on': on});
+
+  /// A settings row opened. [what] is 'apps' | 'app_rules' | 'age' |
+  /// 'permissions' | 'permission_alert' | 'pin' | 'subscription'.
+  static Future<void> settingsOpened(String what) {
+    _screen('settings/$what');
+    return _log('settings_opened', {'what': what});
+  }
+
+  static Future<void> signedOut() => _log('signed_out');
+  static Future<void> accountDeleted() => _log('account_deleted');
 }

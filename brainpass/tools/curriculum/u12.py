@@ -40,7 +40,7 @@ S121 = [
    visual=_b1, options=[[R, R], [U, R, R, D], [R, U, R, D]]),
 
  q("fix", "Put the steps in order to get round the wall.",
-   "Go up first, then across, then back down.",
+   "The wall is in the straight way. Go over it, then back down.",
    route(_b3, [R, U, R, R, D]), visual=_b3,
    blocks=[R, U, R, R, D], slots=5),
 

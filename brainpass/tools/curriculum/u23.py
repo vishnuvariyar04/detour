@@ -65,7 +65,7 @@ _b2 = g(7, 7, (0, 0), goal=(3, 3))
 
 S232 = [
  q("count", "How many times does the UP row run altogether? Tap the number.",
-   "Three lots of four.",
+   "Outside count times inside count.",
    num(12), visual=_b0, kind="stated"),
 
  q("count", "How many moves does this one make? Tap the number.",
@@ -91,7 +91,7 @@ S232 = [
    options=[rep(2, rep(3, [U])), rep(3, rep(2, [U]))]),
 
  q("predict", "Outside 2, inside 3, UP inside. Tap where he ends.",
-   "Six ups altogether.",
+   "Outside count times inside count. How many ups is that?",
    ends(_b5), visual=_b5),
 
  q("choose", "Tap the one that lands exactly on the flag.",
