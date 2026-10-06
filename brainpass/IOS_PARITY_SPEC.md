@@ -1,6 +1,6 @@
 # Nupo iOS ↔ Android parity spec
 
-**What iOS must look like and do so it matches Nupo for Android 1.4.3 (October 2026).**
+**What iOS must look like and do so it matches Nupo for Android 1.4.4 (October 2026).**
 
 This document describes **outputs only**: what each screen shows, what the parent or child can do on it, what gets saved, and what the result must be, as it works on Android today. It does not say how to build anything on iOS. Where this document and the Android behaviour disagree, the Android build and its source files win. The repo is shared with you, and each section names the files to look at.
 
@@ -196,12 +196,14 @@ A small caption under the answers says what to tap, for example "Tap the number.
   - A right answer removes it from the review queue; a wrong one sends it back to the end.
   - The queue holds at most 20, oldest dropped first.
   - Review questions **do not move** the child's place on the path.
-- **The place moves per question, right or wrong.** A wrong answer never blocks progress; it just comes back later as a review. An interrupted lesson resumes at the exact question.
-- **Wrong answers.** The answer is shown, there is **no retry**, and the child goes on. No stars or points are lost.
-- **Minutes are earned when the lesson is finished**, whatever the score. The finish button is **Start playing**.
+- **The place on the path moves once per question**, on its first showing, right or wrong. A repeat of a missed question (in the same lesson or from the review queue) never moves it again. An interrupted lesson resumes at the exact question.
+- **Wrong answers come back in the same lesson.** The right answer is shown, along with the line "You'll see this one again at the end." The **same question is then added to the end of the lesson** (its choices shuffled again). **The lesson only ends when every question has been answered right**, with no attempt limit. The missed question also stays on the review queue until it is answered right. No stars or points are lost.
+- **Minutes are earned when the lesson is finished**, i.e. once every question in it is right. The finish button is **Start playing**. The score line on the finish screen counts every attempt ("<right> of <attempts> right").
 - **Parent PIN on the lesson.** A **Parent** button on the lesson opens a PIN pad. The correct PIN gives an untimed, free session for that app.
 - **Stats kept:** questions answered (total, today, and each of the last 7 days), questions correct, and a streak (consecutive days with at least one answer). These drive the Learning tab. On Android they stay on the device. The setup is restored on a new phone (§11), but progress starts over.
 - **Videos must not play under the lesson.** If the gated app was already playing (e.g. YouTube resumed a video), it must be paused while the lesson is up. Pressing Home must not leave a video playing in picture-in-picture outside the lesson. *(Android 1.4.3 fixed exactly this.)*
+- **A floating window must not lift the lock.** Opening a floating or side-bar app (e.g. ChatGPT) over a locked app must not drop the lesson while the locked app is still on screen. *(Android 1.4.4.)*
+- **Number choices are shuffled every time a question is shown.** The authored lists are in ascending order, which put the right answer in the same slot nearly every time. Applies to every "pick a number" row in all four skills. *(Android 1.4.4.)*
 - **Negative numbers are real answers.** The Reasoning stop "Below zero" has negative answers, and picking −19 must be submittable. *(Android 1.4.2 fixed a bug where it wasn't.)*
 
 ---
@@ -211,7 +213,7 @@ A small caption under the answers says what to tap, for example "Tap the number.
 Light background (`#F6F7FB`). Top to bottom: progress segments, then the content, then a pinned action bar. Reference: `CoderGate.kt`, `GateChrome.kt`.
 
 ### 8.1 Chrome
-- **Top bar:** one rounded segment per item, filled purple as items are answered, and a small **Parent** button on the right.
+- **Top bar:** one rounded segment per item, filled purple as questions are answered **right** (a missed question fills its segment only once it is answered right), and a small **Parent** button on the right.
 - **Bottom bar:** **Hint** (warm yellow face, gold ledge, light-bulb icon with "Hint") next to the main purple button. The main button reads **Check**, or **Run it** for build-a-program questions, and stays disabled until an answer is picked.
 
 ### 8.2 The question
@@ -238,7 +240,9 @@ Light background (`#F6F7FB`). Top to bottom: progress segments, then the content
 - One row: a round badge (white tick or cross on green or red), then the title **Correct!** or **Not quite**, then the message, then the owl reacting (`cheer` or `shrug`) on the right.
 - **Right:** a short praise line, e.g. "Sharp thinking." or "Spot on."
 - **Wrong:** says **which answer was right**, in the question's own words: "The answer is −19." / "It was step 3." / "The answer is the cube." / "It is the 2nd one." Never just "wrong".
+- On a wrong answer, a muted line under the message: **"You'll see this one again at the end."**
 - The answer the child tapped is tinted green or red. Then **Continue** (green or red chunky button); on the last item it reads **Finish**.
+- After a build-a-program question (which runs and locks the main button), the next screen's main button, including a **Got it** on a teach card, must be tappable again. *(Android 1.4.4 fixed a teach card left with a faded, dead "Got it".)*
 
 ### 8.6 Teach card ("New idea")
 - A chip **NEW IDEA** with a small bulb (purple on light lilac). Below it, the stop title, large, with the `teacher` owl on the right. Then the teach line.
@@ -386,7 +390,8 @@ Event names and properties as Android sends them to the shared PostHog project. 
 - [ ] The story's 10 screens match §3, and the demo for each band equals §4 exactly.
 - [ ] Setup steps and copy match §5, including the trade arithmetic.
 - [ ] All four JSON skills are bundled unchanged. The right skill is served per band. All 324 questions per skill render and grade against the stored answer.
-- [ ] Lesson rules in §7 hold: one stop per lesson, teach card shown once, one review first, per-question cursor, no retry, minutes earned at the end, PIN override.
+- [ ] Lesson rules in §7 hold: one stop per lesson, teach card shown once, one review first, cursor moves once per question, a wrong question comes back at the end until it is right, minutes earned when every question is right, shuffled number choices, PIN override.
+- [ ] A floating window over a locked app does not lift the lock. "Got it" is tappable after a build-a-program question.
 - [ ] The hint is docked and never moves the question. The verdict names the right answer. The teach demo loops with no "Watch again". Clue cards use the new design.
 - [ ] Negative answers submit. Video stays paused under the lesson, with no picture-in-picture escape.
 - [ ] The Learning and Parent tabs match §9–§10, including streak, week chart, path states, Pro card states, and the email in "Signed in".
