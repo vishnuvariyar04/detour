@@ -1,10 +1,10 @@
 # Nupo iOS ↔ Android parity spec
 
-**What iOS must look like and do so it matches Nupo for Android 1.4.4 (October 2026).**
+**What iOS must look like and do so it matches Nupo for Android 1.4.5 (October 2026).**
 
 This document describes **outputs only**: what each screen shows, what the parent or child can do on it, what gets saved, and what the result must be, as it works on Android today. It does not say how to build anything on iOS. Where this document and the Android behaviour disagree, the Android build and its source files win. The repo is shared with you, and each section names the files to look at.
 
-**Out of scope:** the PostHog setup, payments and the paywall. §12 lists the analytics events the new screens send.
+**Out of scope:** the PostHog setup, payments and the paywall. §12 lists the analytics events the new screens send. §13 covers measuring Meta ads, §14 the store listing.
 
 **What Android has today:**
 
@@ -12,7 +12,9 @@ This document describes **outputs only**: what each screen shows, what the paren
 2. A new **setup flow** after sign-in (§5).
 3. A real **curriculum**: four skills, one per age band, 48 lessons and 324 questions each, which replaces the random quiz entirely (§6–§7).
 4. A redesigned **lesson screen** (§8).
-5. Redesigned **Learning** and **Parent** tabs (§9–§10).
+5. Redesigned **Learning** and **Parent** tabs (§9–§10), including the child-age screen (§10.1).
+6. **Ad measurement** for Facebook and Instagram ads aimed at parents (§13).
+7. A new **store listing**: copy, eight screenshots and a feature graphic (§14).
 
 ---
 
@@ -31,7 +33,10 @@ This document describes **outputs only**: what each screen shows, what the paren
 | Parent tab and bottom bar | `lib/screens/parent_home_screen.dart`, `home_shell.dart` |
 | Design tokens | `lib/theme.dart`, `lib/screens/onboarding/onb_kit.dart` |
 | Analytics events | `lib/analytics.dart`, `android/.../Analytics.kt`, `ANALYTICS.md` |
-| Privacy wording | `legal/PRIVACY_POLICY.md` (also live at nupo.app/privacy) |
+| Child-age screen (Parent tab) | `lib/screens/age_band_screen.dart`, `AgeCard` in `story_flow.dart` |
+| Ad measurement | `lib/ad_attribution.dart`, the Meta block in `android/app/src/main/AndroidManifest.xml`, `android/meta.properties.example` |
+| Store listing and screenshots | `store_assets/listing_en.md`, `store_assets/screenshots/`, `store_assets/feature_graphic.png` |
+| Privacy wording | `legal/PRIVACY_POLICY.md` (also live at nupo.app/privacy), `legal/DATA_SAFETY.md` |
 
 All copy quoted below is the exact Android text. Use it word for word.
 
@@ -82,7 +87,7 @@ There is no scrolling. Each screen has one button, and a thin 10-segment progres
 | 1 | Welcome | The phone illustration with four skill cards around it (Count, Code, Loops, Binary) and the owl with a trophy. Title **"Turn phone time into real skills."** Subtitle **"A short lesson before every game or video."** | — | **Get started**, plus a text link **I already have an account** |
 | 2 | Their afternoon | Eyebrow **SOUND FAMILIAR?** Title **"After school, the same apps. Again and again."** A card showing "New skills today: 0". | — | Continue |
 | 3 | The idea | Eyebrow **THE IDEA** (yellow). Title **"What if every app opened after a short lesson?"** A diagram: Lesson → app open for 15 min → "Daily limit. Done for today." Line **"Same apps. A new skill, a little every day."** | — | Continue (white) |
-| 4 | Age | The owl asks in a speech bubble: **"How old is your child?"** Four choices: 5–6, 7–8, 9–10, 11+. | **Must pick.** Saves age and age band (a/b/c/d) and picks the child's course (§6). | Continue (disabled until picked) |
+| 4 | Age | The owl asks in a speech bubble: **"How old is your child?"** Four course cards: 5–6, 7–8, 9–10, 11–12, each with its picture and course name. | **Must pick.** Saves age and age band (a/b/c/d) and picks the child's course (§6). | Continue (disabled until picked) |
 | 5 | Their app | The owl asks: **"Which app do they open first?"** Four choices with real icons: YouTube, Roblox, TikTok, Minecraft. | **Must pick.** The app name is used for the rest of the story and is pre-ticked later in the real app picker. | Show me |
 | 6 | Lesson time | On the child's phone: the lesson card. **"Then <app> opens."** | — | Start |
 | 7 | A new idea | The child's phone shows the demo lesson's **teach line and picture** (§4). | — | Got it |
@@ -320,7 +325,7 @@ Lilac background. Reference: `roadmap_screen.dart`. Top to bottom:
    - Active: dark ink card with **NUPO PRO · ACTIVE** in yellow, **"Every skill, every day"**, "Manage subscription", and the `cool` owl. Tap opens subscription management.
    - Not active: yellow card with **NUPO PRO**, **"Try every skill free"**, "7 days free, cancel anytime", and the `star-student` owl. Tap opens the (closable) paywall.
 6. **Learning** group (settings-style rows: a solid colour tile with a white glyph, then title, value, chevron):
-   - Child: "<name>" / "Age N" (orange)
+   - Child: "<name>" / "Ages 5–6", "Ages 7–8", "Ages 9–10" or "Ages 11–12" (orange). Opens the child-age screen (§10.1).
    - Rules per app: count (blue)
    - Permissions: "All on" or "Fix" (green or red)
    - Parent PIN: •••• (purple)
@@ -330,6 +335,25 @@ Lilac background. Reference: `roadmap_screen.dart`. Top to bottom:
    - **Delete account**, alone in its own group, in red
 8. **Confirm dialogs:** rounded cards with an owl (`shrug`, or `ohno` for delete), the title, a line, a chunky confirm button, and Cancel.
 9. **Footer:** the waving owl and "Nupo · learning before play".
+
+### 10.1 Child-age screen (from the Child row) *(Android 1.4.5)*
+
+It must look like the story's age step (§3, screen 4), not a settings list. Reference: `age_band_screen.dart`.
+
+- **Top:** only a white round back button (chevron). No title bar and no progress track.
+- **The owl asks:** the `teacher` owl on the left and a speech bubble **"How old is <child>?"** ("your child" if no name is saved).
+- **Four course cards** in a 2×2 grid, the same cards as the story: picture, age (**5–6, 7–8, 9–10, 11–12**) and course name. The child's current band is selected (purple border).
+- **Status line** under the cards, centred and muted:
+  - unchanged: **"<child> is learning <course name>."**
+  - a different card picked: **"Lessons switch to <course name>."**
+- **Button** (chunky, purple): **Done** when unchanged, **Switch course** when a different card is picked.
+- **What saving does:**
+  - saves the age band (a/b/c/d)
+  - if the band changed, saves the age in years as the top of the band: 6, 8, 10 or 12
+  - saves the course id for that band (`number_sense`, `puzzles_and_logic`, `think_like_a_coder`, `reasoning`)
+  - the next lesson comes from the new course
+  - the saved setup (§11) is updated
+- **Labels everywhere** read "5–6, 7–8, 9–10, 11–12" (or "Ages …"). Nothing says "Age 11" or "11+" any more.
 
 ---
 
@@ -372,6 +396,7 @@ Event names and properties as Android sends them to the shared PostHog project. 
   - `lesson_earned {app, minutes}`
   - `parent_override {app}`
   - `kid_active_day`
+- **Install (once per install, Android):** `install_attributed {install_source, install_medium, install_campaign, install_content}`. The same four values are set **once** on the person (never overwritten). See §13.
 - **Home:**
   - `home_shown {enabled}`
   - `home_tab {tab: roadmap|parent}`
@@ -385,7 +410,114 @@ Event names and properties as Android sends them to the shared PostHog project. 
 
 ---
 
-## 13. Acceptance checklist
+## 13. Ad measurement: Facebook and Instagram ads for parents *(Android 1.4.4)*
+
+Nupo is advertised **to parents** on Facebook and Instagram, and the ads send people straight to the store. The app **shows no ads**. This section describes what Android sends so the ads can be judged on installs, finished setups and subscriptions, and what it never sends. Reference: `lib/ad_attribution.dart` and the Meta block in `AndroidManifest.xml`.
+
+### 13.1 The accounts (already set up, shared with iOS)
+
+Parents see **Nupo**. Everything business-side and on invoices is **Internspirit Private Limited**.
+
+| Thing | Value |
+|---|---|
+| Meta business portfolio | **Internspirit Private Limited** (ID 1653452276307120) |
+| Meta app (developer app) | **Internspirit**, App ID **2159559387974262**, live, owned by the portfolio. Use case: "Create & manage app ads with Meta Ads Manager". |
+| Platform registered on that Meta app | Android: Google Play, package `app.nupo.kid`. iOS is **not** registered yet. |
+| Ad account | **Internspirit** (ID 1984569382232410), INR, Asia/Kolkata, owned by the portfolio and authorised on the Meta app |
+| Identity in ads | Facebook Page **nupo**, Instagram **@nupo.app** (both owned by the portfolio) |
+| Client token | Not in the repo. Android reads it from `android/meta.properties`, which is gitignored. Ask Vishnu for it. |
+| RevenueCat → Meta | Set on the RevenueCat project (`7ec6caad`), not in app code. See §13.3. |
+| Privacy URLs on the Meta app | nupo.app/privacy, nupo.app/terms, nupo.app/data-deletion |
+
+**The iOS app must report into this same Meta app (2159559387974262)** so both platforms' installs and purchases land in one place and on one ad account. Do not create a second Meta app.
+
+### 13.2 What Meta receives from the phone
+
+| When | Meta event | Sent by |
+|---|---|---|
+| First open after install | install / app activation (Meta's automatic event) | Meta SDK, automatically |
+| Every app open | app activation (automatic) | Meta SDK, automatically |
+| Parent finishes setup (the Ready screen, same moment as `setup_complete`) | **CompleteRegistration**, with registration method `setup` | `AdAttribution.completedRegistration()` |
+
+Rules:
+- **Purchases are not sent from the phone.** RevenueCat sends them (§13.3). Sending them from the app too would count every purchase twice. Meta's "log in-app purchases automatically" option is **off** on the Meta app.
+- **The advertising identifier is never collected.** On Android, the AD_ID permission is removed from the manifest, `com.facebook.sdk.AdvertiserIDCollectionEnabled` is false, and the app also turns collection off in code at start-up. Android matches an install to an ad tap through the **Google Play install referrer** instead.
+- **The link to purchases.** At start-up, and again after every sign-in, the app reads Meta's **anonymous install id** from the Meta SDK and hands it to RevenueCat (RevenueCat's Facebook anonymous id attribute). This is how a subscription is tied back to the ad that brought the install.
+- **Fail-safe.** With no Meta app id in the build, none of this runs and the app behaves exactly as before. Nothing here may block or crash the app.
+
+### 13.3 What Meta receives from RevenueCat (server to server)
+
+Configured on the RevenueCat project, using the **App Events API**, with Meta App ID 2159559387974262 and its client token. Sales are reported as **gross revenue**. Event mapping:
+
+| RevenueCat event | Meta event |
+|---|---|
+| Trial Started | `StartTrial` |
+| Trial Converted | `Subscribe` |
+| Initial Purchase | `Subscribe` |
+| Renewal | `Subscribe` |
+| Non-Subscription Purchase | `fb_mobile_purchase` |
+
+The sandbox App ID was removed on 6 Oct 2026, so **test purchases do not reach Meta**. Keep it that way, or test purchases will show up as ad results.
+
+### 13.4 Which campaign brought the parent (our own analytics)
+
+On the first start after install, Android reads the **Play install referrer once** and records:
+
+- event `install_attributed` in PostHog, with `install_source`, `install_medium`, `install_campaign`, `install_content` (from the `utm_*` values; for Meta app-install ads, Meta's own referrer)
+- `install_source` is `none` when there is no referrer, and `unknown` when there is one with no `utm_source`
+- each value is cut to 100 characters
+- the same four values are set **once** on the person, so a reinstall never overwrites the first campaign
+- it is read only once per install; if reading fails, it is tried again on the next start
+
+Every funnel and retention chart can then be split by campaign.
+
+### 13.5 What must never reach Meta
+
+The parent's name or email, the child's name or age, anything about lessons, questions or answers, and any advertising identifier. Meta gets only the events above, plus Meta's random app-scoped id and the basic technical details its SDK attaches (device model, OS version, app version, language, IP address).
+
+### 13.6 Privacy documents (update before iOS sends anything to Meta)
+
+Today the policy says Meta measurement happens **on Android only**:
+- `legal/PRIVACY_POLICY.md` and nupo.app/privacy: the section "Measuring our own ads (Android)", and Meta listed as a processor with "(Android)"
+- the line "Nupo contains no advertising identifier (IDFA or Android advertising ID) and no App Tracking Transparency prompt"
+
+If iOS starts sending events to Meta, these must be changed first to cover iOS, and the iOS store's privacy declaration must match. What Android declares in Google Play's Data safety form (`legal/DATA_SAFETY.md`, "Meta ad measurement"):
+- **App interactions:** shared with Meta (install, app open, setup completed), for Advertising or marketing and Analytics
+- **Purchase history:** shared with Meta by RevenueCat (trial start, conversion, renewal, refund, amount, currency), for Advertising or marketing
+- **Device or other IDs:** collected and shared (Meta's app-scoped anonymous id, **not** the advertising ID), for Advertising or marketing and Analytics
+
+---
+
+## 14. Store listing *(Android, live October 2026)*
+
+The Play listing was rewritten around what makes Nupo different: **it blocks the apps a child already uses, teaches a short lesson first, and limits daily use.** It is not "another learning app". Files: `store_assets/`.
+
+**Name:** Nupo: Kids Earn Screen Time
+
+**Short line:** "A short lesson before YouTube and games. Screen time that teaches, ages 5-12."
+
+**Full description:** `store_assets/listing_en.md`. Use it word for word, except the SETUP paragraph. That paragraph describes Android's two permissions (Usage access, Display over other apps) and must say whatever iOS actually asks for.
+
+**Screenshots** (`store_assets/screenshots/`, 1080×1920), in this order. The order tells the story: block, earn, limit, control, then the course.
+
+| # | File | Headline | Line under it | Shows |
+|---|---|---|---|---|
+| 1 | `01_steps_in.png` | Nupo steps in before games and videos | Their favourite apps, with a short lesson first | A home screen with a dashed arrow from the **YouTube** icon to a coding boss question ("Put the steps in order to get the star, then the flag."); tag "YouTube opens after this"; waving owl |
+| 2 | `02_earn_time.png` | A short lesson earns play time | Finish the lesson and the app opens, on a timer | The finish screen (Stop complete, "+15 min of play unlocked", Start playing), then a YouTube-style kids video page with Nupo's countdown chip on top ("YouTube · 14:59 left"); tag "+15 min" |
+| 3 | `03_daily_limit.png` | Then the daily limit says: done for today | Healthy limits on every app you choose | A home screen with the gated apps locked and the daily-limit card: trophy owl, "You are a star today!", "Great learning. See you tomorrow.", "60 of 60 min played today"; tag "Daily limit reached" |
+| 4 | `04_you_choose.png` | You choose the apps and the minutes | Minutes per lesson, a daily limit, a parent PIN | The Parent tab (status card, app cards with usage rings, Pro card, Learning rows); tags "15 min per lesson", "1 hr a day", "Parent PIN" |
+| 5 | `05_real_course.png` | Every lesson is a step in a real course | 48 lessons that build, written for their age | The Learning tab path: done, current (with owl) and locked stops, a section banner, a boss stop; tags "Up next", "Boss level" |
+| 6 | `06_progress.png` | See what they learned today | Streaks, scores and what comes next | The top of the Learning tab: greeting and streak, Up next card, Today / This week / Correct tiles, week chart, Play time card; tag "6 day streak" |
+| 7 | `07_hints_mistakes.png` | Hints when stuck, retries until right | Every question, finally answered right | Two lessons: a number question with the docked hint open, and a wrong-answer verdict ("Not quite", "You'll see this one again at the end."); tags "A nudge, not the answer", "Asked again at the end" |
+| 8 | `08_ages.png` | A course for every age, 5 to 12 | Numbers, logic, coding and reasoning | Four course cards: AGES 5-6 Number Sense, AGES 7-8 Puzzles & Logic, AGES 9-10 Coding, AGES 11-12 Reasoning, each with a small picture |
+
+These show Android phone screens. iOS needs the same eight slides, in the same order and with the same words, at the sizes its store asks for.
+
+**Feature graphic** (`feature_graphic.png`, 1024×500, Play only): "A lesson first. **Then play.**" / "Screen time that teaches kids 5 to 12", chips "Real courses" and "Daily limits", a home screen with an arrow from YouTube to a coding boss question, and the waving owl. There is **no "No ads" claim**; don't add one to any store art.
+
+---
+
+## 15. Acceptance checklist
 
 - [ ] The story's 10 screens match §3, and the demo for each band equals §4 exactly.
 - [ ] Setup steps and copy match §5, including the trade arithmetic.
@@ -397,3 +529,6 @@ Event names and properties as Android sends them to the shared PostHog project. 
 - [ ] The Learning and Parent tabs match §9–§10, including streak, week chart, path states, Pro card states, and the email in "Signed in".
 - [ ] The saved setup uses §11's fields, and restore brings back the setup and Pro.
 - [ ] The §12 events fire with these names and properties.
+- [ ] The child-age screen matches §10.1, and every age label reads 5–6 / 7–8 / 9–10 / 11–12.
+- [ ] Ad measurement matches §13: the same Meta app, the events Meta receives, nothing from the "never sent" list, and the privacy documents updated before release.
+- [ ] The store listing matches §14.

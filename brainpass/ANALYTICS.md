@@ -213,12 +213,15 @@ lives in **Play Console → Acquisition → Store performance**, and at your vol
 it is the bigger lever: a listing that converts 3% instead of 1% triples
 everything downstream. Check it there, not here.
 
-**No attribution, by design.** The advertising id is stripped for Play Families
-compliance, so GA4 cannot tell you which campaign, post, or link produced an
-install. Play Console's coarse acquisition channels (organic search / explore /
-third-party) are all you get. If you ever run paid acquisition, this is the
-thing you will have to solve, and it is a genuine cost of the child-safe
-configuration — not an oversight.
+**Attribution comes from the install referrer, not the advertising id.** The
+advertising id stays stripped for Play Families compliance. Since 1.4.4 the app
+reads the Play install referrer once per install and sends
+`install_attributed {install_source, install_medium, install_campaign,
+install_content}` to PostHog, setting the same four values once on the person,
+so any funnel or retention chart can be split by campaign. Meta ads are
+measured separately in Meta Events Manager (installs, app opens,
+CompleteRegistration from the app; trials and purchases from RevenueCat). See
+`lib/ad_attribution.dart` and §13 of `IOS_PARITY_SPEC.md`.
 
 **Uninstalls are weak.** Android sends `app_remove`, but it is delayed and
 unreliable, and no analytics tool can tell you WHY. Play Console's installed
