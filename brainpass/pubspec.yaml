@@ -95,6 +95,7 @@ flutter:
     - assets/nupo/
     - assets/videos/
     - assets/curriculum/
+    - assets/paywall/
 
   fonts:
     - family: Nunito

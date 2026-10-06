@@ -1,20 +1,25 @@
-// screens/paywall_screen.dart — Nupo Premium paywall (Android).
+// screens/paywall_screen.dart — the Nupo Pro paywall.
 //
-// PORTED FROM THE iOS APP (iOS-conversion/brainpass/lib/screens/paywall_screen
-// .dart, "three-step trial flow in the reference style", 2026-08-24) so both
-// stores sell Nupo the same way: same look, same words, same plan logic.
+// Three pages, in the order the best trial paywalls use (Cal AI's is the
+// reference):
 //
-// What is different on Android:
-//   • The trial reminder is scheduled by trial_reminder.dart (a local
-//     notification) where iOS uses its FamilyControls bridge. Same promise,
-//     same three screens.
-//   • Store wording: Google account / Google Play, not Apple ID / Settings.
+//   1. Try it free   — what Nupo does (the home screen, YouTube, the lesson
+//                      that opens first), "No payment due now", "Try for ₹0".
+//   2. Reminder      — "We'll send you a reminder before your free trial
+//                      ends". Continue asks for the notification permission
+//                      the reminder needs. Skipped when no plan has a trial.
+//   3. Plans         — the trial timeline (today / reminder / billing day),
+//                      then the plans with Yearly on top, highlighted, and its
+//                      price per week.
 //
-// Rules carried over from iOS:
-//   • Every price comes live from `storeProduct.priceString`, so it is right
-//     for every country and currency. Nothing is hardcoded.
-//   • A free trial is only advertised when the store says the product has one
-//     (`introductoryPrice`), and its length comes from the store too.
+// White page, near-black type, one black button: the shop reads as a page that
+// states facts. Nupo's font, owl colours and words are kept.
+//
+// Rules (unchanged since the iOS port):
+//   • Every price comes live from the store (`priceString`,
+//     `pricePerWeekString`), so it is right in every country and currency.
+//   • A free trial is only advertised when the store says the plan has one,
+//     and its length comes from the store too.
 //   • No invented ratings or user counts.
 
 import 'package:flutter/material.dart';
@@ -25,15 +30,13 @@ import 'package:url_launcher/url_launcher.dart';
 import '../analytics.dart';
 import '../subscription_service.dart';
 import '../trial_reminder.dart';
-import '../widgets.dart';
 
 /// One purchasable plan as shown on the paywall, built from a live package.
 class PaywallPlan {
   final String title;
   final String price;
   final String? unit; // "/week", "/year", null for one-time
-  final String blurb;
-  final String? badge;
+  final String? perWeek; // "₹57.50" for a yearly plan, null otherwise
   final String? saveChip;
   final bool hasTrial;
   final String? trialLabel;
@@ -42,14 +45,28 @@ class PaywallPlan {
   const PaywallPlan({
     required this.title,
     required this.price,
-    required this.blurb,
     required this.package,
     this.unit,
-    this.badge,
+    this.perWeek,
     this.saveChip,
     this.hasTrial = false,
     this.trialLabel,
   });
+
+  bool get isYearly => package.packageType == PackageType.annual;
+  bool get isWeekly => package.packageType == PackageType.weekly;
+  bool get isLifetime => package.packageType == PackageType.lifetime;
+
+  /// "₹2,999 per year (₹57.50/week)", the line under the buttons.
+  String get priceLine {
+    final per = switch (package.packageType) {
+      PackageType.annual => 'per year',
+      PackageType.monthly => 'per month',
+      PackageType.weekly => 'per week',
+      _ => 'once',
+    };
+    return perWeek == null ? '$price $per' : '$price $per ($perWeek/week)';
+  }
 }
 
 /// Whole days of free trial on [p], or null if it has none.
@@ -82,29 +99,23 @@ String formatBillingDate(DateTime d) {
 
 /// "7 days free" / "1 week free" from the live offer, or null without one.
 String? trialLabelFor(Package p) {
-  final intro = p.storeProduct.introductoryPrice;
-  if (intro == null || intro.period.isEmpty) return null;
-  final n = intro.periodNumberOfUnits;
-  if (n <= 0) return null;
-  final unit = switch (intro.periodUnit) {
-    PeriodUnit.day => 'day',
-    PeriodUnit.week => 'week',
-    PeriodUnit.month => 'month',
-    PeriodUnit.year => 'year',
-    PeriodUnit.unknown => '',
-  };
-  if (unit.isEmpty) return null;
-  return '$n $unit${n == 1 ? '' : 's'} free';
+  final days = trialDaysFor(p);
+  if (days == null) return null;
+  return '$days ${days == 1 ? 'day' : 'days'} free';
+}
+
+/// The plan's currency at zero: "₹2,999" -> "₹0", "US$4.99" -> "US$0".
+String zeroPriceLike(String priceString) {
+  final m = RegExp(r'\d[\d.,\s]*\d|\d').firstMatch(priceString);
+  if (m == null) return priceString;
+  return priceString.replaceRange(m.start, m.end, '0');
 }
 
 /// Terms / Privacy, the same pages the iOS paywall links to.
 const String kTermsUrl = 'https://nupo.app/terms';
 const String kPrivacyUrl = 'https://nupo.app/privacy';
 
-/// intro invites, plans sells and says exactly what happens when, notify
-/// appears only AFTER a trial has started and asks for the permission that
-/// lets the promised reminder arrive. Weekly and lifetime skip notify.
-enum _Step { intro, plans, notify }
+enum _Step { intro, notify, plans }
 
 class PaywallScreen extends StatefulWidget {
   /// Called once Premium is unlocked.
@@ -114,11 +125,16 @@ class PaywallScreen extends StatefulWidget {
   /// False for the HARD paywall at the app root: no free tier to go back to.
   final bool dismissible;
 
+  /// Where the plans come from; the store unless a test swaps it.
+  @visibleForTesting
+  final Future<List<Package>> Function()? loadPackages;
+
   const PaywallScreen({
     super.key,
     this.onPurchased,
     this.onClose,
     this.dismissible = false,
+    this.loadPackages,
   });
 
   @override
@@ -141,6 +157,14 @@ class _PaywallScreenState extends State<PaywallScreen> {
     return null;
   }
 
+  /// Yearly if there is one: it leads every price line.
+  PaywallPlan? get _leadPlan {
+    for (final p in _plans) {
+      if (p.isYearly) return p;
+    }
+    return _plans.isEmpty ? null : _plans.first;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -149,21 +173,18 @@ class _PaywallScreenState extends State<PaywallScreen> {
 
   Future<void> _load() async {
     setState(() => _loading = true);
-    final packages = await SubscriptionService.packages();
+    final packages =
+        await (widget.loadPackages ?? SubscriptionService.packages)();
     if (!mounted) return;
-    final plans = _buildPlans(packages);
     setState(() {
-      _plans = plans;
-      // Land on yearly: badged "Most Popular" and the one with the trial.
-      final annual =
-          plans.indexWhere((p) => p.package.packageType == PackageType.annual);
-      _selected = annual >= 0 ? annual : 0;
+      _plans = _buildPlans(packages);
+      _selected = 0; // Yearly is sorted first
       _loading = false;
     });
   }
 
-  /// Live packages → display plans, with the yearly saving computed from the
-  /// real prices rather than claimed.
+  /// Live packages → display plans: Yearly first, then weekly, monthly,
+  /// lifetime. The yearly saving is computed from the real prices.
   List<PaywallPlan> _buildPlans(List<Package> packages) {
     double? weeklyPerYear;
     for (final p in packages) {
@@ -171,14 +192,20 @@ class _PaywallScreenState extends State<PaywallScreen> {
         weeklyPerYear = p.storeProduct.price * 52;
       }
     }
+    int rank(Package p) => switch (p.packageType) {
+          PackageType.annual => 0,
+          PackageType.weekly => 1,
+          PackageType.monthly => 2,
+          PackageType.lifetime => 3,
+          _ => 4,
+        };
+    final sorted = [...packages]..sort((a, b) => rank(a).compareTo(rank(b)));
     return [
-      for (final p in packages)
+      for (final p in sorted)
         () {
-          final type = p.packageType;
+          final annual = p.packageType == PackageType.annual;
           String? saveChip;
-          if (type == PackageType.annual &&
-              weeklyPerYear != null &&
-              weeklyPerYear > 0) {
+          if (annual && weeklyPerYear != null && weeklyPerYear > 0) {
             final pct =
                 ((1 - (p.storeProduct.price / weeklyPerYear)) * 100).round();
             if (pct > 0) saveChip = 'Save $pct%';
@@ -187,14 +214,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
             title: SubscriptionService.labelFor(p),
             price: p.storeProduct.priceString,
             unit: SubscriptionService.unitFor(p),
-            blurb: switch (type) {
-              PackageType.weekly => 'Perfect for trying out',
-              PackageType.monthly => 'Flexible monthly',
-              PackageType.annual => 'Best value',
-              PackageType.lifetime => 'Pay once, use forever',
-              _ => p.storeProduct.description,
-            },
-            badge: type == PackageType.annual ? 'Most Popular' : null,
+            perWeek: annual ? p.storeProduct.pricePerWeekString : null,
             saveChip: saveChip,
             package: p,
             hasTrial: trialDaysFor(p) != null,
@@ -217,10 +237,8 @@ class _PaywallScreenState extends State<PaywallScreen> {
         final days = trialDaysFor(package);
         if (days != null && days > 0) {
           TrialReminder.schedule(billingStartsAt(DateTime.now(), days));
-          setState(() => _step = _Step.notify);
-        } else {
-          widget.onPurchased?.call();
         }
+        widget.onPurchased?.call();
       case PurchaseOutcome.cancelled:
         break; // the parent backed out; not an error
       case PurchaseOutcome.failed:
@@ -242,6 +260,19 @@ class _PaywallScreenState extends State<PaywallScreen> {
     }
   }
 
+  /// Page 2's button: ask for the permission the promised reminder needs,
+  /// whatever the answer, then show the plans.
+  Future<void> _allowReminder() async {
+    if (_busy) return;
+    setState(() => _busy = true);
+    await TrialReminder.requestPermission();
+    if (!mounted) return;
+    setState(() {
+      _busy = false;
+      _step = _Step.plans;
+    });
+  }
+
   bool get _selectedHasTrial =>
       _plans.isNotEmpty && _plans[_selected].hasTrial;
 
@@ -251,28 +282,32 @@ class _PaywallScreenState extends State<PaywallScreen> {
   }
 
   // ---------------------------------------------------------------------------
-  // Presentation. Like iOS, this screen does NOT use Nupo's house style: a
-  // white page, near-black type and one black button, so "this is the shop"
-  // reads as a page that states facts. Only the words are Nupo's.
+  // Presentation
   // ---------------------------------------------------------------------------
 
   static const _ink = Color(0xFF0B0B0F);
   static const _muted = Color(0xFF86868B);
 
   @override
-  Widget build(BuildContext context) => switch (_step) {
-        _Step.intro => _buildIntroStep(context),
-        _Step.plans => _buildPlansStep(context),
-        _Step.notify => _buildNotifyStep(context),
-      };
+  Widget build(BuildContext context) {
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 220),
+      child: KeyedSubtree(
+        key: ValueKey(_step),
+        child: switch (_step) {
+          _Step.intro => _introPage(context),
+          _Step.notify => _notifyPage(context),
+          _Step.plans => _plansPage(context),
+        },
+      ),
+    );
+  }
 
   Widget _shell({
-    required BuildContext context,
     required Widget body,
     required Widget cta,
     Widget? belowCta,
     bool noPaymentDue = false,
-    bool showRestore = true,
     VoidCallback? onBack,
   }) {
     return Scaffold(
@@ -281,25 +316,23 @@ class _PaywallScreenState extends State<PaywallScreen> {
         child: Column(
           children: [
             SizedBox(
-              height: 44,
+              height: 48,
               child: Row(
                 children: [
                   if (onBack != null)
-                    _TopChevron(onTap: onBack)
+                    _BackCircle(onTap: onBack)
                   else
-                    const SizedBox(width: 52),
+                    const SizedBox(width: 60),
                   const Spacer(),
-                  if (showRestore)
-                    TextButton(
-                      onPressed: _busy ? null : _restore,
-                      child: const Text('Restore',
-                          style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: _muted)),
-                    )
-                  else
-                    const SizedBox(width: 52),
+                  TextButton(
+                    onPressed: _busy ? null : _restore,
+                    child: const Text('Restore',
+                        style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: _muted)),
+                  ),
+                  const SizedBox(width: 6),
                 ],
               ),
             ),
@@ -309,15 +342,15 @@ class _PaywallScreenState extends State<PaywallScreen> {
               const SizedBox(height: 12),
             ],
             Padding(
-              padding: const EdgeInsets.fromLTRB(22, 0, 22, 6),
+              padding: const EdgeInsets.fromLTRB(22, 0, 22, 0),
               child: cta,
             ),
             if (belowCta != null)
               Padding(
-                padding: const EdgeInsets.fromLTRB(22, 6, 22, 0),
+                padding: const EdgeInsets.fromLTRB(26, 10, 26, 0),
                 child: belowCta,
               ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 12),
           ],
         ),
       ),
@@ -330,20 +363,21 @@ class _PaywallScreenState extends State<PaywallScreen> {
       label: label,
       child: GestureDetector(
         onTap: onTap,
-        child: Container(
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
           width: double.infinity,
-          height: 58,
+          height: 60,
           alignment: Alignment.center,
           decoration: BoxDecoration(
             color: onTap == null ? _ink.withValues(alpha: 0.35) : _ink,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(30),
           ),
           child: Text(
             label,
             style: const TextStyle(
                 color: Colors.white,
-                fontSize: 17,
-                fontWeight: FontWeight.w700,
+                fontSize: 17.5,
+                fontWeight: FontWeight.w800,
                 letterSpacing: 0.1),
           ),
         ),
@@ -351,144 +385,99 @@ class _PaywallScreenState extends State<PaywallScreen> {
     );
   }
 
-  static TextStyle get _headline => const TextStyle(
-      fontSize: 27,
-      height: 1.24,
-      fontWeight: FontWeight.w800,
-      letterSpacing: -0.4,
+  Widget _priceUnderCta(PaywallPlan? plan) => plan == null
+      ? const SizedBox.shrink()
+      : Text('Just ${plan.priceLine}',
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+              fontSize: 13.5, fontWeight: FontWeight.w600, color: _muted));
+
+  static const _headline = TextStyle(
+      fontSize: 29,
+      height: 1.2,
+      fontWeight: FontWeight.w900,
+      letterSpacing: -0.5,
       color: _ink);
 
-  /// Step 1 — the invitation. One idea only: starting costs nothing.
-  Widget _buildIntroStep(BuildContext context) {
+  /// Page 1 — the invitation: what Nupo does, and that starting costs nothing.
+  Widget _introPage(BuildContext context) {
     final trial = _trialPlan;
+    final lead = _leadPlan;
+    final next = trial != null ? _Step.notify : _Step.plans;
     return _shell(
-      context: context,
       noPaymentDue: trial != null,
       onBack: widget.dismissible
           ? (widget.onClose ?? () => Navigator.maybePop(context))
           : null,
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(26, 4, 26, 8),
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-              minHeight: MediaQuery.sizeOf(context).height * 0.66),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                trial != null
-                    ? 'We want you to\ntry Nupo for free'
-                    : 'Unlock everything\nin Nupo',
-                textAlign: TextAlign.center,
-                style: _headline,
-              ),
-              const SizedBox(height: 34),
-              const HaloMascot('assets/nupo/wave.png', size: 170),
-              const SizedBox(height: 34),
-              Text(
-                trial != null
-                    ? 'A few questions before the apps they love. '
-                        'Set it up in two minutes.'
-                    : 'A few questions before the apps they love.',
-                textAlign: TextAlign.center,
-                style:
-                    const TextStyle(fontSize: 15, height: 1.5, color: _muted),
-              ),
-            ],
-          ),
-        ),
-      ),
-      cta: _blackCta(trial != null ? 'Try for free' : 'See plans',
-          () => setState(() => _step = _Step.plans)),
-      belowCta: trial == null
-          ? null
-          : Text('Just ${trial.price}${trial.unit ?? ''}',
+      body: Column(
+        children: [
+          const Padding(
+            padding: EdgeInsets.fromLTRB(28, 6, 28, 0),
+            child: Text(
+              'We want you to\ntry Nupo for free.',
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 12.5, color: _muted)),
+              style: _headline,
+            ),
+          ),
+          const SizedBox(height: 14),
+          const Expanded(child: _Hero()),
+        ],
+      ),
+      cta: _blackCta(
+        trial != null && lead != null
+            ? 'Try for ${zeroPriceLike(lead.price)}'
+            : (_loading ? 'Please wait…' : 'See plans'),
+        _loading ? null : () => setState(() => _step = next),
+      ),
+      belowCta: _priceUnderCta(lead),
     );
   }
 
-  /// Step 3 — reached only after a trial has started. The reminder it describes
-  /// is already scheduled; this asks for permission to deliver it.
-  Widget _buildNotifyStep(BuildContext context) {
-    Future<void> finish() async {
-      if (_busy) return;
-      setState(() => _busy = true);
-      await TrialReminder.requestPermission();
-      if (!mounted) return;
-      setState(() => _busy = false);
-      widget.onPurchased?.call();
-    }
-
+  /// Page 2 — the promised reminder, and the permission it needs.
+  Widget _notifyPage(BuildContext context) {
     return _shell(
-      context: context,
-      showRestore: false,
       noPaymentDue: true,
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 26),
+      onBack: () => setState(() => _step = _Step.intro),
+      body: const Padding(
+        padding: EdgeInsets.symmetric(horizontal: 28),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text("We'll send you\na reminder before\nyour free trial ends",
-                textAlign: TextAlign.center, style: _headline),
-            const SizedBox(height: 44),
-            Stack(
-              clipBehavior: Clip.none,
-              children: [
-                const Icon(Icons.notifications_rounded,
-                    size: 128, color: Color(0xFFE3E3E8)),
-                Positioned(
-                  top: -2,
-                  right: -6,
-                  child: Container(
-                    width: 46,
-                    height: 46,
-                    alignment: Alignment.center,
-                    decoration: const BoxDecoration(
-                        color: Color(0xFFE5342B), shape: BoxShape.circle),
-                    child: const Text('1',
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 22,
-                            fontWeight: FontWeight.w800)),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 44),
-            const Text(
-              'One notification, the day before billing starts. '
-              'Nothing else — Nupo never sends marketing.',
+            SizedBox(height: 6),
+            Text(
+              "We'll send you a reminder\nbefore your free trial ends",
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 14.5, height: 1.5, color: _muted),
+              style: _headline,
             ),
+            Expanded(child: Center(child: _Bell())),
           ],
         ),
       ),
       cta: _blackCta(_busy ? 'Please wait…' : 'Continue for FREE',
-          _busy ? null : finish),
+          _busy ? null : _allowReminder),
+      belowCta: _priceUnderCta(_leadPlan),
     );
   }
 
-  /// Step 2 — the plans, and exactly what happens on which day.
-  Widget _buildPlansStep(BuildContext context) {
+  /// Page 3 — exactly what happens on which day, then the plans.
+  Widget _plansPage(BuildContext context) {
     final trial = _trialPlan;
     final trialDays = trial == null ? null : trialDaysFor(trial.package);
+    final sel = _plans.isEmpty ? null : _plans[_selected];
+    final selDays = sel == null ? null : trialDaysFor(sel.package);
     final ctaLabel = _busy
         ? 'Please wait…'
-        : (_selectedHasTrial && trialDays != null
-            ? 'Start my $trialDays-day free trial'
+        : (selDays != null
+            ? 'Start my $selDays-day free trial'
             : 'Continue');
-    final sel = _plans.isEmpty ? null : _plans[_selected];
 
     return _shell(
-      context: context,
       noPaymentDue: _selectedHasTrial,
-      onBack: () => setState(() => _step = _Step.intro),
+      onBack: () => setState(
+          () => _step = trial != null ? _Step.notify : _Step.intro),
       body: _loading
           ? const Center(child: CircularProgressIndicator(color: _ink))
           : SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(22, 4, 22, 8),
+              padding: const EdgeInsets.fromLTRB(22, 6, 22, 12),
               child: Column(
                 children: [
                   Text(
@@ -498,21 +487,21 @@ class _PaywallScreenState extends State<PaywallScreen> {
                     textAlign: TextAlign.center,
                     style: _headline,
                   ),
-                  const SizedBox(height: 26),
+                  const SizedBox(height: 24),
                   if (trialDays != null) ...[
                     _TrialTimeline(days: trialDays),
-                    const SizedBox(height: 26),
+                    const SizedBox(height: 22),
                   ],
                   if (_plans.isEmpty)
                     _PlansUnavailable(onRetry: _load)
                   else
                     for (int i = 0; i < _plans.length; i++) ...[
-                      _PlanRow(
+                      _PlanCard(
                         plan: _plans[i],
                         selected: _selected == i,
                         onTap: () => setState(() => _selected = i),
                       ),
-                      if (i != _plans.length - 1) const SizedBox(height: 10),
+                      SizedBox(height: i == 0 ? 14 : 10),
                     ],
                 ],
               ),
@@ -520,36 +509,31 @@ class _PaywallScreenState extends State<PaywallScreen> {
       cta: _blackCta(ctaLabel, (_busy || _plans.isEmpty) ? null : _continue),
       belowCta: Column(
         children: [
-          const SizedBox(height: 2),
+          if (sel != null)
+            Text(
+              selDays != null
+                  ? '$selDays days free, then ${sel.priceLine}'
+                  : sel.priceLine,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                  fontSize: 13, fontWeight: FontWeight.w700, color: _ink),
+            ),
+          const SizedBox(height: 4),
           Text(
-            (_selectedHasTrial && trialDays != null && sel != null
-                    ? '$trialDays days free, then ${sel.price}${sel.unit ?? ''}. '
-                    : '') +
-                (sel?.unit == null
-                    ? 'One payment. Yours to keep.'
-                    : 'Renews automatically unless cancelled before the '
-                        'period ends. Manage or cancel in Google Play.'),
+            sel?.unit == null
+                ? 'One payment. Yours to keep.'
+                : 'Renews automatically unless cancelled before the period '
+                    'ends. Manage or cancel any time in Google Play.',
             textAlign: TextAlign.center,
             style: const TextStyle(fontSize: 10.5, height: 1.4, color: _muted),
           ),
-          const SizedBox(height: 8),
-          Row(
+          const SizedBox(height: 6),
+          const Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const _LegalLink(label: 'Terms', url: kTermsUrl),
-              const Text(' · ',
-                  style: TextStyle(color: _muted, fontSize: 11.5)),
-              const _LegalLink(label: 'Privacy', url: kPrivacyUrl),
-              const Text(' · ',
-                  style: TextStyle(color: _muted, fontSize: 11.5)),
-              GestureDetector(
-                onTap: _busy ? null : _restore,
-                child: const Text('Restore',
-                    style: TextStyle(
-                        fontSize: 11.5,
-                        color: _muted,
-                        decoration: TextDecoration.underline)),
-              ),
+              _LegalLink(label: 'Terms', url: kTermsUrl),
+              Text('  ·  ', style: TextStyle(color: _muted, fontSize: 11.5)),
+              _LegalLink(label: 'Privacy', url: kPrivacyUrl),
             ],
           ),
         ],
@@ -558,17 +542,117 @@ class _PaywallScreenState extends State<PaywallScreen> {
   }
 }
 
-class _TopChevron extends StatelessWidget {
-  final VoidCallback onTap;
-  const _TopChevron({required this.onTap});
+/// Page 1's picture: the home screen, an arrow from YouTube, and the lesson
+/// that opens first, fading into the page at the bottom.
+class _Hero extends StatelessWidget {
+  const _Hero();
 
   @override
-  Widget build(BuildContext context) => SizedBox(
-        width: 52,
-        child: IconButton(
-          onPressed: onTap,
-          icon: const Icon(Icons.chevron_left_rounded,
-              size: 30, color: Color(0xFF0B0B0F)),
+  Widget build(BuildContext context) {
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        // a soft lilac glow behind the phones
+        Positioned.fill(
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: RadialGradient(
+                center: const Alignment(0, -0.1),
+                radius: 0.75,
+                colors: [
+                  const Color(0xFF7C3AED).withValues(alpha: 0.10),
+                  Colors.white.withValues(alpha: 0),
+                ],
+              ),
+            ),
+          ),
+        ),
+        ShaderMask(
+          blendMode: BlendMode.dstIn,
+          shaderCallback: (r) => const LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Colors.white, Colors.white, Color(0x00FFFFFF)],
+            stops: [0, 0.78, 1],
+          ).createShader(r),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: Image.asset(
+              'assets/paywall/hero.png',
+              fit: BoxFit.contain,
+              semanticLabel:
+                  'YouTube opens after a short Nupo lesson',
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Page 2's picture: a bell with one unread reminder.
+class _Bell extends StatelessWidget {
+  const _Bell();
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 240,
+      height: 240,
+      child: Stack(
+        clipBehavior: Clip.none,
+        alignment: Alignment.center,
+        children: [
+          Container(
+            width: 230,
+            height: 230,
+            decoration: const BoxDecoration(
+                color: Color(0xFFF4F4F6), shape: BoxShape.circle),
+          ),
+          const Icon(Icons.notifications_rounded,
+              size: 158, color: Color(0xFFD1D1D8)),
+          Positioned(
+            top: 38,
+            right: 44,
+            child: Container(
+              width: 50,
+              height: 50,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: const Color(0xFFF04438),
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 4),
+              ),
+              child: const Text('1',
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 22,
+                      fontWeight: FontWeight.w900)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BackCircle extends StatelessWidget {
+  final VoidCallback onTap;
+  const _BackCircle({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.only(left: 14),
+        child: GestureDetector(
+          onTap: onTap,
+          child: Container(
+            width: 40,
+            height: 40,
+            decoration: const BoxDecoration(
+                color: Color(0xFFF4F4F6), shape: BoxShape.circle),
+            child: const Icon(Icons.chevron_left_rounded,
+                size: 28, color: Color(0xFF0B0B0F)),
+          ),
         ),
       );
 }
@@ -590,109 +674,186 @@ class _LegalLink extends StatelessWidget {
       );
 }
 
-/// One selectable plan, full width because Nupo sells three.
-class _PlanRow extends StatelessWidget {
+/// One selectable plan. Yearly gets the badges and its price per week, so it
+/// reads as the obvious choice; the others are plain rows.
+class _PlanCard extends StatelessWidget {
   final PaywallPlan plan;
   final bool selected;
   final VoidCallback onTap;
-  const _PlanRow(
+  const _PlanCard(
       {required this.plan, required this.selected, required this.onTap});
+
+  static const _ink = Color(0xFF0B0B0F);
+  static const _muted = Color(0xFF86868B);
+  static const _green = Color(0xFF12B76A);
 
   @override
   Widget build(BuildContext context) {
-    const ink = Color(0xFF0B0B0F);
-    const muted = Color(0xFF86868B);
-    return GestureDetector(
-      onTap: onTap,
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          Container(
-            padding: const EdgeInsets.fromLTRB(16, 16, 14, 16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                  color: selected ? ink : const Color(0xFFE3E3E8),
-                  width: selected ? 2 : 1.4),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(plan.title,
-                          style: const TextStyle(
-                              fontSize: 16.5,
-                              fontWeight: FontWeight.w800,
-                              color: ink)),
-                      const SizedBox(height: 3),
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.baseline,
-                        textBaseline: TextBaseline.alphabetic,
-                        children: [
-                          Text(plan.price,
-                              style: const TextStyle(
-                                  fontSize: 15.5,
-                                  fontWeight: FontWeight.w700,
-                                  color: ink)),
-                          if (plan.unit != null)
-                            Text(plan.unit!,
+    final yearly = plan.isYearly;
+    final sub = switch (plan.package.packageType) {
+      PackageType.annual => '${plan.price} per year',
+      PackageType.monthly => 'Billed monthly',
+      PackageType.weekly => 'Billed weekly',
+      PackageType.lifetime => 'Pay once, keep forever',
+      _ => '',
+    };
+    // Big number on the right: per week for yearly, else the price itself.
+    final big = plan.perWeek ?? plan.price;
+    final bigUnit = plan.perWeek != null
+        ? 'per week'
+        : switch (plan.package.packageType) {
+            PackageType.weekly => 'per week',
+            PackageType.monthly => 'per month',
+            PackageType.lifetime => 'once',
+            _ => '',
+          };
+
+    return Semantics(
+      button: true,
+      selected: selected,
+      label: '${plan.title}, ${plan.priceLine}',
+      child: GestureDetector(
+        onTap: onTap,
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 160),
+              padding: EdgeInsets.fromLTRB(16, yearly ? 22 : 16, 14, 16),
+              decoration: BoxDecoration(
+                color: yearly ? const Color(0xFFFFFBF0) : Colors.white,
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(
+                  color: selected ? _ink : const Color(0xFFE3E3E8),
+                  width: selected ? 2.4 : 1.4,
+                ),
+              ),
+              child: Row(
+                children: [
+                  _Radio(selected: selected),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(plan.title,
+                            style: TextStyle(
+                                fontSize: yearly ? 18.5 : 16.5,
+                                fontWeight: FontWeight.w900,
+                                color: _ink)),
+                        const SizedBox(height: 2),
+                        Text(sub,
+                            style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: _muted)),
+                        if (plan.saveChip != null) ...[
+                          const SizedBox(height: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: _green.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(999),
+                            ),
+                            child: Text(plan.saveChip!,
                                 style: const TextStyle(
-                                    fontSize: 12.5, color: muted)),
-                          if (plan.saveChip != null) ...[
-                            const SizedBox(width: 8),
-                            Text(plan.saveChip!,
-                                style: const TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w800,
-                                    color: Color(0xFF1E9E5A))),
-                          ],
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w900,
+                                    color: Color(0xFF087443))),
+                          ),
                         ],
-                      ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(big,
+                          style: TextStyle(
+                              fontSize: yearly ? 22 : 17,
+                              fontWeight: FontWeight.w900,
+                              color: _ink)),
+                      if (bigUnit.isNotEmpty)
+                        Text(bigUnit,
+                            style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: _muted)),
                     ],
                   ),
-                ),
-                Container(
-                  width: 26,
-                  height: 26,
-                  decoration: BoxDecoration(
-                    color: selected ? ink : Colors.transparent,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                        color: selected ? ink : const Color(0xFFD3D3D9),
-                        width: 1.8),
-                  ),
-                  child: selected
-                      ? const Icon(Icons.check_rounded,
-                          size: 16, color: Colors.white)
-                      : null,
-                ),
-              ],
-            ),
-          ),
-          if (plan.trialLabel != null)
-            Positioned(
-              top: -9,
-              right: 16,
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
-                decoration: BoxDecoration(
-                    color: ink, borderRadius: BorderRadius.circular(999)),
-                child: Text(plan.trialLabel!.toUpperCase(),
-                    style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 9.5,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 0.5)),
+                ],
               ),
             ),
-        ],
+            if (yearly)
+              Positioned(
+                top: -11,
+                left: 14,
+                child: Row(
+                  children: [
+                    const _Pill(
+                        text: 'BEST VALUE',
+                        bg: Color(0xFFF9C13C),
+                        fg: Color(0xFF241C3B)),
+                    if (plan.trialLabel != null) ...[
+                      const SizedBox(width: 6),
+                      _Pill(
+                          text: plan.trialLabel!.toUpperCase(),
+                          bg: _ink,
+                          fg: Colors.white),
+                    ],
+                  ],
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
+}
+
+class _Pill extends StatelessWidget {
+  final String text;
+  final Color bg;
+  final Color fg;
+  const _Pill({required this.text, required this.bg, required this.fg});
+
+  @override
+  Widget build(BuildContext context) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        decoration: BoxDecoration(
+            color: bg, borderRadius: BorderRadius.circular(999)),
+        child: Text(text,
+            style: TextStyle(
+                color: fg,
+                fontSize: 10.5,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 0.6)),
+      );
+}
+
+class _Radio extends StatelessWidget {
+  final bool selected;
+  const _Radio({required this.selected});
+
+  @override
+  Widget build(BuildContext context) => AnimatedContainer(
+        duration: const Duration(milliseconds: 160),
+        width: 26,
+        height: 26,
+        decoration: BoxDecoration(
+          color: selected ? const Color(0xFF0B0B0F) : Colors.transparent,
+          shape: BoxShape.circle,
+          border: Border.all(
+              color:
+                  selected ? const Color(0xFF0B0B0F) : const Color(0xFFD3D3D9),
+              width: 1.8),
+        ),
+        child: selected
+            ? const Icon(Icons.check_rounded, size: 17, color: Colors.white)
+            : null,
+      );
 }
 
 class _PlansUnavailable extends StatelessWidget {
@@ -705,7 +866,7 @@ class _PlansUnavailable extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(color: const Color(0xFFE3E3E8), width: 1.4),
       ),
       child: Column(
@@ -760,12 +921,12 @@ class _NoPaymentDueNow extends StatelessWidget {
   Widget build(BuildContext context) => const Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.check_rounded, size: 18, color: Color(0xFF0B0B0F)),
+          Icon(Icons.check_rounded, size: 20, color: Color(0xFF0B0B0F)),
           SizedBox(width: 7),
           Text('No payment due now',
               style: TextStyle(
-                  fontSize: 14.5,
-                  fontWeight: FontWeight.w700,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w800,
                   color: Color(0xFF0B0B0F))),
         ],
       );
@@ -776,6 +937,9 @@ class _TrialTimeline extends StatelessWidget {
   final int days;
   const _TrialTimeline({required this.days});
 
+  static const _gold = Color(0xFFF9C13C);
+  static const _ink = Color(0xFF0B0B0F);
+
   @override
   Widget build(BuildContext context) {
     final charge = billingStartsAt(DateTime.now(), days);
@@ -784,31 +948,27 @@ class _TrialTimeline extends StatelessWidget {
       children: [
         const _TimelineRow(
           icon: Icons.lock_open_rounded,
-          tint: Color(0xFFF0A81E),
+          tint: _gold,
+          next: _gold,
           title: 'Today',
-          body: 'Everything unlocks. Pick the apps and set the rules.',
-          showLine: true,
+          body: 'Unlock every course. Lessons start the next time your child '
+              'opens an app you picked.',
         ),
         if (reminderDay > 0)
           _TimelineRow(
             icon: Icons.notifications_rounded,
-            tint: const Color(0xFFF0A81E),
-            title: reminderDay == 1
-                ? 'In 1 day — Reminder'
-                : 'In $reminderDay days — Reminder',
-            body: "We'll remind you the trial is ending, if you allow "
-                'notifications on the next screen.',
-            showLine: true,
+            tint: _gold,
+            next: _ink,
+            title: 'In $reminderDay ${reminderDay == 1 ? 'day' : 'days'} '
+                '- Reminder',
+            body: "We'll send you a reminder that your trial is ending soon.",
           ),
         _TimelineRow(
           icon: Icons.workspace_premium_rounded,
-          tint: const Color(0xFF0B0B0F),
-          title: days == 1
-              ? 'In 1 day — Billing starts'
-              : 'In $days days — Billing starts',
-          body: "You'll be charged on ${formatBillingDate(charge)} "
-              'unless you cancel in Google Play before then.',
-          showLine: false,
+          tint: _ink,
+          title: 'In $days ${days == 1 ? 'day' : 'days'} - Billing starts',
+          body: "You'll be charged on ${formatBillingDate(charge)} unless "
+              'you cancel anytime before in Google Play.',
         ),
       ],
     );
@@ -818,58 +978,79 @@ class _TrialTimeline extends StatelessWidget {
 class _TimelineRow extends StatelessWidget {
   final IconData icon;
   final Color tint;
+
+  /// Colour the rail fades into, toward the next row; null on the last row.
+  final Color? next;
   final String title;
   final String body;
-  final bool showLine;
   const _TimelineRow({
     required this.icon,
     required this.tint,
     required this.title,
     required this.body,
-    required this.showLine,
+    this.next,
   });
 
   @override
   Widget build(BuildContext context) {
+    final last = next == null;
     return IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Column(
-            children: [
-              Container(
-                width: 34,
-                height: 34,
-                decoration: BoxDecoration(color: tint, shape: BoxShape.circle),
-                child: Icon(icon, size: 17, color: Colors.white),
-              ),
-              if (showLine)
-                Expanded(
-                  child: Container(
-                    width: 3,
-                    margin: const EdgeInsets.symmetric(vertical: 2),
-                    color: tint.withValues(alpha: 0.30),
-                  ),
+          SizedBox(
+            width: 40,
+            child: Column(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration:
+                      BoxDecoration(color: tint, shape: BoxShape.circle),
+                  child: Icon(icon,
+                      size: 21,
+                      color: tint == const Color(0xFFF9C13C)
+                          ? const Color(0xFF241C3B)
+                          : Colors.white),
                 ),
-            ],
+                if (!last)
+                  Expanded(
+                    child: Container(
+                      width: 8,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(4),
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            tint.withValues(alpha: 0.45),
+                            next!.withValues(alpha: 0.25),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
           ),
-          const SizedBox(width: 13),
+          const SizedBox(width: 14),
           Expanded(
             child: Padding(
-              padding: EdgeInsets.only(bottom: showLine ? 18 : 0, top: 5),
+              padding: EdgeInsets.only(bottom: last ? 0 : 16, top: 2),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(title,
                       style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w800,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w900,
                           color: Color(0xFF0B0B0F))),
-                  const SizedBox(height: 3),
+                  const SizedBox(height: 2),
                   Text(body,
                       style: const TextStyle(
-                          fontSize: 12.8,
-                          height: 1.42,
+                          fontSize: 13.5,
+                          height: 1.35,
+                          fontWeight: FontWeight.w600,
                           color: Color(0xFF86868B))),
                 ],
               ),
