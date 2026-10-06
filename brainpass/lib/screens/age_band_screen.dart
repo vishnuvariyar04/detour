@@ -1,16 +1,22 @@
 // screens/age_band_screen.dart
 //
-// Pick an age band (or enter the child's age, which maps to a band). Saves
-// `ageBand` to storage.
+// The child's age, changed later from the Parent tab. Built from the same
+// pieces as the onboarding age step (the owl asking, the four course cards,
+// a chunky button) so the setting looks like the place it was first chosen.
+//
+// Picking an age picks the course: it saves the age band, an age in years at
+// the top of that band (as onboarding does), and the course id, then tells the
+// engine, so the next lesson comes from the new course.
 
 import 'package:flutter/material.dart';
 
-import '../engine.dart';
 import '../curriculum.dart';
-import '../questions.dart';
+import '../engine.dart';
 import '../storage.dart';
 import '../theme.dart';
-import '../widgets.dart';
+import 'onboarding/demo_lessons.dart';
+import 'onboarding/onb_kit.dart';
+import 'onboarding/story_flow.dart' show AgeCard;
 
 class AgeBandScreen extends StatefulWidget {
   final VoidCallback onNext;
@@ -23,260 +29,107 @@ class AgeBandScreen extends StatefulWidget {
 }
 
 class _AgeBandScreenState extends State<AgeBandScreen> {
-  late Band _band;
-
-  @override
-  void initState() {
-    super.initState();
-    _band = bandFromString(Storage.ageBand);
-  }
+  late String _band = Storage.ageBand;
+  bool _saving = false;
 
   Future<void> _save() async {
-    final band = bandToString(_band);
-    await Storage.setAgeBand(band);
+    if (_saving) return;
+    setState(() => _saving = true);
+    const upper = {'a': 6, 'b': 8, 'c': 10, 'd': 12};
+    final changed = _band != Storage.ageBand;
+    await Storage.setAgeBand(_band);
+    if (changed) await Storage.setChildAge(upper[_band]!);
+    await Storage.setOnbSubject(demoFor(_band).id);
     Curriculum.invalidate();
-    await Engine.setAgeBand(band);
+    await Engine.setAgeBand(_band);
     widget.onNext();
   }
 
-  void _pickAge() async {
-    final age = await showModalBottomSheet<int>(
-      context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-      ),
-      builder: (_) => _AgePicker(),
-    );
-    if (age != null) setState(() => _band = bandFromAge(age));
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        decoration: AppColors.bgDecoration(),
-        height: double.infinity,
-        child: SafeArea(
-          child: Column(
-            children: [
-              NupoTopBar(step: widget.step, total: widget.total),
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text('How old is your kid?', style: AppText.title),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'The complete syllabus changes with the age you pick.',
-                        style: AppText.body,
-                      ),
-                      const SizedBox(height: 20),
-
-                      for (final b in Band.values)
-                        SelectCard(
-                          title: bandLabel(b),
-                          subtitle: _bandDescription(b),
-                          selected: _band == b,
-                          leading: _bandEmoji(b),
-                          onTap: () => setState(() => _band = b),
-                        ),
-
-                      Center(
-                        child: TextButton.icon(
-                          onPressed: _pickAge,
-                          icon: const Icon(Icons.cake_rounded, size: 18),
-                          label: const Text('Enter exact age'),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-
-                      _previewCard(),
-                      const SizedBox(height: 24),
-                    ],
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
-                child: PrimaryButton(
-                  label: 'Save & switch syllabus',
-                  onPressed: _save,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _bandEmoji(Band b) {
-    final (emoji, bg) = switch (b) {
-      Band.a => ('🧸', const Color(0xFFFFEFE6)),
-      Band.b => ('🚀', const Color(0xFFE6F4EA)),
-      Band.c => ('🔬', const Color(0xFFE8F0FE)),
-      Band.d => ('🎓', const Color(0xFFF1F0FE)),
-    };
-    return Container(
-      width: 46,
-      height: 46,
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(14),
-      ),
-      alignment: Alignment.center,
-      child: Text(emoji, style: const TextStyle(fontSize: 23)),
-    );
-  }
-
-  Widget _previewCard() {
-    final (name, topics) = switch (_band) {
-      Band.a => (
-        'Number Sense',
-        ['Counting', 'Making numbers', 'Shapes & patterns'],
-      ),
-      Band.b => (
-        'Puzzles & Logic',
-        ['Number thinking', 'Order & position', 'Relations & codes'],
-      ),
-      Band.c => (
-        'Think Like a Coder',
-        ['Sequences', 'Loops & conditions', 'Debugging'],
-      ),
-      Band.d => ('Reasoning', ['Sequences & logic', 'Codes', '3D space']),
-    };
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: AppColors.cardDecoration(color: const Color(0xFFFAF9FF)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Row(
-            children: [
-              Icon(
-                Icons.auto_awesome_rounded,
-                color: AppColors.accent,
-                size: 16,
-              ),
-              SizedBox(width: 8),
-              Text(
-                'SYLLABUS PREVIEW',
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w900,
-                  color: AppColors.accentDeep,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 200),
-            child: Column(
-              key: ValueKey(_band),
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  name,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w900,
-                    color: AppColors.textDark,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [for (final topic in topics) _topicChip(topic)],
+    final child = Storage.childNameOr('your child');
+    final course = demoFor(_band);
+    final changed = _band != Storage.ageBand;
+    return OnbPage(
+      top: Align(
+        alignment: Alignment.centerLeft,
+        child: GestureDetector(
+          onTap: () => Navigator.of(context).maybePop(),
+          child: Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.textDark.withValues(alpha: 0.08),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
                 ),
               ],
             ),
+            child: const Icon(Icons.chevron_left_rounded, color: AppColors.textDark),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _topicChip(String topic) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: AppColors.line),
-      ),
-      child: Text(
-        topic,
-        style: const TextStyle(
-          fontSize: 12.5,
-          fontWeight: FontWeight.w800,
-          color: AppColors.textDark,
         ),
       ),
-    );
-  }
-
-  String _bandDescription(Band b) {
-    switch (b) {
-      case Band.a:
-        return 'Number sense and visual patterns';
-      case Band.b:
-        return 'Puzzles, order and everyday logic';
-      case Band.c:
-        return 'Sequences, loops and debugging';
-      case Band.d:
-        return 'Algebraic, spatial and formal reasoning';
-    }
-  }
-}
-
-class _AgePicker extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
+      content: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            const Text('How old?', style: AppText.title),
-            const SizedBox(height: 16),
-            Wrap(
-              spacing: 12,
-              runSpacing: 12,
-              children: [
-                for (var age = 5; age <= 12; age++)
-                  ElevatedButton(
-                    onPressed: () => Navigator.of(context).pop(age),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primarySoft,
-                      foregroundColor: AppColors.primary,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      minimumSize: const Size(62, 50),
-                    ),
-                    child: Text(
-                      '$age',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w900,
-                        fontSize: 17,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
+            Image.asset(Nupo.teacher, width: 84, semanticLabel: 'Nupo'),
+            const SizedBox(width: 8),
+            Flexible(child: SpeechBubble('How old is $child?')),
           ],
         ),
-      ),
+        const SizedBox(height: 18),
+        // Rows, not a GridView: the page body sizes itself to its content.
+        for (var r = 0; r < 2; r++) ...[
+          if (r > 0) const SizedBox(height: 12),
+          Row(
+            children: [
+              for (var i = 0; i < 2; i++) ...[
+                if (i > 0) const SizedBox(width: 12),
+                Expanded(
+                  child: AspectRatio(
+                    aspectRatio: 0.98,
+                    child: AgeCard(
+                      course: kDemoCourses[r * 2 + i],
+                      selected: _band == kDemoCourses[r * 2 + i].band,
+                      onTap: () =>
+                          setState(() => _band = kDemoCourses[r * 2 + i].band),
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ],
+        const SizedBox(height: 16),
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 180),
+          child: Text(
+            changed
+                ? 'Lessons switch to ${course.name}.'
+                : '$child is learning ${course.name}.',
+            key: ValueKey('$_band$changed'),
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w800,
+              color: AppColors.textMuted,
+            ),
+          ),
+        ),
+        const Spacer(),
+      ],
+      bottom: [
+        ChunkyButton(
+          label: changed ? 'Switch course' : 'Done',
+          arrow: false,
+          onPressed: _saving ? null : _save,
+        ),
+      ],
     );
   }
 }

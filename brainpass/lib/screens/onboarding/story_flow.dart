@@ -302,7 +302,7 @@ class _OnboardingStoryState extends State<OnboardingStory> {
               Expanded(
                 child: AspectRatio(
                   aspectRatio: 0.98,
-                  child: _AgeCard(
+                  child: AgeCard(
                     course: kDemoCourses[r * 2 + i],
                     selected: _band == kDemoCourses[r * 2 + i].band,
                     onTap: () => _pickBand(kDemoCourses[r * 2 + i].band),
@@ -1010,11 +1010,13 @@ class _DashedBoxPainter extends CustomPainter {
   bool shouldRepaint(_DashedBoxPainter o) => o.color != color;
 }
 
-class _AgeCard extends StatelessWidget {
+/// One age choice: the course's drawing, the ages, the course name. Shared by
+/// the story and the parent's age setting so both look the same.
+class AgeCard extends StatelessWidget {
   final DemoCourse course;
   final bool selected;
   final VoidCallback onTap;
-  const _AgeCard({required this.course, required this.selected, required this.onTap});
+  const AgeCard({super.key, required this.course, required this.selected, required this.onTap});
 
   @override
   Widget build(BuildContext context) => GestureDetector(

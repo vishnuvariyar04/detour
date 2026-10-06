@@ -48,15 +48,16 @@ Band bandFromAge(int age) {
 
 /// A human-friendly label for a band, used in the parent UI.
 String bandLabel(Band b) {
+  // Same wording as the onboarding age cards.
   switch (b) {
     case Band.a:
-      return 'Ages 5 and 6';
+      return 'Ages 5–6';
     case Band.b:
-      return 'Ages 7 and 8';
+      return 'Ages 7–8';
     case Band.c:
-      return 'Ages 9 and 10';
+      return 'Ages 9–10';
     case Band.d:
-      return 'Age 11';
+      return 'Ages 11–12';
   }
 }
 
