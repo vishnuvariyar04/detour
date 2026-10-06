@@ -15,6 +15,7 @@ This document describes **outputs only**: what each screen shows, what the paren
 5. Redesigned **Learning** and **Parent** tabs (§9–§10), including the child-age screen (§10.1).
 6. **Ad measurement** for Facebook and Instagram ads aimed at parents (§13).
 7. A new **store listing**: copy, eight screenshots and a feature graphic (§14).
+8. **Johniton's five lesson fixes** (§7.1): wrong answers come back until right, shuffled number choices, a working "Got it" after build-a-program questions, the lock holding under floating windows, and negative answers.
 
 ---
 
@@ -207,9 +208,54 @@ A small caption under the answers says what to tap, for example "Tap the number.
 - **Parent PIN on the lesson.** A **Parent** button on the lesson opens a PIN pad. The correct PIN gives an untimed, free session for that app.
 - **Stats kept:** questions answered (total, today, and each of the last 7 days), questions correct, and a streak (consecutive days with at least one answer). These drive the Learning tab. On Android they stay on the device. The setup is restored on a new phone (§11), but progress starts over.
 - **Videos must not play under the lesson.** If the gated app was already playing (e.g. YouTube resumed a video), it must be paused while the lesson is up. Pressing Home must not leave a video playing in picture-in-picture outside the lesson. *(Android 1.4.3 fixed exactly this.)*
-- **A floating window must not lift the lock.** Opening a floating or side-bar app (e.g. ChatGPT) over a locked app must not drop the lesson while the locked app is still on screen. *(Android 1.4.4.)*
-- **Number choices are shuffled every time a question is shown.** The authored lists are in ascending order, which put the right answer in the same slot nearly every time. Applies to every "pick a number" row in all four skills. *(Android 1.4.4.)*
-- **Negative numbers are real answers.** The Reasoning stop "Below zero" has negative answers, and picking −19 must be submittable. *(Android 1.4.2 fixed a bug where it wasn't.)*
+- **A floating window must not lift the lock.** Opening a floating or side-bar app (e.g. ChatGPT) over a locked app must not drop the lesson while the locked app is still on screen. *(Android 1.4.4; see §7.1.)*
+- **Number choices are shuffled every time a question is shown.** The authored lists are in ascending order, which put the right answer in the same slot nearly every time. Applies to every "pick a number" row in all four skills. *(Android 1.4.4; see §7.1.)*
+- **Negative numbers are real answers.** The Reasoning stop "Below zero" has negative answers, and picking −19 must be submittable. *(Fixed on Android; see §7.1.)*
+
+### 7.1 Johniton's five fixes *(Android 1.4.4)*
+
+Five fixes by Johniton, merged in 1.4.4. Each is summarised in the rules above; this section gives the full behaviour and a case to test it with. Source: the commits in merge `fe0ca37`, plus `GateQueue.kt`, `GatedVisibility.kt`, `CoderGate.kt`, and their unit tests `GateQueueTest.kt` (13 tests) and `GatedVisibilityTest.kt` (14 tests) in `android/app/src/test/`. The test files list the exact cases Android checks.
+
+**1. A wrong answer comes back until it's right**
+
+- **Before:** a wrong answer showed the explanation and the child moved on. The miss only came back in a later lesson, through the review queue.
+- **Now:** the lesson ends only when **every question has been answered right**.
+- **On a wrong answer:**
+  - the verdict names the right answer (§8.5) and adds "You'll see this one again at the end."
+  - the **same question goes to the end of the lesson**, with its choices reshuffled
+  - there is no attempt limit; the parent PIN still lets the parent skip the lesson
+- **The place on the path** moves once, on a question's first showing. A retry or a review question never moves it again, so content is never skipped.
+- **The review queue:** the miss is added to it as before, and removed once the question is finally answered right, so it isn't asked again in a later lesson.
+- **Progress bar and score:** the bar counts questions finished **right**. The finish screen's score line counts **attempts** ("4 of 6 right" after two misses on a 4-question lesson).
+- **Test:** a 4-question lesson with question 2 answered wrong runs 1, 2 (wrong), 3, 4, 2 (right), then the finish screen. The bar reaches full only after the last step.
+
+**2. Number choices are shuffled every time**
+
+- **Before:** "pick a number" choices are written in ascending order with the answer at a fixed spot. 149 of 168 Number Sense questions had the answer 3rd of 4, and all 93 numeric Think Like a Coder questions had it 2nd of 4. Nothing shuffled them.
+- **Now:** the numbers are shuffled **each time a question is shown**, including a retry of the same question.
+- **Grading** compares the value tapped with the stored answer, so shuffling never changes what is right. The buttons and the green or red verdict tint follow the shuffled order, so the tint lands on the button the child actually tapped.
+- **Test:** open the same question several times; the right answer's position changes.
+
+**3. "Got it" works after a build-a-program question** *(ages 9–10)*
+
+- **Bug:** submitting a build-a-program answer (fix, inverse, constrain) disables the main button while the program runs. Nothing turned it back on, so a teach card shown right after it had a faded, dead **Got it** and the child was stuck.
+- **Example:** the child misses the stop 1.1.1 `fix` question. In the next lesson that question is asked first (review), followed by the "Order changes everything" teach card.
+- **Now:** a teach card always shows an enabled, purple **Got it**, whatever came before it.
+
+**4. The lock holds when a floating window opens over a locked app**
+
+- **Bug:** opening a floating or side-bar app (e.g. ChatGPT in a floating window) over a locked app made the floating app count as "the app in front". The locked app was never paused, so it stayed usable without a lesson.
+- **Now:** while a gated app is **still visible on screen**, it counts as the app in front, even if a floating window opened on top. The lesson stays up, or comes up.
+- **Normal switching is unchanged:** opening a gated app full screen behaves exactly as before.
+- **Must not over-lock:** the home screen must never be locked because of a gated app that has really gone. Android re-checks the last minute of app events so it can't miss the moment an app left the screen, and forgets everything after more than 30 minutes without checking.
+- **Test:** open YouTube (gated) and get the lesson, then open a floating app over it; the lesson stays. Go home; nothing is locked.
+
+**5. Negative answers can be submitted**
+
+- **Bug:** "nothing picked yet" was stored as −1, and Check only turned on for a pick of 0 or more. Any negative choice counted as no answer, so Check stayed off.
+- **Example:** the Reasoning stop "Below zero", whose answers include −28, −19, −18 and −10.
+- **Now:** any number, negative or zero, can be picked and checked. "Nothing picked" must be a value that can never be an answer.
+- **Test:** in "Below zero", tap −19; Check turns on and the answer is graded.
 
 ---
 
@@ -523,7 +569,7 @@ These show Android phone screens. iOS needs the same eight slides, in the same o
 - [ ] Setup steps and copy match §5, including the trade arithmetic.
 - [ ] All four JSON skills are bundled unchanged. The right skill is served per band. All 324 questions per skill render and grade against the stored answer.
 - [ ] Lesson rules in §7 hold: one stop per lesson, teach card shown once, one review first, cursor moves once per question, a wrong question comes back at the end until it is right, minutes earned when every question is right, shuffled number choices, PIN override.
-- [ ] A floating window over a locked app does not lift the lock. "Got it" is tappable after a build-a-program question.
+- [ ] Each of Johniton's five fixes in §7.1 passes its test case: wrong answers return until right, number choices shuffle, "Got it" works after a build-a-program question, a floating window doesn't lift the lock (and home is never over-locked), negative answers submit.
 - [ ] The hint is docked and never moves the question. The verdict names the right answer. The teach demo loops with no "Watch again". Clue cards use the new design.
 - [ ] Negative answers submit. Video stays paused under the lesson, with no picture-in-picture escape.
 - [ ] The Learning and Parent tabs match §9–§10, including streak, week chart, path states, Pro card states, and the email in "Signed in".
