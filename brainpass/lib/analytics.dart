@@ -50,6 +50,8 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:posthog_flutter/posthog_flutter.dart';
 
+import 'ad_attribution.dart';
+
 class Analytics {
   static FirebaseAnalytics? _fa;
 
@@ -284,11 +286,15 @@ class Analytics {
     required String ageBand,
     required String subject,
     required int appsGated,
-  }) => _log('setup_complete', {
-    'age_band': ageBand,
-    'subject': subject,
-    'apps_gated': appsGated,
-  });
+  }) {
+    // The conversion Meta ads optimise for until purchases have volume.
+    AdAttribution.completedRegistration();
+    return _log('setup_complete', {
+      'age_band': ageBand,
+      'subject': subject,
+      'apps_gated': appsGated,
+    });
+  }
 
   /// A returning parent whose saved setup was pulled back down on sign-in.
   static Future<void> setupRestored() => _log('setup_restored');

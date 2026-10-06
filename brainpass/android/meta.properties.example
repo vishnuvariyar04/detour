@@ -1,0 +1,4 @@
+# Meta for Developers -> your app -> App settings -> Basic (App ID)
+# and -> Advanced -> Security (Client token). Copy to meta.properties.
+appId=000000000000000
+clientToken=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx

@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
 
+import 'ad_attribution.dart';
 import 'analytics.dart';
 import 'auth_service.dart';
 import 'engine.dart';
@@ -59,6 +60,8 @@ Future<void> main() async {
   );
   // RevenueCat (Nupo Pro). Fail-safe: falls back to the cached entitlement.
   await SubscriptionService.init();
+  // Ad measurement (Meta app events, install campaign). Needs RevenueCat up.
+  unawaited(AdAttribution.init());
   // Remote kill-switch for paywall enforcement (see remote_config_service.dart).
   await RemoteConfigService.init();
   if (Storage.onboardingComplete) {
@@ -124,7 +127,8 @@ class _RootRouterState extends State<RootRouter> {
       // can be traced to an actual account.
       Analytics.setUser(user?.uid, method: AuthService.providerId);
       if (user != null) {
-        SubscriptionService.logIn(user.uid); // purchases follow the account
+        SubscriptionService.logIn(user.uid) // purchases follow the account
+            .then((_) => AdAttribution.relink()); // and keep their ad link
         _afterSignIn();
       } else {
         SubscriptionService.logOut();

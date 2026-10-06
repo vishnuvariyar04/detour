@@ -117,7 +117,8 @@ App: `app.nupo.kid` · Target audience: **includes children (5–11)**
   purchase/subscription status tied to the account.
 
 ### Device or other IDs
-- Collected: **No**
+- Collected: **Yes since 1.4.4** (Meta SDK's anonymous app id; see "Meta ad
+  measurement"). Before 1.4.4: **No**
 - Rationale (keep for your records): the **AD_ID permission is removed**
   (`tools:node="remove"`, verified absent in the merged manifest), and the app
   reads **no** Android ID / IMEI / IMSI / MAC / SIM serial / device phone
@@ -126,6 +127,24 @@ App: `app.nupo.kid` · Target audience: **includes children (5–11)**
   hardware identifiers), so this category stays **Not collected**.
 
 ---
+
+## Meta ad measurement (added in 1.4.4)
+
+The Meta app-events SDK and RevenueCat's Meta integration send data to Meta
+Platforms for **ad measurement of our own ads**. That makes the data
+**Shared** (a third party using it under its own terms), purpose
+**Advertising or marketing** (plus **Analytics**):
+
+- **App activity → App interactions:** Shared = **Yes** (install, app open,
+  setup completed). Purposes add **Advertising or marketing**.
+- **Financial info → Purchase history:** Shared = **Yes** (trial start,
+  conversion, renewal, refund, amount, currency, sent by RevenueCat).
+  Purposes add **Advertising or marketing**.
+- **Device or other IDs:** Collected = **Yes**, Shared = **Yes**. Meta's SDK
+  creates an app-scoped anonymous id (not the advertising ID, which stays
+  removed). Purposes: **Advertising or marketing**, **Analytics**.
+- The advertising ID (AAID) is still NOT collected: AD_ID stays removed and
+  `com.facebook.sdk.AdvertiserIDCollectionEnabled` is false.
 
 ## Explicitly NOT collected (do not tick these)
 
@@ -166,8 +185,8 @@ App: `app.nupo.kid` · Target audience: **includes children (5–11)**
 - [ ] App interactions = **Yes** (Firebase Analytics, added after 1.2.0, and
       PostHog Cloud EU, added October 2026),
       purpose **Analytics only**, ephemeral **No**, collection **required**.
-- [ ] Advertising or marketing purpose left UNTICKED everywhere — it would
-      contradict the stripped AD_ID and the Families declaration.
+- [ ] Advertising or marketing ticked ONLY on the three Meta-shared types
+      above (App interactions, Purchase history, Device or other IDs).
 - [ ] Merged manifest re-verified after any release build:
       `unzip -p app-release.aab base/manifest/AndroidManifest.xml | strings | grep permission.AD_ID`
       must be EMPTY, and the four `google_analytics_*` flags must be present.

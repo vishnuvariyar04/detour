@@ -32,6 +32,16 @@ if (posthogPropertiesFile.exists()) {
 fun posthogSetting(key: String, env: String): String =
     (posthogProperties.getProperty(key) ?: System.getenv(env) ?: "").trim()
 
+// Meta (Facebook/Instagram ads) app events. App id and client token come
+// from android/meta.properties (gitignored; copy meta.properties.example).
+// Without them the Meta SDK is never started and no ad events are sent.
+val metaProperties = Properties()
+val metaPropertiesFile = rootProject.file("meta.properties")
+if (metaPropertiesFile.exists()) {
+    metaProperties.load(FileInputStream(metaPropertiesFile))
+}
+fun metaSetting(key: String): String = (metaProperties.getProperty(key) ?: "").trim()
+
 val nupoPreview = project.hasProperty("nupoPreview")
 
 android {
@@ -45,6 +55,11 @@ android {
         // flutter_local_notifications (the trial reminder) uses java.time on
         // older Android versions through library desugaring.
         isCoreLibraryDesugaringEnabled = true
+    }
+
+    // resValue (the Meta app id string) needs this switched on with AGP 8+.
+    buildFeatures {
+        resValues = true
     }
 
     defaultConfig {
@@ -61,6 +76,13 @@ android {
         manifestPlaceholders["posthogHost"] = posthogHost
         manifestPlaceholders["posthogToken"] =
             if (nupoPreview) "" else posthogSetting("projectToken", "POSTHOG_PROJECT_TOKEN")
+        // Meta reads its app id from a STRING resource (a numeric manifest
+        // value is parsed as an integer and rejected), hence resValue.
+        val metaAppId = if (nupoPreview) "" else metaSetting("appId")
+        resValue("string", "facebook_app_id", metaAppId)
+        resValue("string", "facebook_client_token",
+            if (nupoPreview) "" else metaSetting("clientToken"))
+        manifestPlaceholders["metaAutoInit"] = metaAppId.isNotEmpty().toString()
     }
 
     signingConfigs {

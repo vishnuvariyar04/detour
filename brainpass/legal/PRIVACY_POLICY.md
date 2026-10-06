@@ -15,8 +15,8 @@ Nupo is a daily learning app for children aged 5–12, set up and controlled ent
 - The **parent** creates the account. On Android that means **Sign in with Google** or an **email address and password**; on iOS it means **Sign in with Apple or Sign in with Google**. Either way we get an email address for the parent.
 - **Children never create accounts, enter personal information, or see ads.**
 - Almost everything Nupo does — knowing which app was opened, showing lessons, counting minutes — happens **entirely on the device** and is never uploaded.
-- We show no ads and use no advertising or marketing SDKs. We do use **product analytics** (Google Firebase Analytics, and PostHog) to see where parents get stuck setting Nupo up and whether families keep using it — never to profile anyone and never for advertising. **No advertising identifier is collected, and no child's answers or names are ever sent.** See "Product analytics" below.
-- We **never sell or share data** with anyone except the infrastructure providers listed below.
+- Nupo **shows no ads**, to children or to parents, and contains no ad-serving SDK. We do advertise Nupo to parents on Facebook and Instagram, and the Android app tells Meta when one of those ads led to an install, a finished setup or a subscription, so we can see which ads work (see "Measuring our own ads" below). We also use **product analytics** (Google Firebase Analytics, and PostHog) to see where parents get stuck setting Nupo up and whether families keep using it — never to profile anyone and never for advertising. **No advertising identifier is collected, and no child's answers or names are ever sent.** See "Product analytics" below.
+- We **never sell data**. Apart from the infrastructure providers listed below, the only data shared is the short list of ad-measurement events sent to Meta, described below.
 
 ## Information we collect (parent account)
 
@@ -38,7 +38,7 @@ When a parent signs in and uses Nupo, we store the following in our cloud databa
 
 **A note on Sign in with Apple.** Apple lets you hide your real email address. If you choose that, we receive a relay address ending in `@privaterelay.appleid.com` and never see your actual email. That works perfectly well — you can use Nupo entirely through the relay.
 
-**Subscriptions.** Nupo Pro is sold through **Apple** on iOS and through **Google Play** on Android, and we use **RevenueCat** to confirm whether a subscription is active. Neither we nor RevenueCat ever see your payment card, billing address, or store account password — Apple and Google handle all of that. If you start a free trial on Android, Nupo schedules one **local** reminder notification on your phone for the day before the trial ends; it is created on the device, not sent from our servers. RevenueCat holds only your purchase history and an account identifier so that your subscription follows you across devices and reinstalls. We have deliberately **disabled RevenueCat's optional device-identifier and advertising-attribution collection**.
+**Subscriptions.** Nupo Pro is sold through **Apple** on iOS and through **Google Play** on Android, and we use **RevenueCat** to confirm whether a subscription is active. Neither we nor RevenueCat ever see your payment card, billing address, or store account password — Apple and Google handle all of that. If you start a free trial on Android, Nupo schedules one **local** reminder notification on your phone for the day before the trial ends; it is created on the device, not sent from our servers. RevenueCat holds only your purchase history and an account identifier so that your subscription follows you across devices and reinstalls. We have deliberately **disabled RevenueCat's optional device-identifier collection**. On Android, RevenueCat also tells Meta when a trial starts, converts, renews or is refunded, with the amount and currency, so we can measure our Facebook and Instagram ads (see "Measuring our own ads").
 
 **Your saved setup.** So that signing in on a new phone (or after a reinstall) restores what you already configured, we store your setup against your account: your child's first name, the name you gave the Nupo owl, their age in years and age range, their chosen subject, the apps you selected for lessons, and each app's rules. This is readable only by your own signed-in account, is never sold or shared, and is deleted with your account.
 
@@ -67,7 +67,7 @@ Your child's first name, the owl's name, and your chosen apps and rules are also
 
 On **neither** platform does Nupo request SMS, contacts, camera, microphone, or location permissions.
 
-**We never ask for permission to track you across other companies' apps and websites, because we never do it.** Nupo contains no advertising identifier (IDFA), no App Tracking Transparency prompt, and no attribution SDK.
+**We never ask for permission to track you across other companies' apps and websites, because we never do it.** Nupo contains no advertising identifier (IDFA or Android advertising ID) and no App Tracking Transparency prompt. The Android app does use Meta's app-events SDK to measure our own ads, as described below, without the advertising ID.
 
 ## Children's privacy
 
@@ -87,11 +87,12 @@ If you believe we have inadvertently collected personal information from a child
 | **Apple Inc.** (iOS only) | Sign in with Apple, and all payment processing for iOS subscriptions. |
 | **Google LLC** (Google Play, Android only) | All payment processing for Android subscriptions. |
 | **RevenueCat, Inc.** (both apps) | Confirming whether a subscription is active. Purchase history and an account identifier only. |
+| **Meta Platforms, Inc.** (Android) | The ad-measurement events described under "Measuring our own ads". |
 | **PostHog, Inc.** | The product-analytics events listed under "Product analytics". Data from both apps is hosted in PostHog's EU region (Frankfurt, Germany). No session replay and no automatic capture — only the events we write ourselves. |
 
 All data is encrypted in transit (TLS), and database access rules ensure each account can only ever read or write its own record.
 
-We use **no advertising SDKs, no crash-reporting SDKs, and no data brokers**. We do not sell, rent, or share your personal information with third parties for their own purposes.
+We use **no ad-serving SDKs, no crash-reporting SDKs, and no data brokers**. We do not sell, rent, or share your personal information with third parties for their own purposes.
 
 ## Product analytics
 
@@ -120,7 +121,24 @@ Nupo uses product analytics so we can tell where the app is failing parents. Bef
 - Screen recordings, screenshots, or a general log of what was tapped.
 - Your advertising ID. Because Nupo is for children, there is no advertising identifier in either app — on Android it is removed from the app entirely and ad personalisation and ad-user-data signals are switched off; on iOS there is no IDFA and no App Tracking Transparency prompt. Analytics data is tied only to a random, app-specific identifier that is destroyed when you uninstall Nupo.
 
-This data is used solely to improve Nupo. It is never used for advertising, never sold, and never shared with anyone other than Google and PostHog, Inc. as the processors running the service on our behalf.
+This data is used solely to improve Nupo. It is never used for advertising, never sold, and never shared with anyone other than Google and PostHog, Inc. as the processors running the service on our behalf. The separate ad-measurement events below are the only exception.
+
+## Measuring our own ads (Android)
+
+We advertise Nupo to **parents** on Facebook and Instagram. To know which of those ads actually help families, the Android app uses **Meta's app-events SDK**, and RevenueCat sends purchase events to Meta from its servers. Nupo itself never shows ads.
+
+What Meta receives:
+
+- That Nupo was installed and opened, and which ad led to the install (from Google Play's install referrer).
+- That a parent finished setting Nupo up.
+- That a free trial started, converted, renewed or was refunded, with the amount and currency.
+- A random, app-specific identifier created by Meta's SDK, and basic technical details its SDK attaches (device model, Android version, app version, language, and the IP address the event came from).
+
+What Meta never receives: your advertising ID (it is removed from the app), your name, your email address, your child's name or age, or anything about your child's lessons, questions or answers.
+
+We also record the ad campaign that led to the install (for example "facebook / spring-campaign") with our own analytics, so we can see how families from each campaign use Nupo.
+
+Meta processes these events under its own terms and privacy policy (facebook.com/privacy/policy). To limit how Meta uses activity from apps for ads shown to you, use Meta's "Activity from ad partners" setting in your Facebook or Instagram account.
 
 ## Where your data is processed
 

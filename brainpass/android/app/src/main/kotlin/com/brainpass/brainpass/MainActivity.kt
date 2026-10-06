@@ -132,6 +132,11 @@ class MainActivity : FlutterFragmentActivity() {
                         result.success(true)
                     }
                     "autostartRelevant" -> result.success(Autostart.isRelevant())
+                    // Whether this build carries a Meta app id. Without one the
+                    // Meta SDK is never started, and calling it would throw.
+                    "metaConfigured" -> result.success(
+                        getString(R.string.facebook_app_id).isNotBlank()
+                    )
                     "openAutostartSettings" -> result.success(Autostart.open(this))
                     "canDrawOverlays" -> result.success(Settings.canDrawOverlays(this))
                     "requestOverlay" -> {

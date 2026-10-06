@@ -108,6 +108,29 @@
              the child-safe settings in Analytics.kt, before any Activity or the
              guard runs. A guard started at boot has no Flutter engine, so the
              plugin could not be the one to start it. -->
+        <!-- Meta (Facebook/Instagram ads) app events, for measuring which ads
+             bring parents who set up and subscribe. The ADVERTISING ID stays
+             off (AD_ID is removed above): Meta matches Play installs to ad
+             taps through the install referrer. Purchases reach Meta from
+             RevenueCat's servers, not from here, so they are not double
+             counted. With no app id in android/meta.properties the SDK is
+             never started (AutoInitEnabled false). -->
+        <meta-data
+            android:name="com.facebook.sdk.ApplicationId"
+            android:value="@string/facebook_app_id" />
+        <meta-data
+            android:name="com.facebook.sdk.ClientToken"
+            android:value="@string/facebook_client_token" />
+        <meta-data
+            android:name="com.facebook.sdk.AutoInitEnabled"
+            android:value="${metaAutoInit}" />
+        <meta-data
+            android:name="com.facebook.sdk.AutoLogAppEventsEnabled"
+            android:value="${metaAutoInit}" />
+        <meta-data
+            android:name="com.facebook.sdk.AdvertiserIDCollectionEnabled"
+            android:value="false" />
+
         <meta-data
             android:name="com.posthog.posthog.AUTO_INIT"
             android:value="false" />
