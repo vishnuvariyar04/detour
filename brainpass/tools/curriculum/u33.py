@@ -79,7 +79,10 @@ S331 = [
       "for the inner IF row.",
       "The outer check already asks about the star.",
       opt(1), visual=_a2gap,
-      optionsText=["ON A STAR", "WALL ABOVE", "AT THE DOOR"]),
+      optionsText=["ON A STAR", "WALL ABOVE", "AT THE DOOR"],
+      # The prompt states the rule; the other option that happens to work
+      # on this one board breaks it. validate.py skips its option run.
+      criterion="rule"),
 ]
 
 # ---------------------------------------------------------------- 3.3.2
@@ -89,7 +92,7 @@ _b0 = g(5, 5, (4, 0), goal=(4, 1), program=_EITHER)
 _b1 = g(5, 5, (1, 0), goal=(1, 1), stars=[(1, 0)], mustPick=True,
         program=_EITHER)
 _b2 = g(5, 5, (1, 0), goal=(1, 1), program=_EITHER)
-_b2gap = g(5, 5, (1, 0), goal=(1, 1),
+_b2gap = g(5, 5, (1, 0), goal=(1, 1), stars=[(1, 0)], mustPick=True,
            program=["if:wall-right", U, "else", "if:star", "?", "end", "end"])
 _b3 = g(6, 6, (0, 0), stars=[(0, 1), (0, 2)], mustPick=True,
         program=rep(3, [U] + _EITHER))
@@ -187,7 +190,8 @@ S333 = [
       "above it. Tap the check that belongs in the IF row.",
       "One check is enough when the other is not wanted.",
       opt(0), visual=_c3gap,
-      optionsText=["ON A STAR", "WALL ABOVE", "WALL ON THE RIGHT"]),
+      optionsText=["ON A STAR", "WALL ABOVE", "WALL ON THE RIGHT"],
+      criterion="rule"),
 ]
 
 # ---------------------------------------------------------------- 3.3.4  BOSS

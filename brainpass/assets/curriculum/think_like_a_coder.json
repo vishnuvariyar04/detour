@@ -1458,7 +1458,7 @@
          },
          "optionsText": [
           "DOWN",
-          "UP",
+          "RIGHT",
           "LEFT"
          ]
         },
@@ -5418,10 +5418,10 @@
         {
          "shape": "complete",
          "prompt": "Tap the inside count that gets Nupo to the flag.",
-         "hint": "The flag is six up, and the outside loop runs three times.",
+         "hint": "The flag is four up, and the outside loop runs twice.",
          "answer": {
           "type": "option",
-          "value": 0
+          "value": 1
          },
          "visual": {
           "w": 7,
@@ -5432,10 +5432,10 @@
           ],
           "goal": [
            0,
-           6
+           4
           ],
           "program": [
-           "repeat:3",
+           "repeat:2",
            "repeat:?",
            "up",
            "end",
@@ -5443,9 +5443,9 @@
           ]
          },
          "optionsText": [
+          "1",
           "2",
-          "3",
-          "4"
+          "3"
          ]
         },
         {
@@ -5958,7 +5958,7 @@
          "hint": "Six up in total, and the outside loop runs twice.",
          "answer": {
           "type": "option",
-          "value": 1
+          "value": 2
          },
          "visual": {
           "w": 7,
@@ -5980,9 +5980,9 @@
           ]
          },
          "optionsText": [
+          "1",
           "2",
-          "3",
-          "4"
+          "3"
          ]
         },
         {
@@ -8660,6 +8660,7 @@
           "type": "option",
           "value": 1
          },
+         "criterion": "rule",
          "visual": {
           "w": 5,
           "h": 5,
@@ -8965,9 +8966,16 @@
            1,
            0
           ],
+          "mustPick": true,
           "goal": [
            1,
            1
+          ],
+          "stars": [
+           [
+            1,
+            0
+           ]
           ],
           "program": [
            "if:wall-right",
@@ -9296,6 +9304,7 @@
           "type": "option",
           "value": 0
          },
+         "criterion": "rule",
          "visual": {
           "w": 6,
           "h": 6,

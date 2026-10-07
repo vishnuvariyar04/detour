@@ -267,6 +267,11 @@ def shortest(vis):
     return None
 
 
+# A `complete` option's label back to the program token it stands for.
+GAP_TOKEN = {"PICK UP": "pick", "ON A STAR": "star", "WALL ABOVE": "wall-up",
+             "WALL BELOW": "wall-down", "WALL ON THE RIGHT": "wall-right",
+             "WALL ON THE LEFT": "wall-left", "AT THE DOOR": "door"}
+
 ERRORS = []
 def bad(qid, msg): ERRORS.append(f"{qid}: {msg}")
 
@@ -291,7 +296,9 @@ def check(qid, q):
         end, *_ = run(vis, vis["program"])
         if end != a["value"]: bad(qid, f"lands on {end}, answer says {a['value']}")
 
-    elif shape in ("spot", "debug"):
+    elif shape == "debug":
+        # (Was `in ("spot", "debug")`, which sent every spot question here and
+        # left the full `spot` check further down unreachable.)
         if not vis or "program" not in vis: return bad(qid, "needs visual.program")
         i = a["value"]
         if not 0 <= i < len(vis["program"]): return bad(qid, f"block {i} out of range")
@@ -332,6 +339,26 @@ def check(qid, q):
             prog = (vis or {}).get("program", [])
             if not any("?" in t for t in prog):
                 bad(qid, "no ? gap in program")
+            # Fill the gap with every option and run it. Exactly the stored
+            # option may do what the question asks: reach the flag when the
+            # board has one, else clear everything the board asks for. Without
+            # this, "up ? up right" shipped with RIGHT missing from the options,
+            # and a loop count that overshot the top edge stopped ON the flag.
+            elif q.get("criterion") != "rule":
+                wins = []
+                for i, o in enumerate(opts):
+                    t = GAP_TOKEN.get(o, o.lower())
+                    filled = [x.replace("?", t) if isinstance(x, str) else x
+                              for x in prog]
+                    if "goal" in vis:
+                        ok = list(run(vis, filled)[0]) == list(vis["goal"])
+                    else:
+                        ok = clears(vis, filled)
+                    if ok:
+                        wins.append(i)
+                if wins != [a["value"]]:
+                    bad(qid, f"options that work: {[opts[i] for i in wins]}, "
+                             f"answer says {opts[a['value']]!r}")
 
     elif shape == "compare":
         opts = q["options"]

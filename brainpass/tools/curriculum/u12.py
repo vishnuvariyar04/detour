@@ -78,7 +78,7 @@ S122 = [
  q("complete", "One step is missing from the middle. Tap the step that fills "
                "the gap.",
    "Work out where he must end up, then fill the middle.",
-   opt(1), visual=_c3, optionsText=["DOWN", "UP", "LEFT"]),
+   opt(1), visual=_c3, optionsText=["DOWN", "RIGHT", "LEFT"]),
 
  q("choose", "Tap the list that stops on the star.",
    "Check where each one ends. Only one lands on the star.",

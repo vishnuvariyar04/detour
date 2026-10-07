@@ -59,7 +59,7 @@ S231 = [
 # Outer times inner. That is the whole trick.
 _b0 = g(7, 7, (0, 0), program=rep(3, rep(4, [U])))
 _b1 = g(7, 7, (0, 0), program=rep(4, rep(2, [U, R])))
-_b3 = g(7, 7, (0, 0), goal=(0, 6), program=["repeat:3", "repeat:?", U, "end", "end"])
+_b3 = g(7, 7, (0, 0), goal=(0, 4), program=["repeat:2", "repeat:?", U, "end", "end"])
 _b5 = g(7, 7, (0, 0), program=rep(2, rep(3, [U])))
 _b2 = g(7, 7, (0, 0), goal=(3, 3))
 
@@ -80,8 +80,8 @@ S232 = [
    options=[rep(2, rep(3, [U])), rep(2, rep(2, [U])), rep(1, rep(5, [U]))]),
 
  q("complete", "Tap the inside count that gets Nupo to the flag.",
-   "The flag is six up, and the outside loop runs three times.",
-   opt(0), visual=_b3, optionsText=["2", "3", "4"]),
+   "The flag is four up, and the outside loop runs twice.",
+   opt(1), visual=_b3, optionsText=["1", "2", "3"]),
 
  q("compare", "These two nested loops have their counts swapped. Do they "
               "end on the same square? Tap your answer.",
@@ -173,7 +173,7 @@ S234 = [
  q("complete", "The inside count is missing. Tap the one that reaches the "
                "flag.",
    "Six up in total, and the outside loop runs twice.",
-   opt(1), visual=_d3, optionsText=["2", "3", "4"]),
+   opt(2), visual=_d3, optionsText=["1", "2", "3"]),
 
  q("choose", "Tap the loop that stops exactly on this flag.",
    "The flag is four up and four across.",
